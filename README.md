@@ -5,6 +5,6 @@ The code provided here is sorted by lecture, where each exercise session follows
 
 The practicals are 4 hours long sessions of programming exercises which replace lectures 5, 8 and 11 respectively. Practical 3 is meant to be run with panda robots in the lab. 
 
-## Warning 
+## *Important*
 To run theses files, you must first download the libraries folder available [here](https://www.dropbox.com/s/5r6thx6w8wuaarb/libraries.zip?dl=0) and place it in your 'book-code' folder as shown in the instruction files.
 
