@@ -1,0 +1,8 @@
+*.asv
+libraries/*
+!libraries/book-robot-simulation
+*penm_log.txt
+*cmake-build*
+*idea
+*bags
+
