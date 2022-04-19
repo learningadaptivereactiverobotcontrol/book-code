@@ -76,6 +76,8 @@ for i=1:size(x, 1)
 
         % Compute distance function
         distance = gamma(x(i,j), y(i,j));
+        lambda_n = 1 - (1 / distance);
+        lambda_e = 1 + (1 / distance);
 
 
         %% ------ Write your code below ------ %%
@@ -88,8 +90,8 @@ for i=1:size(x, 1)
         %       going around the obstacle
         %   - Construct eigenvalues for accelerating/decelerating the flow 
 
-        L = [1 - (1 / distance), 0; ...
-             0, 1];
+        L = [lambda_n, 0; ...
+             0, lambda_e];
         
         % Construct reference and tangent directions
         normal = gradient_gamma(x(i,j), y(i,j));

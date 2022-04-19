@@ -77,18 +77,18 @@ hold on; axis equal;
 
 %% Exercise 2.1.3 
 % TODO: 
-%   - Change for the case of an ellipse like in 2.1.2
+%   - Set gamma for the case of an ellipse like in 2.1.2
 %   - Set and compute reference direction like in 2.1.2
 %   - Implement a moving obstacle
 %   - DO NOT FORGET to update your obstacle position and velocity 
 %           after plotting
 
-% Construct and plot ellipse 
-object_center = [1; 1];  % Coordinate of center of obstacle
-ellipse_axes % = ;  % half lengths of ellipse
+% Construct and plot ellipse
+object_center = [2; 1];  % Coordinate of center of obstacle
+ellipse_axes = [0.5; 2]; % half lengths of ellipse
 theta = linspace(0, 2*pi);
-x_object % = ; 
-y_object % = ; 
+x_object = ellipse_axes(1) * cos(theta) + object_center(1);
+y_object = ellipse_axes(2) * sin(theta) + object_center(2);
 
 % Set reference point to ensure flow is not stuck
 reference_point % = ;

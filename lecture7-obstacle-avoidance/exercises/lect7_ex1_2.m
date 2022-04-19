@@ -61,15 +61,14 @@ hold on; axis equal;
 
 %% Exercise 2.1.2.a
 % TODO: 
-%   - Change obstacle radius to construct an ellipse 
 %   - Adapt gamma function and its gradient to new elliptic shape
 
-% Construct and plot ellipse 
-object_center = [1; 1];  % Coordinate of center of obstacle
-ellipse_axes % = ;  % half lengths of ellipse
+% Construct and plot ellipse
+object_center = [2; 1];  % Coordinate of center of obstacle
+ellipse_axes = [0.5; 2]; % half lengths of ellipse
 theta = linspace(0, 2*pi);
-x_object % = ; 
-y_object % = ; 
+x_object = ellipse_axes(1) * cos(theta) + object_center(1);
+y_object = ellipse_axes(2) * sin(theta) + object_center(2);
 
 % Set gamma function and its gradient
 gamma % = @(x,y) ;
