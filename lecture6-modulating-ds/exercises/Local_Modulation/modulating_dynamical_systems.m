@@ -113,7 +113,7 @@ scatter(Target(1),Target(2),50,[0 0 0],'+'); hold on;
 % IMPORTANT : You should also call "simulate_lmds" with a 7th parameter 
 % corresponding to the position of modulation location 
 % to deactivate the user input in the GUI.
-% Example : simulate_lmds(Target, limits,fig1, Influence, Phi_c, A, [1,1]);
+% Example : simulate_lmds(Target, limits,fig1, Influence, Phi_c, A, [1;1]);
 % vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
 simulate_lmds(Target, limits,fig1, Influence, Phi_c, A);
