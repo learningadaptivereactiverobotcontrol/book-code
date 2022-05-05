@@ -17,4 +17,5 @@ You will need a version of matlab from 2019 or higher with the following toolbox
 - Robotic System
 - Signal Processing
 - Statistics and Machine Learning
+- Image Processing 
 
