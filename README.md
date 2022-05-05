@@ -1,4 +1,4 @@
-# book-code
+# "Learning for Adaptive and Reactive Robot Control" Exercises Code
 We provide here Matlab Code for each of the Book's chapter. Note that this is matlab code for Lecturers. Solutions to the exercises can be requested along with solution to the pen and paper exercises by emailing aude.billard@epfl.ch 
 
 The code provided here is sorted by lecture, where each exercise session follows its corresponding lecture and is meant to last 2 hours, with 1h of theoretical exercises and 1h of programming exercises. 
