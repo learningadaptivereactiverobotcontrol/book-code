@@ -23,7 +23,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function passive_ds(Damping_Gains)
 close all; clc;
-folder = fileparts(which('lect9_ex1.m'));
+folder = fileparts(which('lect10_ex1.m'));
 cd(folder);
 addpath(genpath(fullfile(folder, '..', 'libraries', 'Passive_Dynamical_system')));
 addpath(genpath(fullfile(folder, '..', '..', 'libraries', 'book-ds-opt')));

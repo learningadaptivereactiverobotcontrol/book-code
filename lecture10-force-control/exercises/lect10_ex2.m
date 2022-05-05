@@ -26,7 +26,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function motion_force_generations()
 close all; clc;
-folder = fileparts(which('motion_force_generations.m'));
+folder = fileparts(which('lect10_ex2.m'));
 addpath(genpath(fullfile(folder,  '..', 'libraries', 'Motion_Force_Generation')));
 addpath(genpath(fullfile(folder, '..', 'libraries', 'SVMGrad')));
 addpath(genpath(fullfile(folder, '..', '..', 'libraries', 'book-ml-toolbox')));

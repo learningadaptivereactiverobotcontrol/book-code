@@ -28,8 +28,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 clc; close all; clear all;
-folder = fileparts(which('simulation.m'));
-addpath(genpath(fullfile(folder, '..', '..', 'libraries', 'Learning-force-adaptation')));
+folder = fileparts(which('lect10_ex3.m'));
+addpath(genpath(fullfile(folder, '..', 'libraries', 'Learning-force-adaptation')));
 
 t = 0; % Time
 dt = 0.01; % Time step
