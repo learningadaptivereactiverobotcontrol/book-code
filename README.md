@@ -9,13 +9,14 @@ The practicals are 4 hours long sessions of programming exercises which replace 
 To run theses files, you must first download the libraries folder available [here](https://www.dropbox.com/s/5r6thx6w8wuaarb/libraries.zip?dl=0) and place it in your 'book-code' folder as shown in the instruction files. 
 
 You will need a version of matlab from 2019 or higher with the following toolboxes :
-- Curve Fitting
 - Control System
+- Curve Fitting
 - Deep Learning
+- Image Processing 
 - Model Predictive Control
 - Optimization
 - Robotic System
 - Signal Processing
 - Statistics and Machine Learning
-- Image Processing 
+
 
