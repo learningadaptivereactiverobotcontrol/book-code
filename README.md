@@ -3,7 +3,7 @@ We provide here Matlab Code for each of the course's lectures. This repository i
 
 The code provided here is sorted by lecture, where each exercise session follows its corresponding lecture and is meant to last 2 hours, with 1h of theoretical exercises and 1h of programming exercises. The correspondence between book chapters and lectures is available [here](https://www.epfl.ch/labs/lasa/mit-press-book-learning/#mit-book-table).
 
-The practicals are 4 hours long sessions of programming exercises which replace lectures 5, 8 and 11 respectively. Practical 3 is meant to be run with panda robots in the lab. 
+The practicals are 4 hours long sessions of programming exercises which replace lectures 5, 8 and 11 respectively. Practical 3 is meant to be run with Franka Emika Panda robots in the lab. 
 
 ## *Installation*
 To run theses files, you must first download the libraries folder available [here](https://www.dropbox.com/s/5r6thx6w8wuaarb/libraries.zip?dl=0) and place it in your 'book-code' folder as shown in the instruction files. 
