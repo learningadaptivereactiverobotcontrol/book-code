@@ -1,5 +1,5 @@
 # "Learning for Adaptive and Reactive Robot Control" Code
-We provide here Matlab Code for each of the course's lectures. This repository is composed of exercises adapted from the book for each lecture, with instructions and code ready to be completed by students. Solutions to the exercises can be requested along with solution to the pen and paper exercises by emailing aude.billard@epfl.ch 
+We provide here Matlab Code for each of the course's lectures. This repository is composed of exercises adapted from the book for each lecture, with instructions and code ready to be completed by students. Instructors may request solutions to the programming and pen and paper exercises on the [MIT Press website](https://mitpress.mit.edu/9780262046169/) by clicking on "Digital Exam/Desk Copy" and choosing supplementary materials afterwards.
 
 The code provided here is sorted by lecture, where each exercise session follows its corresponding lecture and is meant to last 2 hours, with 1h of theoretical exercises and 1h of programming exercises. The correspondence between book chapters and lectures is available [here](https://www.epfl.ch/labs/lasa/mit-press-book-learning/#mit-book-table).
 
