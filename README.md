@@ -6,7 +6,7 @@ The code provided here is sorted by lecture, where each exercise session follows
 The practicals are 4 hours long sessions of programming exercises which replace lectures 5, 8 and 11 respectively. Practical 3 is meant to be run with Franka Emika Panda robots in the lab. 
 
 ## *Installation*
-To run theses files, you must first download the libraries folder available [here](https://www.dropbox.com/s/5r6thx6w8wuaarb/libraries.zip?dl=0) and place it in your 'book-code' folder as shown in the instruction files. 
+To run theses files, you must first download the libraries folder available [here](https://www.dropbox.com/s/5r6thx6w8wuaarb/libraries.zip?dl=0) and place it in your 'book-code' folder as shown in the diagram below. 
 
 You will need a version of matlab from 2019 or higher with the following toolboxes :
 - Control System
@@ -19,7 +19,7 @@ You will need a version of matlab from 2019 or higher with the following toolbox
 - Signal Processing
 - Statistics and Machine Learning
 
-## Architecture 
+## *Architecture* 
 
 The solutions folders obtained by students through Moodle should be unzipped and placed in their respective lecture directory, adjoint to the exercises directory, as shown in the diagram below.
 
