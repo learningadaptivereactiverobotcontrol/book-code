@@ -23,4 +23,4 @@ You will need a version of matlab from 2019 or higher with the following toolbox
 
 The solutions folders obtained by students through Moodle should be unzipped and placed in their respective lecture directory, adjoint to the exercises directory, as shown in the diagram below.
 
-![Architecture Diagram](larrc-repo-architecture.png)
+![Architecture Diagram](utils/larrc-repo-architecture.png)
