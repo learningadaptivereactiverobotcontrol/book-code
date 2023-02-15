@@ -24,7 +24,7 @@ function setup_code_ch3(compileFlag)
 % Then run the following command in this terminal:
 % bash Mac_config.sh
 %
-% You will then need to run 'ch3_ex4_lpvDS.m' with 'est_options.type = 0' to finalize the setup.
+% You will then need to run 'MPC_LPVDS.m' with 'est_options.type = 0' to finalize the setup.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

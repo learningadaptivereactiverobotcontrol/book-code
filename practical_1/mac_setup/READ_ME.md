@@ -16,7 +16,7 @@ We use SUDO command line, which means you‘ll have to enter you admin password.
 4. Then run the following command in this terminal:
 bash Mac_config.sh
 
-5. To finalize the setup, the file 'ch3_ex4_lpvDS.m' should be run once with 'est_options.type = 0'.
+5. To finalize the setup, 'MPC_LPVDS.m' should be run once with 'est_options.type = 0'.
 
 
 If you encounter any issue with this installation, please contact tristan.bonato@epfl.ch 
