@@ -1,0 +1,160 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of alselftest</title>
+  <meta name="keywords" content="alselftest">
+  <meta name="description" content="ALSELFTEST is a self test of evaluation of the Augmented Lagrangian and its">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">utilities</a> &gt; alselftest.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for utilities&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>alselftest
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>ALSELFTEST is a self test of evaluation of the Augmented Lagrangian and its</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [prob]=alselftest(testID) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> ALSELFTEST is a self test of evaluation of the Augmented Lagrangian and its
+ derivatives. It uses precomputed data from PenSDP and Pennon/Pennlp stored
+ in data container file (DCF) in directory ./datafiles/
+ Argument 'testID' is optional and if it is not present, it runs all the
+ tests otherwise only these listed in vector 'testID'. Returns the last 
+ loaded problem.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="readsdpa.html" class="code" title="function sdpdata = readsdpa(filename);">readsdpa</a>	READSDPA - Read a linear SDP problem from a Sparse SDPA file</li><li><a href="setuptestpoint.html" class="code" title="function [alx,aldx,alddx] = setuptestpoint(obj, filename, type)">setuptestpoint</a>	SETUPTESTPOINT sets a point from original Pennon for comparison</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function [prob] = runtest(ID, type, input1, input2, comment)</a></li><li><a href="#_sub2" class="code">function prndiff(text,my,ref)</a></li></ul>
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [prob]=alselftest(testID)</a>
+0002 <span class="comment">% ALSELFTEST is a self test of evaluation of the Augmented Lagrangian and its</span>
+0003 <span class="comment">% derivatives. It uses precomputed data from PenSDP and Pennon/Pennlp stored</span>
+0004 <span class="comment">% in data container file (DCF) in directory ./datafiles/</span>
+0005 <span class="comment">% Argument 'testID' is optional and if it is not present, it runs all the</span>
+0006 <span class="comment">% tests otherwise only these listed in vector 'testID'. Returns the last</span>
+0007 <span class="comment">% loaded problem.</span>
+0008 
+0009 <span class="comment">% This file is a part of PENLAB package distributed under GPLv3 license</span>
+0010 <span class="comment">% Copyright (c) 2013 by  J. Fiala, M. Kocvara, M. Stingl</span>
+0011 <span class="comment">% Last Modified: 27 Nov 2013</span>
+0012   
+0013   prob = [];
+0014 
+0015   <span class="comment">% hardcoded data - type, input1, input2, comment where input 1 and 2 will</span>
+0016   <span class="comment">% be typically problem definition and matching DCF.</span>
+0017   tests = [
+0018     {<span class="string">'pennlp'</span>,<span class="string">'../../problems/ampl-nl/cosine.nl'</span>, <span class="string">'datafiles/pennlp_cosine.dcf'</span>, <span class="string">'big &amp; unconstrained'</span>}
+0019     {<span class="string">'pennlp'</span>, <span class="string">'../../problems/ampl-nl/chain100.nl'</span>, <span class="string">'datafiles/pennlp_chain100_a.dcf'</span>, <span class="string">'100 LIN eq + 1 NLN eq, no box (==&gt; no penalties)'</span>}
+0020     {<span class="string">'pennlp'</span>, <span class="string">'../../problems/ampl-nl/israel.nl'</span>, <span class="string">'datafiles/pennlp_israel_a.dcf'</span>, <span class="string">'box + LIN ineq only (no equal)'</span>}
+0021     {<span class="string">'pennlp'</span>, <span class="string">'../../problems/ampl-nl/seba.nl'</span>, <span class="string">'datafiles/pennlp_seba.dcf'</span>, <span class="string">'box + LIN ineq &amp; eq'</span>}
+0022     {<span class="string">'pennlp'</span>, <span class="string">'../../problems/ampl-nl/camshape100.nl'</span>, <span class="string">'datafiles/pennlp_camshape100_a.dcf'</span>, <span class="string">'NLN ineq + LIN eq + BOX'</span>}
+0023 
+0024     {<span class="string">'pensdp'</span>, <span class="string">'datafiles/truss1.dat-s'</span>, <span class="string">'datafiles/pensdpa_truss1.dcf'</span>, <span class="string">'very small matrices, no inequalities'</span>} 
+0025     {<span class="string">'pensdp'</span>, <span class="string">'datafiles/theta1.dat-s'</span>, <span class="string">'datafiles/pensdpa_theta1.dcf'</span>, <span class="string">'one bigger matrix, no inequalitites'</span>}
+0026     {<span class="string">'pensdp'</span>, <span class="string">'datafiles/control1.dat-s'</span>, <span class="string">'datafiles/pensdpa_control1.dcf'</span>, <span class="string">'two bigger matrices'</span>}
+0027     {<span class="string">'pensdp'</span>, <span class="string">'datafiles/arch0.dat-s'</span>, <span class="string">'datafiles/pensdpa_arch0.dcf'</span>, <span class="string">'one matrix &amp; set of inequalitites'</span>}
+0028     {<span class="string">'pensdp'</span>, <span class="string">'datafiles/truss1b.dat-s'</span>, <span class="string">'datafiles/pensdpa_truss1b.dcf'</span>, <span class="string">'very small matrices, one inequality'</span>} 
+0029     ];
+0030 
+0031   testno=size(tests,1);
+0032 
+0033   <span class="keyword">if</span> (nargin==0)
+0034     testID=[1:testno];
+0035   <span class="keyword">else</span>
+0036     testID=intersect(testID,[1:testno]);
+0037   <span class="keyword">end</span>
+0038 
+0039   <span class="keyword">for</span> i=testID
+0040     prob = <a href="#_sub1" class="code" title="subfunction [prob] = runtest(ID, type, input1, input2, comment)">runtest</a>(i,tests{i,:});
+0041   <span class="keyword">end</span>
+0042 <span class="keyword">end</span>
+0043     
+0044 <span class="comment">% run one test and return the object</span>
+0045 <a name="_sub1" href="#_subfunctions" class="code">function [prob] = runtest(ID, type, input1, input2, comment)</a>
+0046 
+0047   [fdir,fname,fext] = fileparts(input1);
+0048   disp(sprintf(<span class="string">'* Test %2i - %s: %s, %s'</span>,ID,type,fname,comment));
+0049 
+0050   <span class="keyword">if</span> (strcmpi(type,<span class="string">'pennlp'</span>) || strcmpi(type,<span class="string">'nlp'</span>))
+0051 
+0052     penm=nlp_define(input1);
+0053     prob=penlab(penm);
+0054     [alx,aldx,alddx] = <a href="setuptestpoint.html" class="code" title="function [alx,aldx,alddx] = setuptestpoint(obj, filename, type)">setuptestpoint</a>(prob,input2,type);
+0055 
+0056   <span class="keyword">elseif</span> (strcmpi(type,<span class="string">'pensdp'</span>) || strcmpi(type,<span class="string">'sdp'</span>))
+0057 
+0058     sdpdata=<a href="readsdpa.html" class="code" title="function sdpdata = readsdpa(filename);">readsdpa</a>(input1);
+0059     penm=sdp_define(sdpdata);
+0060     prob=penlab(penm);
+0061     [alx,aldx,alddx] = <a href="setuptestpoint.html" class="code" title="function [alx,aldx,alddx] = setuptestpoint(obj, filename, type)">setuptestpoint</a>(prob,input2,type);
+0062 
+0063   <span class="keyword">else</span>
+0064     disp(<span class="string">'Unknown type of the test.'</span>);
+0065     prob = [];
+0066   <span class="keyword">end</span>
+0067 
+0068   <span class="keyword">if</span> (~isempty(prob))
+0069 
+0070     prob.eval_alx(); 
+0071     prob.eval_aldx(); 
+0072     prob.eval_alddx();
+0073 
+0074     <a href="#_sub2" class="code" title="subfunction prndiff(text,my,ref)">prndiff</a>(<span class="string">'ALx'</span>, prob.ALx, alx);
+0075     <a href="#_sub2" class="code" title="subfunction prndiff(text,my,ref)">prndiff</a>(<span class="string">'ALdx'</span>, prob.ALdx, aldx);
+0076     <span class="keyword">if</span> (prob.Neq&gt;0)
+0077       <a href="#_sub2" class="code" title="subfunction prndiff(text,my,ref)">prndiff</a>(<span class="string">'ALddx'</span>, prob.ALddx, alddx(1:prob.Nx,1:prob.Nx));
+0078       <a href="#_sub2" class="code" title="subfunction prndiff(text,my,ref)">prndiff</a>(<span class="string">'eqdx'</span>, prob.eqdx, alddx(1:prob.Nx,prob.Nx+1:end));
+0079     <span class="keyword">else</span>
+0080       <a href="#_sub2" class="code" title="subfunction prndiff(text,my,ref)">prndiff</a>(<span class="string">'ALddx'</span>, prob.ALddx, alddx);
+0081     <span class="keyword">end</span>
+0082 
+0083   <span class="keyword">end</span>
+0084 
+0085 <span class="keyword">end</span>
+0086 
+0087 <span class="comment">% print differences (errors) absolute and relative</span>
+0088 <a name="_sub2" href="#_subfunctions" class="code">function prndiff(text,my,ref)</a>
+0089   diff=norm(my-ref,inf);
+0090   nrm=norm(ref,inf);
+0091   <span class="keyword">if</span> (nrm==0)
+0092     nrm=1;
+0093   <span class="keyword">end</span>
+0094 
+0095   <span class="keyword">if</span> (diff/nrm&gt;1e-10)
+0096     wrn=<span class="string">'   WARNING !!!'</span>;
+0097   <span class="keyword">else</span>
+0098     wrn=<span class="string">''</span>;
+0099   <span class="keyword">end</span>
+0100   disp(sprintf(<span class="string">'  %-20s:   %e   %e  (abs|rel) %s'</span>,text,diff,diff/nrm,wrn));
+0101   <span class="comment">%if (diff/nrm&gt;1e-10)</span>
+0102   <span class="comment">%  disp('  !!!         WARNING         WARNING         WARNING         !!!');</span>
+0103   <span class="comment">%end</span>
+0104 
+0105 <span class="keyword">end</span>
+0106</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

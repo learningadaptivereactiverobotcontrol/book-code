@@ -1,0 +1,173 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of testmexsumsparse</title>
+  <meta name="keywords" content="testmexsumsparse">
+  <meta name="description" content="TESTMEXSUMSPARSE tests that the behaviour of mexsumsparse() is correct">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">utilities</a> &gt; testmexsumsparse.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for utilities&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>testmexsumsparse
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>TESTMEXSUMSPARSE tests that the behaviour of mexsumsparse() is correct</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [status] = testmexsumsparse(verbose,tol) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> TESTMEXSUMSPARSE tests that the behaviour of mexsumsparse() is correct
+
+ RETURN
+   status ...  0 failed, 1 all ok
+ INPUT
+   verbose ... 0 print only what failed, 1 print progress,
+               optional, default 1
+   tol ....... tolerance when comparing the results
+               optional, default 1e-8
+
+ See also mexsumsparse, penlabtest, <a href="penlabstresstest.html" class="code" title="function [] = penlabstresstest(feeder,timestats,logs)">penlabstresstest</a></pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="testmex.html" class="code" title="function []=testmex()">testmex</a>	TESTMEX tests that the behaviour of all the mex files is correct</li></ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function [status] = onerandtest(verbose,tol,testname,n,m,density)</a></li></ul>
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [status] = testmexsumsparse(verbose,tol)</a>
+0002 <span class="comment">% TESTMEXSUMSPARSE tests that the behaviour of mexsumsparse() is correct</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% RETURN</span>
+0005 <span class="comment">%   status ...  0 failed, 1 all ok</span>
+0006 <span class="comment">% INPUT</span>
+0007 <span class="comment">%   verbose ... 0 print only what failed, 1 print progress,</span>
+0008 <span class="comment">%               optional, default 1</span>
+0009 <span class="comment">%   tol ....... tolerance when comparing the results</span>
+0010 <span class="comment">%               optional, default 1e-8</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">% See also mexsumsparse, penlabtest, penlabstresstest</span>
+0013 <span class="comment">%</span>
+0014 
+0015 <span class="comment">% This file is a part of PENLAB package distributed under GPLv3 license</span>
+0016 <span class="comment">% Copyright (c) 2013 by  J. Fiala, M. Kocvara, M. Stingl</span>
+0017 <span class="comment">% Last Modified: 5 Dec 2013</span>
+0018 
+0019   <span class="keyword">if</span> (nargin&lt;2)
+0020     tol = 1e-8;
+0021   <span class="keyword">end</span>
+0022   <span class="keyword">if</span> (nargin&lt;1)
+0023     verbose = 1;
+0024   <span class="keyword">end</span>
+0025   status = 1;
+0026 
+0027   <span class="keyword">if</span> (verbose)
+0028     disp(<span class="string">' testing functionality of mexsumsparse()...'</span>)
+0029   <span class="keyword">end</span>
+0030 
+0031   <span class="comment">% is it possible to call it?</span>
+0032   <span class="keyword">try</span>
+0033     mexsumsparse(3,{sparse([1,2;2,1])});
+0034   <span class="keyword">catch</span>
+0035     disp(<span class="string">' Error: mexsumsparse - cannot call'</span>)
+0036     status = 0;
+0037     <span class="keyword">return</span>;
+0038   <span class="keyword">end</span>
+0039 
+0040   <span class="comment">% some of Si will be empty...</span>
+0041   <span class="comment">%status = status &amp;&amp; onerandtest(verbose,tol,'n=1, a few',1,20,0.8);</span>
+0042 
+0043   status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onerandtest(verbose,tol,testname,n,m,density)">onerandtest</a>(verbose,tol,<span class="string">'n=5, a few'</span>,5,20,0.8);
+0044 
+0045   status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onerandtest(verbose,tol,testname,n,m,density)">onerandtest</a>(verbose,tol,<span class="string">'n=30 x1, a few'</span>,30,1,0.3);
+0046   status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onerandtest(verbose,tol,testname,n,m,density)">onerandtest</a>(verbose,tol,<span class="string">'n=30 x2, a few'</span>,30,2,0.3);
+0047   status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onerandtest(verbose,tol,testname,n,m,density)">onerandtest</a>(verbose,tol,<span class="string">'n=30 x50, a few'</span>,30,50,0.1);
+0048 
+0049   status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onerandtest(verbose,tol,testname,n,m,density)">onerandtest</a>(verbose,tol,<span class="string">'n=401 x50, a few'</span>,401,50,0.1);
+0050 
+0051   <span class="comment">%status = status &amp;&amp; onerandtest(verbose,tol,testname,n,m,density);</span>
+0052 
+0053 <span class="keyword">end</span>
+0054 
+0055 <a name="_sub1" href="#_subfunctions" class="code">function [status] = onerandtest(verbose,tol,testname,n,m,density)</a>
+0056 <span class="comment">% ONERANDTEST run one randomly generated test on mexsumsparse()</span>
+0057 <span class="comment">%   n - dimension of matrices</span>
+0058 <span class="comment">%   m - number of matrices</span>
+0059 <span class="comment">%   density (0..1) - density of the matrices</span>
+0060 
+0061   status = 1;
+0062 
+0063   <span class="comment">% generate the problem data</span>
+0064   S = cell(m,1);
+0065   w = rand(m,1);
+0066   <span class="keyword">for</span> i=1:m
+0067     S{i} = sprandsym(n,density);
+0068   <span class="keyword">end</span>
+0069 
+0070   <span class="comment">% compute reference result (as dense)</span>
+0071   ref = zeros(n,n);
+0072   <span class="keyword">for</span> i=1:m
+0073     ref = ref + w(i)*S{i};
+0074   <span class="keyword">end</span>
+0075   nrm = norm(ref,inf);
+0076 
+0077   <span class="comment">% call mex to generate result as dense</span>
+0078   <span class="keyword">try</span>
+0079     rd = mexsumsparse(w,S,-1);
+0080     err = norm(ref-rd,inf);
+0081   <span class="keyword">catch</span>
+0082     err = [];
+0083   <span class="keyword">end</span>
+0084 
+0085   <span class="keyword">if</span> (isempty(err))
+0086     fprintf(<span class="string">' test (dense) %-30s: HARD FAILED\n'</span>, testname);
+0087     status = 0;
+0088   <span class="keyword">elseif</span> (err&gt;tol*nrm)
+0089     fprintf(<span class="string">' test (dense) %-30s: FAILED  %15.6e %15.6e\n'</span>, testname,err,nrm);
+0090     status = 0;
+0091   <span class="keyword">elseif</span> (verbose)
+0092     fprintf(<span class="string">' test (dense) %-30s: ok (tol)  %15.6e %15.6e\n'</span>, testname,err,nrm);
+0093   <span class="keyword">end</span>
+0094 
+0095   <span class="comment">% call mex to generate result as sparse (auto)</span>
+0096   <span class="keyword">try</span>
+0097     rd = mexsumsparse(w,S);
+0098     err = norm(ref-rd,inf);
+0099   <span class="keyword">catch</span>
+0100     err = [];
+0101   <span class="keyword">end</span>
+0102 
+0103   <span class="keyword">if</span> (isempty(err))
+0104     fprintf(<span class="string">' test (auto) %-30s: HARD FAILED\n'</span>, testname);
+0105     status = 0;
+0106   <span class="keyword">elseif</span> (err&gt;tol*nrm)
+0107     fprintf(<span class="string">' test (auto)  %-30s: FAILED  %15.6e %15.6e\n'</span>, testname,err,nrm);
+0108     status = 0;
+0109   <span class="keyword">elseif</span> (verbose)
+0110     fprintf(<span class="string">' test (auto)  %-30s: ok (tol)  %15.6e %15.6e\n'</span>, testname,err,nrm);
+0111   <span class="keyword">end</span>
+0112 
+0113 <span class="keyword">end</span>
+0114</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

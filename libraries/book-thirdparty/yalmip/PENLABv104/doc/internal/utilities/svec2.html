@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of svec2</title>
+  <meta name="keywords" content="svec2">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">utilities</a> &gt; svec2.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for utilities&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>svec2
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [evec, idiag] = svec2(emat) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">
+ [evec, idiag] = svec2(emat)
+ vectorization of a (generally full) symmetric matrix; 
+ upper triangle is vectorized row-wise
+ INPUT: evac...symmetric matrix
+ OUPUT: evec...upper triangle of emat stored row-wise in a vector
+        idiag...vector oex72f indices of diagonal entries of emat in evec</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [evec, idiag] = svec2(emat)</a>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% [evec, idiag] = svec2(emat)</span>
+0004 <span class="comment">% vectorization of a (generally full) symmetric matrix;</span>
+0005 <span class="comment">% upper triangle is vectorized row-wise</span>
+0006 <span class="comment">% INPUT: evac...symmetric matrix</span>
+0007 <span class="comment">% OUPUT: evec...upper triangle of emat stored row-wise in a vector</span>
+0008 <span class="comment">%        idiag...vector oex72f indices of diagonal entries of emat in evec</span>
+0009 
+0010 <span class="comment">% This file is a part of PENLAB package distributed under GPLv3 license</span>
+0011 <span class="comment">% Copyright (c) 2013 by  J. Fiala, M. Kocvara, M. Stingl</span>
+0012 <span class="comment">% Last Modified: 27 Nov 2013</span>
+0013 
+0014 m = size(emat,2);
+0015 idiag(1) = 1;
+0016 k = m;
+0017 
+0018 evec = zeros(m*(m+1)/2,1);
+0019 evec(1:m) = emat(1:m,1);
+0020 <span class="keyword">for</span> j=2:m
+0021     i = idiag(j-1) + k;
+0022     idiag(j) = i;
+0023     k = k-1;
+0024     evec(i:i+k-1) = emat(j:m,j);
+0025 <span class="keyword">end</span>
+0026 
+0027 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

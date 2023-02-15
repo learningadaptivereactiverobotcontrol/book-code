@@ -1,8 +1,9 @@
 *.asv
-libraries/*
-!libraries/book-robot-simulation
 *penm_log.txt
 *cmake-build*
 *idea
 *bags
+*.DS_Store
+*ds_control.mat
+*.zip
 

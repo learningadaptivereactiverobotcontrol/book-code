@@ -58,6 +58,7 @@ else
     Xi_dot_ref = Data_sh(M+1:end,:);
 end
 clearvars -except filepath M Xi_ref Xi_dot_ref x0_all Data att
+tStart = cputime;
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%  Step 2a (GMM FITTING): Fit GMM to Trajectory Data %
@@ -134,6 +135,7 @@ sub_sample            = 1;             % sub-sample trajectories by this factor
 [Priors, Mu, Sigma]= SEDS_Solver(Priors0, Mu0, Sigma0,[Xi_ref(:,1:sub_sample:end); Xi_dot_ref(:,1:sub_sample:end)], options); 
 clear ds_seds
 ds_seds = @(x) GMR_SEDS(Priors, Mu, Sigma, x - repmat(att,[1 size(x,2)]), 1:M, M+1:2*M);
+tEnd = cputime - tStart;
 
 %% %%%%%%%%%%%%    Plot Resulting DS  %%%%%%%%%%%%%%%%%%%
 % Fill in plotting options
@@ -195,6 +197,9 @@ fprintf('SEDS got velocity RMSE on training set: %d \n', rmse);
 % Compute e_dot on training data
 edot = mean(edot_error(ds_seds, Xi_ref, Xi_dot_ref));
 fprintf('SEDS got velocity deviation (e_dot) on training set: %d \n', edot);
+
+% Display time 
+fprintf('Computation Time is %1.2f seconds \n', tEnd);
 
 % Compute DTWD between train trajectories and reproductions
 if ds_plot_options.sim_traj

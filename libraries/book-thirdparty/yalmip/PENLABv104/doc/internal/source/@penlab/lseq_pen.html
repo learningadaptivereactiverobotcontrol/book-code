@@ -1,0 +1,227 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of lseq_pen</title>
+  <meta name="keywords" content="lseq_pen">
+  <meta name="description" content="dir/udir ... new directions for x/equality constraints multipliers">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">source</a> &gt; <a href="index.html">@penlab</a> &gt; lseq_pen.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for source/@penlab&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>lseq_pen
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>dir/udir ... new directions for x/equality constraints multipliers</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [rRelStep, nFlag]=lseq_pen(obj, dir, udir, miter) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> dir/udir ... new directions for x/equality constraints multipliers
+
+ miter = v kolikate jsem velke iteraci, pokud 0 ~ delam prvni, dopad na rNu
+ fx/gradx ~ function value/gradient of lagrangian, e.i., eqlty constraints included</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="penlab.html" class="code" title="">penlab</a>	PenLab (Pennon Laboratory for Matlab, previously PennonM)</li></ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function [phi, constr] = add_penalty_to(objective, rNu, x, ueq)</a></li></ul>
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [rRelStep, nFlag]=lseq_pen(obj, dir, udir, miter)</a>
+0002 <span class="comment">% dir/udir ... new directions for x/equality constraints multipliers</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% miter = v kolikate jsem velke iteraci, pokud 0 ~ delam prvni, dopad na rNu</span>
+0005 <span class="comment">% fx/gradx ~ function value/gradient of lagrangian, e.i., eqlty constraints included</span>
+0006 <span class="comment">%</span>
+0007 
+0008 <span class="comment">% TO DO:</span>
+0009 <span class="comment">% * fx&lt;HUGE_VAL ... check how it works</span>
+0010 <span class="comment">% * bStop problem... (stop crit)</span>
+0011 <span class="comment">% * fail-safe by using normal LS</span>
+0012 <span class="comment">%</span>
+0013 
+0014 <span class="comment">%%%%%%%%% Settings %%%%%%%%%%</span>
+0015   rAlphaMin = 1.0e-14;
+0016   rPrecfac=10.0;
+0017   rMacheps=1.0e-16; 
+0018 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0019 
+0020   bJustStarted=0;
+0021   <span class="keyword">if</span> (isempty(obj.ls_rnu) || miter==0)
+0022     obj.ls_rnu=0;
+0023     bJustStarted=1;
+0024   <span class="keyword">end</span>
+0025 
+0026   LSEQ_MAX_ITER = obj.allopts.max_lseq_iter;
+0027   xall0 = obj.xall;
+0028   ueq0 = obj.ueq;
+0029 
+0030 <span class="comment">%% co s multiplikatory?  global/parametr?</span>
+0031 <span class="comment">%% Jak to brat defaultne? fx/gradx jsou Lagrangianu s multiplikatory? ano...?</span>
+0032 
+0033   <span class="comment">% find maximal step length</span>
+0034   rStepMax = 1.;
+0035 
+0036   <span class="comment">% note: reduce gradient by eq. constr.</span>
+0037   rPi = dir'*(obj.ALdx - obj.eqdx*obj.ueq);
+0038   rEqNorm0 = obj.eqx'*obj.eqx;
+0039   rU0C0 = obj.ueq'*obj.eqx;
+0040   rUgVh0 = (obj.ueq+udir)'*obj.eqx - 2*rU0C0;  <span class="comment">%??</span>
+0041 
+0042   <span class="comment">% new penalty parameter rNu estimate</span>
+0043   rNu_old = obj.ls_rnu;
+0044   <span class="keyword">if</span> (rEqNorm0 &gt; 1e-12)
+0045     rEtadd = (rPi + rUgVh0) / rEqNorm0;
+0046   <span class="keyword">else</span>
+0047     rEtadd = 0.;
+0048   <span class="keyword">end</span>
+0049 
+0050   <span class="keyword">if</span> (bJustStarted)
+0051     obj.ls_rnu = abs(rEtadd) + 0.1; <span class="comment">% rNu0 = 0.1 !!!</span>
+0052   <span class="keyword">else</span>
+0053     obj.ls_rnu = max(0.,rEtadd) + 0.1;
+0054   <span class="keyword">end</span>
+0055   <span class="comment">%obj.ls_rnu = max(rNu_old, obj.ls_rnu);</span>
+0056 
+0057   obj.print(4,Inf,<span class="string">'LSEQ (pen): penalty par. NU=%f'</span>, obj.ls_rnu);
+0058       
+0059   <span class="comment">% Add new penalty term</span>
+0060   fx = obj.ALx;
+0061   fx0 = fx;            <span class="comment">% original name in line_search_eq.c: rFobj_old, fx~rFobj</span>
+0062   meritx0 = fx0 + .5*obj.ls_rnu*rEqNorm0;         <span class="comment">% original name: rF0</span>
+0063   rDelal0 = rUgVh0 - obj.ls_rnu * rEqNorm0 + rPi;
+0064 
+0065   obj.print(4,Inf,<span class="string">'LSEQ (pen): NU: %e %e %f'</span>, rDelal0, rEqNorm0, rEtadd);
+0066 
+0067   rAlphaStep = 2.0*rStepMax;
+0068 
+0069   ok=0;
+0070   <span class="keyword">for</span> iter=1:LSEQ_MAX_ITER
+0071     rAlphaStep = rAlphaStep / 2.0;        
+0072         
+0073     <span class="comment">% Compute new trial point and evaluate objective and constraint</span>
+0074     <span class="comment">% function at that point</span>
+0075     obj.xall = xall0 + rAlphaStep*dir;
+0076     obj.ueq = ueq0 + rAlphaStep*udir;
+0077       
+0078     obj.eval_alx();
+0079     fx=obj.ALx;
+0080     <span class="comment">%[fx,eqx]=fnc.obj(x_it,ueq_it);</span>
+0081     rEqNorm=obj.eqx'*obj.eqx;
+0082     meritx = fx + .5*obj.ls_rnu*rEqNorm;
+0083 
+0084     <span class="keyword">if</span> (iter==1 &amp;&amp; abs((fx - fx0)/(.5*(fx + fx0))) + abs(rEqNorm0 - rEqNorm) &lt; 1.0e-14)
+0085       ok=2;    <span class="comment">% in Pennlp: bStop &lt;-- 1; ~ stop crit of unconstr_min &lt;d,g&gt;</span>
+0086       <span class="keyword">break</span>;
+0087     <span class="keyword">end</span>
+0088 
+0089     rUC = obj.ueq'*obj.eqx;
+0090     rUgVh = rUC - rU0C0;
+0091 
+0092     rZlhs = fx - fx0 + rUgVh - 1.0e-4 * rAlphaStep * (rPi + rUgVh0);
+0093     rZrhs = (rEqNorm0 - rEqNorm) * .5 - rAlphaStep * 1.0e-4 * rEqNorm0;
+0094 
+0095     <span class="keyword">if</span> (abs(rZrhs) &lt;= 1.0e-15 &amp;&amp; rZlhs &lt;= 1.0e-15 &amp;&amp; isfinite(fx)) <span class="comment">% &amp;&amp; *fX &lt; HUGE_VAL)</span>
+0096       ok=1;
+0097       <span class="keyword">break</span>;
+0098     <span class="keyword">end</span>
+0099     <span class="keyword">if</span> (rZrhs &gt;= 0. &amp;&amp; isfinite(fx)) <span class="comment">% &amp;&amp; *fX &lt; HUGE_VAL)</span>
+0100       ok=1;
+0101       <span class="keyword">break</span>;
+0102     <span class="keyword">end</span>
+0103         
+0104     rNu_ls = rZlhs / rZrhs;
+0105 
+0106     <span class="keyword">if</span> (iter &gt; 1 &amp;&amp; rNu_ls &gt; obj.ls_rnu &amp;&amp; isfinite(fx)) <span class="comment">% &amp;&amp; *fX &lt; HUGE_VAL)</span>
+0107       ok=1;
+0108       <span class="keyword">break</span>;
+0109     <span class="keyword">end</span>
+0110 
+0111     rLhs = meritx - meritx0 - rPrecfac * rMacheps * abs(meritx0);
+0112     rRhs = rAlphaStep * 1.0e-4 * rDelal0;
+0113         
+0114     <span class="keyword">if</span> (rLhs &lt;= rRhs &amp;&amp; isfinite(fx)) <span class="comment">% &amp;&amp; *fX &lt; HUGE_VAL)</span>
+0115       ok=1;
+0116       <span class="keyword">break</span>;
+0117     <span class="keyword">end</span> 
+0118 
+0119     <span class="keyword">if</span> (rAlphaStep &lt;= rAlphaMin)   <span class="comment">% really????</span>
+0120       ok=1;
+0121       <span class="keyword">break</span>;
+0122     <span class="keyword">end</span> 
+0123 
+0124   <span class="keyword">end</span>
+0125 
+0126   <span class="comment">% If evrth. OK update ...</span>
+0127   <span class="keyword">if</span> (ok&gt;0)
+0128     obj.print(3,Inf,<span class="string">'LSEQ (pen): %i steps, rel. width %f'</span>,iter,rAlphaStep);
+0129     <span class="comment">%x=x_it;</span>
+0130     <span class="comment">%ueq=ueq_it;</span>
+0131     obj.eval_aldx();
+0132     <span class="comment">%[gradx, gradeqx] = fnc.obj_grad(x, ueq);</span>
+0133     rRelStep=rAlphaStep;
+0134     nFlag=0;
+0135   <span class="keyword">else</span>
+0136     obj.print(3,Inf,<span class="string">'LSEQ (pen): failed - step too short, max_ls_it (%i)'</span>,iter);
+0137     <span class="comment">% x/ueq unchanged</span>
+0138     obj.xall=xall0;
+0139     obj.ueq=ueq0;
+0140     obj.eval_alx();
+0141     <span class="comment">%[fx,eqx]=fnc.obj(x,ueq);</span>
+0142     rRelStep=0;
+0143     nFlag=3;
+0144   <span class="keyword">end</span>
+0145 
+0146   obj.lsiter_last = obj.lsiter_last+iter;
+0147 
+0148 <span class="comment">%  if (!ok)</span>
+0149 <span class="comment">%    for iter=1:4</span>
+0150 <span class="comment">%      obj.ls_rnu = obj.ls_rnu * 10.0;</span>
+0151 <span class="comment">%      obj.print(3,Inf,'LSEQ (pen): Nu = %10.2E (short step)', obj.ls_rnu);</span>
+0152 <span class="comment">%      merit_obj=@(xtmp,ueqtmp) add_penalty_to(fnc.obj,obj.ls_rnu,xtmp,ueqtmp);</span>
+0153        <span class="comment">% call ordinary linesearch, do not forget, that now it returns values of the merit function!</span>
+0154 <span class="comment">%      rRelStepLength = line_search((* objective), (* gradient_obj), gradx, S, X, fX, rStepLength, 1., 1);</span>
+0155 <span class="comment">%      if ok ... break;</span>
+0156 <span class="comment">%    end</span>
+0157 <span class="comment">%  end</span>
+0158 
+0159   <span class="keyword">return</span>;
+0160 
+0161 
+0162 <a name="_sub1" href="#_subfunctions" class="code">function [phi, constr] = add_penalty_to(objective, rNu, x, ueq)</a>
+0163 <span class="comment">% suppose [f, constr]=objective(x,ueq), create a new function (merit function)</span>
+0164 <span class="comment">% such that returns [f+0.5*rNu*constr'*constr]</span>
+0165 <span class="comment">% need to mimic behaviour as objective but need to return merit function</span>
+0166 <span class="comment">% usage: merit=@(xtmp,utmp) add_penalty_to(obj, rNu, xtmp, utmp)</span>
+0167 <span class="comment">% then merit(x,ueq) does its job</span>
+0168 
+0169   <span class="comment">% this would need to be changed, but it is not used anyway</span>
+0170   error(<span class="string">'this is not adapted for PenLab'</span>);
+0171   [f, constr]=objective(x,ueq);
+0172   phi = f + 0.5*rNu*(constr'*constr);
+0173 
+0174   <span class="keyword">return</span>;
+0175</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

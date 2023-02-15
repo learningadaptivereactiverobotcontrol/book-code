@@ -1,0 +1,210 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of eval_alx</title>
+  <meta name="keywords" content="eval_alx">
+  <meta name="description" content="Evaluate Augmented Lagrangian at the current 'xall' point with the current">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">source</a> &gt; <a href="index.html">@penlab</a> &gt; eval_alx.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for source/@penlab&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>eval_alx
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Evaluate Augmented Lagrangian at the current 'xall' point with the current</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [status] = eval_alx(obj) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Evaluate Augmented Lagrangian at the current 'xall' point with the current
+ penalty parameters and Lagrangian multipliers. The result will be stored
+ in 'obj.ALx' and its ticker updated. All equalities 'obj.eqx' get updated
+ as well. Return nonzero if evaluation failed (matrix not pos def, etc.) and 
+ in this case, the value ALx will be set to Inf.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="penlab.html" class="code" title="">penlab</a>	PenLab (Pennon Laboratory for Matlab, previously PennonM)</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Evaluate Augmented Lagrangian at the current 'xall' point with the current</span>
+0002 <span class="comment">% penalty parameters and Lagrangian multipliers. The result will be stored</span>
+0003 <span class="comment">% in 'obj.ALx' and its ticker updated. All equalities 'obj.eqx' get updated</span>
+0004 <span class="comment">% as well. Return nonzero if evaluation failed (matrix not pos def, etc.) and</span>
+0005 <span class="comment">% in this case, the value ALx will be set to Inf.</span>
+0006 <a name="_sub0" href="#_subfunctions" class="code">function [status] = eval_alx(obj)</a>
+0007   
+0008   <span class="comment">% TODO ... set status when cannot evaluate or something like that</span>
+0009   status=0;
+0010 
+0011   <span class="comment">% work only if the value is out of date</span>
+0012   <span class="keyword">if</span> (obj.ALxtck &lt; obj.ticker)
+0013     starttime = cputime;
+0014     
+0015     <span class="comment">% create local copies of obj.x,obj.Y to avoid checking repetitively if they</span>
+0016     <span class="comment">% are 'up-to-date' with obj.xall, they get used many times in calls to</span>
+0017     <span class="comment">% user's functions</span>
+0018     x=obj.x;
+0019     Y=obj.Y;
+0020     <span class="comment">% same for obj.userdata, it might be quite expensive to get&amp;store it in</span>
+0021     <span class="comment">% the object</span>
+0022     userdata=obj.userdata;
+0023 
+0024     [fx, userdata] = obj.objfun(x, Y, userdata);
+0025     obj.objx=fx;
+0026 
+0027     <span class="comment">% function inequal &amp; equal</span>
+0028     <span class="comment">%ineqx = zeros(obj.Nineq,1);   % probably not necessary, rather = []?</span>
+0029     ineqx=[];
+0030     <span class="comment">%obj.eqx = zeros(obj.Neq,1);</span>
+0031     <span class="keyword">if</span> (obj.NgNLN + obj.NgLIN&gt;0)
+0032       [gx, userdata] = obj.confun(x, Y, userdata);
+0033       ineqx = obj.ineqshift + obj.ineqmlt .* gx(obj.ineqmap);
+0034       obj.ineqx = ineqx;
+0035       obj.eqx = obj.eqshift + gx(obj.eqmap);
+0036     <span class="keyword">end</span>
+0037     
+0038     <span class="comment">% box constraints</span>
+0039     xboxx = [];
+0040     <span class="keyword">if</span> (obj.Nxbox&gt;0)
+0041       xboxx = obj.xboxshift + obj.xboxmlt .* obj.xall(obj.xboxmap);
+0042       obj.xboxx=xboxx;
+0043     <span class="keyword">end</span>
+0044 
+0045     ALx=fx;
+0046 
+0047     <span class="comment">%  inequalitites: phi or bar?</span>
+0048     <span class="comment">%  L = L + u'*(p.*phi2(g./p));</span>
+0049     <span class="comment">%  L = L + u(i)*p(i)*phi2(g(i)/p(i));</span>
+0050 
+0051     <span class="comment">% box constraints</span>
+0052     ind=obj.xboxindbar;
+0053     <span class="keyword">if</span> (~isempty(ind))
+0054       ALx=ALx + obj.uxbox(ind)'*(obj.pxbox(ind).*obj.phibar(xboxx(ind)));
+0055     <span class="keyword">end</span>
+0056 
+0057     ind=obj.xboxindphi;
+0058     <span class="keyword">if</span> (~isempty(ind))
+0059       ALx=ALx + obj.uxbox(ind)'*(obj.pxbox(ind).*obj.phi2(xboxx(ind)./obj.pxbox(ind)));
+0060     <span class="keyword">end</span>
+0061 
+0062     <span class="comment">% function inequalitites</span>
+0063     <span class="comment">%ind=obj.ineqindbar;</span>
+0064     <span class="comment">%if (~isempty(ind))</span>
+0065     <span class="comment">%  ALx=ALx + obj.uineq(ind)'*(obj.pineq(ind).*phibar(ineqx(ind)));</span>
+0066     <span class="comment">%end</span>
+0067 
+0068     ind=obj.ineqindphi;
+0069     <span class="keyword">if</span> (~isempty(ind))
+0070       ALx=ALx + obj.uineq(ind)'*(obj.pineq(ind).*obj.phi2(ineqx(ind)./obj.pineq(ind)));
+0071     <span class="keyword">end</span>
+0072 
+0073     <span class="comment">% (function) equalities</span>
+0074     <span class="keyword">if</span> (obj.Neq&gt;0)
+0075       ALx = ALx + obj.ueq'*obj.eqx;
+0076     <span class="keyword">end</span>
+0077 
+0078     <span class="comment">% matrix variable - log barrier (strict feasibility)</span>
+0079     <span class="keyword">if</span> ~isempty(obj.Yboxindbar)
+0080     <span class="keyword">for</span> k=obj.Yboxindbar
+0081       <span class="comment">% convert the matrix box constraint to the form:   +/-Y +/-bound &gt;=0</span>
+0082       pkx=obj.PYbox(k);
+0083       Ykx = Y{obj.Yboxmap(k)};
+0084       Akx=-obj.Yboxshift(k)*speye(size(Ykx)) - obj.Yboxmlt(k)*Ykx;
+0085       <span class="comment">% check that it is pos. def.</span>
+0086       [R,iii]=chol(Akx);
+0087       <span class="keyword">if</span> (iii~=0)
+0088         ALx=Inf;
+0089         <span class="comment">% jump out and even avoid anything other cycle</span>
+0090         <span class="keyword">break</span>;  
+0091       <span class="keyword">end</span>
+0092 
+0093       <span class="comment">% compute penalty term: -p*log(det(A)) = -p*log( det(R)^2 ) =</span>
+0094       <span class="comment">%    = -2*p*log( prod(diag(R)) ) = -2*p*sum(log( diag(R) ))</span>
+0095       ALx = ALx -2*pkx*sum(log(diag(R)));
+0096 
+0097     <span class="keyword">end</span>
+0098     <span class="keyword">end</span>
+0099 
+0100 
+0101     <span class="comment">% matrix variable - pen/bar</span>
+0102     <span class="keyword">if</span> ~isempty(obj.Yboxindphi)
+0103     <span class="keyword">for</span> k=obj.Yboxindphi
+0104       pkx=obj.PYbox(k);            <span class="comment">%2*p(sdpdata.Ng+k);</span>
+0105       Ykx = Y{obj.Yboxmap(k)};
+0106       Akx=obj.Yboxshift(k)*speye(size(Ykx)) + obj.Yboxmlt(k)*Ykx;
+0107       umatk=obj.UYbox{k};
+0108 
+0109       <span class="comment">%Z=(pkx*speye(size(Akx))-Akx);</span>
+0110       Z=(pkx*speye(size(Akx))-Akx);
+0111       [R,iii]=chol(Z);   <span class="comment">% to double check that it is pos. def!</span>
+0112       <span class="keyword">if</span> (iii~=0)
+0113         ALx=Inf;
+0114         <span class="comment">% jump out and even avoid anything other cycle</span>
+0115         <span class="keyword">break</span>;  
+0116       <span class="keyword">end</span>
+0117         
+0118       invZ=inv(Z);
+0119       <span class="comment">% ... TODO ...</span>
+0120       ALx = ALx + trace(pkx^2*umatk*invZ-pkx*umatk);
+0121     <span class="keyword">end</span>
+0122     <span class="keyword">end</span>
+0123 
+0124     <span class="comment">% matrix constraints - pen/bar</span>
+0125     <span class="keyword">if</span> ~isempty(obj.Aindphi)
+0126     <span class="keyword">for</span> k=obj.Aindphi
+0127       pkx=obj.PA(k);  <span class="comment">% I used to use 2*         !!!!!!!!</span>
+0128       <span class="comment">% TODO need to map the matrix first! - is it correct???</span>
+0129       kuser=obj.Amap(k);
+0130       [Akuserx, userdata] = obj.mconfun(x, Y, kuser, userdata);
+0131       Akx = obj.Ashift(k)*speye(size(Akuserx)) + obj.Amlt(k) .* Akuserx;
+0132       umatk=obj.UA{k};
+0133 
+0134       <span class="comment">%Z=(pkx*speye(size(Akx))-Akx);</span>
+0135       Z=(pkx*speye(size(Akx))-Akx);
+0136       [R,iii]=chol(Z);   <span class="comment">% to double check that it is pos. def!</span>
+0137       <span class="keyword">if</span> (iii~=0)
+0138         ALx=Inf;
+0139         <span class="keyword">break</span>;
+0140       <span class="keyword">end</span>
+0141       invZ=inv(Z);
+0142       <span class="comment">% ... TODO ...</span>
+0143       <span class="comment">%ALx = ALx + trace(pkx^2*umatk*invZ-pkx*umatk);</span>
+0144       ALx = ALx + pkx^2*(umatk(:)'*invZ(:))-pkx*trace(umatk);
+0145     <span class="keyword">end</span>
+0146     <span class="keyword">end</span>
+0147 
+0148     <span class="comment">% store user's data back in the object if it got changed</span>
+0149     obj.userdata=userdata;
+0150 
+0151     <span class="comment">% update ticker</span>
+0152     obj.ALx = ALx;
+0153     obj.ALxtck = obj.ticker;
+0154 
+0155     <span class="comment">% update stats</span>
+0156     obj.stats_ncall_alx = obj.stats_ncall_alx + 1;
+0157     obj.stats_time_alx = obj.stats_time_alx + cputime - starttime;
+0158   <span class="keyword">end</span>
+0159</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

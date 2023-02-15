@@ -1,0 +1,69 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of setpointall</title>
+  <meta name="keywords" content="setpointall">
+  <meta name="description" content="This is testing/debugging routine, it shouldn't be used by the user!">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">source</a> &gt; <a href="index.html">@penlab</a> &gt; setpointall.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for source/@penlab&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>setpointall
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This is testing/debugging routine, it shouldn't be used by the user!</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function []=setpointall(obj,xall,uxbox,pxbox,uineq,pineq,ueq,UYbox,PYbox,UA,PA) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> This is testing/debugging routine, it shouldn't be used by the user!
+ Resets the current point, penalty parameters and Lagrangian multipliers.
+ Typically to set a known point from the original Pennon to be able to 
+ evaluate the Augmented Lagrangian at the set point &amp; compare the results.
+ This work probably only for problems without matrix variables!
+ Input: matches (more or less) the elements in the object
+   x ...</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% This is testing/debugging routine, it shouldn't be used by the user!</span>
+0002 <span class="comment">% Resets the current point, penalty parameters and Lagrangian multipliers.</span>
+0003 <span class="comment">% Typically to set a known point from the original Pennon to be able to</span>
+0004 <span class="comment">% evaluate the Augmented Lagrangian at the set point &amp; compare the results.</span>
+0005 <span class="comment">% This work probably only for problems without matrix variables!</span>
+0006 <span class="comment">% Input: matches (more or less) the elements in the object</span>
+0007 <span class="comment">%   x ...</span>
+0008 <a name="_sub0" href="#_subfunctions" class="code">function []=setpointall(obj,xall,uxbox,pxbox,uineq,pineq,ueq,UYbox,PYbox,UA,PA)</a>
+0009 
+0010   <span class="keyword">if</span> (length(xall)~=obj.Nx+obj.NYnnz)
+0011     error(<span class="string">'ERR @ setpointall: wrong dimension of x.'</span>);
+0012   <span class="keyword">end</span>
+0013   obj.xall=xall;
+0014 
+0015   <span class="comment">% TODO</span>
+0016</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

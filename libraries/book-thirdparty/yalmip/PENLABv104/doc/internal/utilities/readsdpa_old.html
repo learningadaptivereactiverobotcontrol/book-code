@@ -1,0 +1,317 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of readsdpa_old</title>
+  <meta name="keywords" content="readsdpa_old">
+  <meta name="description" content="read the file &amp; separate the linear constraint matrix, return">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">utilities</a> &gt; readsdpa_old.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for utilities&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>readsdpa_old
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>read the file &amp; separate the linear constraint matrix, return</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function sdpdata=readsdpa(filename); </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> read the file &amp; separate the linear constraint matrix, return
+ the problem in the following structure:
+  
+function [mDIM,nBLOCK,bLOCKsTRUCT,c,F]=readsdpa(filename); 
+
+ Read a problem in SDPA sparse format.
+
+ [mDIM,nBLOCK,bLOCKsTRUCT,c,F] = read_data(fname)
+
+ &lt;INPUT&gt;
+ - filename: string; filename of the SDP data with SDPA foramt.
+
+ &lt;OUTPUT&gt;
+ - mDIM       : integer; number of primal variables
+ - nBLOCK     : integer; number of blocks of F
+ - bLOCKsTRUCT: vector; represetns the block structure of F
+ - c          : vector; coefficient vector
+ - F          : cell array; coefficient matrices</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function sdpdata=readsdpa(filename); </a>
+0002 <span class="comment">% read the file &amp; separate the linear constraint matrix, return</span>
+0003 <span class="comment">% the problem in the following structure:</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">%function [mDIM,nBLOCK,bLOCKsTRUCT,c,F]=readsdpa(filename);</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Read a problem in SDPA sparse format.</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% [mDIM,nBLOCK,bLOCKsTRUCT,c,F] = read_data(fname)</span>
+0010 <span class="comment">%</span>
+0011 <span class="comment">% &lt;INPUT&gt;</span>
+0012 <span class="comment">% - filename: string; filename of the SDP data with SDPA foramt.</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% &lt;OUTPUT&gt;</span>
+0015 <span class="comment">% - mDIM       : integer; number of primal variables</span>
+0016 <span class="comment">% - nBLOCK     : integer; number of blocks of F</span>
+0017 <span class="comment">% - bLOCKsTRUCT: vector; represetns the block structure of F</span>
+0018 <span class="comment">% - c          : vector; coefficient vector</span>
+0019 <span class="comment">% - F          : cell array; coefficient matrices</span>
+0020 <span class="comment">%</span>
+0021 
+0022 <span class="comment">% This file is a component of SDPA</span>
+0023 <span class="comment">% edited by JF 2011</span>
+0024 <span class="comment">%</span>
+0025 <span class="comment">% Copyright (C) 2004 SDPA Project</span>
+0026 <span class="comment">%</span>
+0027 <span class="comment">% This program is free software; you can redistribute it and/or modify</span>
+0028 <span class="comment">% it under the terms of the GNU General Public License as published by</span>
+0029 <span class="comment">% the Free Software Foundation; either version 2 of the License, or</span>
+0030 <span class="comment">% (at your option) any later version.</span>
+0031 <span class="comment">%</span>
+0032 <span class="comment">% This program is distributed in the hope that it will be useful,</span>
+0033 <span class="comment">% but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+0034 <span class="comment">% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+0035 <span class="comment">% GNU General Public License for more details.</span>
+0036 <span class="comment">%</span>
+0037 <span class="comment">% You should have received a copy of the GNU General Public License</span>
+0038 <span class="comment">% along with this program; if not, write to the Free Software</span>
+0039 <span class="comment">% Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA</span>
+0040 <span class="comment">%</span>
+0041 <span class="comment">% SDPA-M: $Revision: 6.2 $</span>
+0042 <span class="comment">% $Id: read_data.m,v 6.2 2005/05/28 02:36:40 drophead Exp $</span>
+0043 
+0044 <span class="comment">% check the validity of the arguments</span>
+0045 <span class="keyword">if</span> ( nargin ~= 1 | ( nargin == 1 &amp; ~isstr(filename) ) )
+0046   error(<span class="string">'input argument must be a filename'</span>);
+0047 <span class="keyword">end</span>
+0048 
+0049 sdpdata=[];
+0050 
+0051 <span class="comment">% identify whether a file is sparse format or not.</span>
+0052 bsparse=0;
+0053 len=length(filename);
+0054 <span class="keyword">if</span> len &gt;= 2
+0055   str=filename(end-1:end);
+0056   <span class="keyword">if</span> strncmp(str,<span class="string">'-s'</span>,2) 
+0057     bsparse=1;
+0058   <span class="keyword">end</span>
+0059 <span class="keyword">end</span>
+0060 
+0061 fid=fopen(filename,<span class="string">'r'</span>);
+0062 <span class="keyword">if</span> fid == -1
+0063   error(sprintf(<span class="string">'Cannot open %s'</span>,filename));
+0064 <span class="keyword">end</span>
+0065 
+0066 <span class="comment">% skip comment and after it, read a number of decision variables (mDIM)</span>
+0067 <span class="keyword">while</span> 1
+0068   str=fgetl(fid);
+0069   <span class="keyword">if</span>( str(1)~=<span class="string">'*'</span> &amp; str(1) ~=<span class="string">'&quot;'</span> )
+0070     mDIM=sscanf(str,<span class="string">'%d'</span>,1);
+0071     <span class="keyword">break</span>;
+0072   <span class="keyword">end</span>
+0073 <span class="keyword">end</span>
+0074 <span class="comment">%disp(sprintf('mDIM=%d',mDIM));</span>
+0075 
+0076 <span class="comment">% read a number of blocks (nBLOCK)</span>
+0077 nBLOCK=fscanf(fid,<span class="string">'%d'</span>,1);
+0078 <span class="comment">%disp(sprintf('nBLOCK=%d',nBLOCK));</span>
+0079 
+0080 <span class="comment">% read each size of blocks (bLOCKsTRUCT)</span>
+0081 bLOCKsTRUCT=zeros(nBLOCK,1);
+0082 <span class="keyword">for</span> idx=1:nBLOCK
+0083   bLOCKsTRUCT(idx)=fscanf(fid,<span class="string">'%*[^0-9+-]%d'</span>,1);
+0084   <span class="comment">%if bLOCKsTRUCT(idx) == 1</span>
+0085   <span class="comment">%  bLOCKsTRUCT(idx) = -1;</span>
+0086   <span class="comment">%end</span>
+0087 <span class="keyword">end</span>
+0088 
+0089 <span class="comment">% read cost vector (c)</span>
+0090 c=zeros(mDIM,1);
+0091 <span class="keyword">for</span> idx=1:mDIM
+0092   c(idx)=fscanf(fid,<span class="string">'%*[^0-9+-]%lg'</span>,1);
+0093 <span class="keyword">end</span>
+0094 
+0095 <span class="comment">% read coefficient matrices (F)</span>
+0096 F=cell(nBLOCK,mDIM+1);
+0097 
+0098 <span class="keyword">if</span> bsparse
+0099   <span class="comment">% sparse format case</span>
+0100   <span class="keyword">while</span> 1
+0101     [k,cnt]=fscanf(fid,<span class="string">'%*[^0-9+-]%d'</span>,1);
+0102     [l,cnt]=fscanf(fid,<span class="string">'%*[^0-9+-]%d'</span>,1);
+0103     [i,cnt]=fscanf(fid,<span class="string">'%*[^0-9+-]%d'</span>,1);
+0104     [j,cnt]=fscanf(fid,<span class="string">'%*[^0-9+-]%d'</span>,1);
+0105     [value,cnt]=fscanf(fid,<span class="string">'%*[^0-9+-]%lg'</span>,1);
+0106     <span class="keyword">if</span> cnt
+0107       <span class="keyword">if</span> isempty(F{l,k+1})
+0108         bsize=abs(bLOCKsTRUCT(l));
+0109         <span class="keyword">if</span> bLOCKsTRUCT(l) &lt; 0
+0110           F{l,k+1}=sparse(zeros(bsize,1));
+0111         <span class="keyword">else</span>
+0112           F{l,k+1}=sparse(zeros(bsize));
+0113         <span class="keyword">end</span>
+0114       <span class="keyword">end</span>
+0115       <span class="keyword">if</span> bLOCKsTRUCT(l) &lt; 0
+0116         F{l,k+1}(i)=value;
+0117       <span class="keyword">else</span>
+0118         <span class="keyword">if</span> i &lt; j
+0119           F{l,k+1}(i,j)=value;
+0120           F{l,k+1}(j,i)=value;
+0121         <span class="keyword">elseif</span> i == j
+0122           F{l,k+1}(i,j)=value;
+0123         <span class="keyword">end</span>
+0124       <span class="keyword">end</span>
+0125     <span class="keyword">else</span> 
+0126       <span class="keyword">break</span>;
+0127     <span class="keyword">end</span>
+0128   <span class="keyword">end</span>
+0129 <span class="keyword">else</span>
+0130   <span class="comment">% dense format case</span>
+0131   <span class="keyword">for</span> k=1:mDIM+1
+0132     <span class="keyword">for</span> l=1:nBLOCK
+0133       bsize=abs(bLOCKsTRUCT(l));
+0134       <span class="keyword">if</span> bLOCKsTRUCT(l) &gt; 0
+0135         F{l,k}=zeros(bsize);
+0136         <span class="keyword">for</span> i=1:bsize
+0137           <span class="keyword">for</span> j=1:bsize
+0138             [value,cnt]=fscanf(fid,<span class="string">'%*[^0-9+-]%lg'</span>,1);
+0139             <span class="keyword">if</span> cnt
+0140               F{l,k}(i,j)=value;
+0141             <span class="keyword">else</span>
+0142               error(sprintf(<span class="string">'Failed to read an element at %d %d %d %d'</span>),<span class="keyword">...</span>
+0143             k-1,l,i,j);
+0144             <span class="keyword">end</span>
+0145           <span class="keyword">end</span>
+0146         <span class="keyword">end</span>
+0147       <span class="keyword">else</span>
+0148         F{l,k}=zeros(bsize,1);
+0149         <span class="keyword">for</span> i=1:bsize
+0150           [value,cnt]=fscanf(fid,<span class="string">'%*[^0-9+-]%lg'</span>,1);
+0151           <span class="keyword">if</span> cnt
+0152             F{l,k}(i)=value;
+0153           <span class="keyword">else</span>
+0154             error(sprintf(<span class="string">'Failed to read an element at %d %d %d %d'</span>),<span class="keyword">...</span>
+0155               k-1,l,i,i);
+0156           <span class="keyword">end</span>
+0157         <span class="keyword">end</span>
+0158       <span class="keyword">end</span>
+0159     <span class="keyword">end</span>
+0160   <span class="keyword">end</span>
+0161 <span class="keyword">end</span>
+0162 fclose(fid);
+0163 
+0164 <span class="comment">% How to treat 1-dim blocks - exclude into the linear inequality block?</span>
+0165 <span class="comment">%linblk=find(bLOCKsTRUCT&lt;0 | bLOCKsTRUCT==1);</span>
+0166 linblk=find(bLOCKsTRUCT&lt;0);
+0167 matr=setdiff(1:nBLOCK,linblk);
+0168 sdpdata.Ng=sum(abs(bLOCKsTRUCT(linblk)));
+0169 
+0170 <span class="comment">%linblk</span>
+0171 <span class="comment">%matr</span>
+0172 
+0173 <span class="comment">% this might not work if linblk has more than 1 element</span>
+0174 <span class="comment">% do blocks one by one + perhaps use vertcat (instead of horzcat [])</span>
+0175 <span class="comment">%B=[F{linblk,2:end}];</span>
+0176 <span class="comment">%d=[F{linblk,1}];</span>
+0177 
+0178 B=[]; d=[];
+0179 <span class="comment">% still doesn't work (see truss1) - some of the matrices (columns in B) are</span>
+0180 <span class="comment">% empty instead of zeros -&gt; won't concatenate the columns correctly</span>
+0181 <span class="comment">% ==&gt; modify F and substitute empty matrices by zero matrices</span>
+0182 <span class="keyword">if</span> (~isempty(linblk))
+0183   <span class="keyword">for</span> k=linblk
+0184     sz=abs(bLOCKsTRUCT(k));
+0185     <span class="keyword">for</span> i=1:mDIM+1
+0186       <span class="keyword">if</span> (isempty(F{k,i}))
+0187         F{k,i} = sparse(sz, 1); <span class="comment">% in linblk ==&gt; it is just a vector, not a matrix</span>
+0188       <span class="keyword">end</span>
+0189     <span class="keyword">end</span>
+0190   <span class="keyword">end</span>
+0191   <span class="keyword">for</span> k=linblk
+0192     Bk=[F{k,2:end}];   <span class="comment">% should be a matrix dim_of_kth_block x mDIM</span>
+0193     dk=[F{k,1}];       <span class="comment">% should be a vector dim_of_kth_block x 1</span>
+0194     <span class="comment">% check dimensions if concatenated properly</span>
+0195     <span class="keyword">if</span> (size(Bk,1)~=abs(bLOCKsTRUCT(k)) || size(Bk,2)~=mDIM)
+0196       disp(sprintf(<span class="string">'ERR: wrong dimensions of Bk, k=%i: %i %i'</span>,k,size(Bk)))
+0197     <span class="keyword">end</span>
+0198     <span class="keyword">if</span> (size(dk,1)~=abs(bLOCKsTRUCT(k)) || size(dk,2)~=1)
+0199       disp(sprintf(<span class="string">'ERR: wrong dimensions of dk, k=%i: %i %i'</span>,k,size(dk)))
+0200     <span class="keyword">end</span>
+0201     <span class="comment">% vertical concatenation</span>
+0202     B=[B;Bk];
+0203     d=[d;dk];
+0204   <span class="keyword">end</span>
+0205 <span class="keyword">end</span>
+0206 
+0207 <span class="comment">%size(B)</span>
+0208 <span class="comment">%size(d)</span>
+0209 
+0210 <span class="comment">% apply the same fix for the first blocks (&quot;absolute term&quot;), the others are covered by Adep</span>
+0211 <span class="keyword">for</span> k=matr
+0212   sz=bLOCKsTRUCT(k);
+0213   <span class="keyword">if</span> (isempty(F{k,1}))
+0214     F{k,1}=sparse(sz,sz);
+0215   <span class="keyword">end</span>
+0216 <span class="keyword">end</span>
+0217 
+0218 <span class="comment">% probably won't work as F{k,i}... if F{k,i} is empty it won't add a column :(</span>
+0219 <span class="comment">% better [F{k,:}]</span>
+0220 <span class="comment">%B=[];</span>
+0221 <span class="comment">%for k=linblk</span>
+0222 <span class="comment">%  D=[];</span>
+0223 <span class="comment">%  for i=2,mDIM+1</span>
+0224 <span class="comment">%    D=[D, F{k,i}]</span>
+0225 <span class="comment">%  end</span>
+0226 <span class="comment">%  B=[B;D]</span>
+0227 <span class="comment">%end</span>
+0228 
+0229 sdpdata.name=filename;
+0230 sdpdata.Nx=mDIM;
+0231 sdpdata.Na=length(matr);  <span class="comment">%nBLOCK;</span>
+0232 sdpdata.B=B;
+0233 sdpdata.d=d;
+0234 sdpdata.c=c;
+0235 sdpdata.NaDims=bLOCKsTRUCT(matr);
+0236 sdpdata.A=F(matr,:);
+0237 
+0238 <span class="comment">% create dependency table, Adep(k) = vector of all x indices which Ak depends on</span>
+0239 sdpdata.Adep=cell(sdpdata.Na,1);
+0240 <span class="keyword">for</span> k=1:sdpdata.Na
+0241   list=[];
+0242   <span class="keyword">for</span> i=2:mDIM+1
+0243     <span class="keyword">if</span> (~isempty(sdpdata.A{k,i}) &amp;&amp; nnz(sdpdata.A{k,i})&gt;0)
+0244       list=[list,i-1];
+0245     <span class="keyword">end</span>
+0246   <span class="keyword">end</span>
+0247   sdpdata.Adep{k}=list;
+0248 <span class="keyword">end</span>
+0249 
+0250 sdpdata.origF=F;
+0251 sdpdata.origNaDims=bLOCKsTRUCT;
+0252 
+0253 <span class="comment">% End of File</span></pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

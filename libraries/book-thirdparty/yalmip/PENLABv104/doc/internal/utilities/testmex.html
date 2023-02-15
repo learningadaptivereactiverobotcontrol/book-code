@@ -1,0 +1,232 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of testmex</title>
+  <meta name="keywords" content="testmex">
+  <meta name="description" content="TESTMEX tests that the behaviour of all the mex files is correct">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">utilities</a> &gt; testmex.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for utilities&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>testmex
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>TESTMEX tests that the behaviour of all the mex files is correct</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function []=testmex() </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> TESTMEX tests that the behaviour of all the mex files is correct</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="testmexsumsparse.html" class="code" title="function [status] = testmexsumsparse(verbose,tol)">testmexsumsparse</a>	TESTMEXSUMSPARSE tests that the behaviour of mexsumsparse() is correct</li><li><a href="testmextrdsdsmat.html" class="code" title="function [status] = testmextrdsdsmat(verbose,tol)">testmextrdsdsmat</a>	TESTMEXTRDSDSMAT tests that the behaviour of mextrdsdsmat() is correct</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function []=testmextrdsdsmat()</a></li><li><a href="#_sub2" class="code">function [ok]=onetestmextrdsds(testname,A,S1,B,S2,ref)</a></li><li><a href="#_sub3" class="code">function [] = testmexsumsparse()</a></li><li><a href="#_sub4" class="code">function [ok] = onerandtestmexsumsparse(testname,n,m,density)</a></li></ul>
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 
+0002 <a name="_sub0" href="#_subfunctions" class="code">function []=testmex()</a>
+0003 <span class="comment">% TESTMEX tests that the behaviour of all the mex files is correct</span>
+0004 
+0005 <span class="comment">% This file is a part of PENLAB package distributed under GPLv3 license</span>
+0006 <span class="comment">% Copyright (c) 2013 by  J. Fiala, M. Kocvara, M. Stingl</span>
+0007 <span class="comment">% Last Modified: 27 Nov 2013</span>
+0008 
+0009   disp(<span class="string">'Testing mextrdsdsmat()...'</span>);
+0010   <a href="testmextrdsdsmat.html" class="code" title="function [status] = testmextrdsdsmat(verbose,tol)">testmextrdsdsmat</a>()
+0011 
+0012   disp(<span class="string">'Testing mexsumsparse()...'</span>);
+0013   <a href="testmexsumsparse.html" class="code" title="function [status] = testmexsumsparse(verbose,tol)">testmexsumsparse</a>()
+0014 
+0015 <span class="keyword">end</span>
+0016 
+0017 <span class="comment">% run all tests on mextrdsdsmat()</span>
+0018 <a name="_sub1" href="#_subfunctions" class="code">function []=testmextrdsdsmat()</a>
+0019   
+0020   <a href="#_sub2" class="code" title="subfunction [ok]=onetestmextrdsds(testname,A,S1,B,S2,ref)">onetestmextrdsds</a>(<span class="string">'n=0, all empty'</span>, [],[],[],[],0);
+0021   <a href="#_sub2" class="code" title="subfunction [ok]=onetestmextrdsds(testname,A,S1,B,S2,ref)">onetestmextrdsds</a>(<span class="string">'n=1, all ones'</span>, 1,1,1,1,2);
+0022   <a href="#_sub2" class="code" title="subfunction [ok]=onetestmextrdsds(testname,A,S1,B,S2,ref)">onetestmextrdsds</a>(<span class="string">'n=1, all nonzeros'</span>, 2,3,-4,5,-120*2);
+0023   <a href="#_sub2" class="code" title="subfunction [ok]=onetestmextrdsds(testname,A,S1,B,S2,ref)">onetestmextrdsds</a>(<span class="string">'n=1, A=0'</span>, 0,3,-4,5,0);
+0024   <a href="#_sub2" class="code" title="subfunction [ok]=onetestmextrdsds(testname,A,S1,B,S2,ref)">onetestmextrdsds</a>(<span class="string">'n=1, S1=0'</span>, 2,0,-4,5,0);
+0025   <a href="#_sub2" class="code" title="subfunction [ok]=onetestmextrdsds(testname,A,S1,B,S2,ref)">onetestmextrdsds</a>(<span class="string">'n=1, B=0'</span>, 2,3,0,5,0);
+0026   <a href="#_sub2" class="code" title="subfunction [ok]=onetestmextrdsds(testname,A,S1,B,S2,ref)">onetestmextrdsds</a>(<span class="string">'n=1, S2=0'</span>, 2,3,-4,0,0);
+0027   <span class="comment">%onetestmextrdsds('n=2, all numbers, A diag', diag([2 3]),[-2.1,3.2;3.2,4.4],magic(2)+3,-magic(2)^2); % magic is not symmetric!!!</span>
+0028   <a href="#_sub2" class="code" title="subfunction [ok]=onetestmextrdsds(testname,A,S1,B,S2,ref)">onetestmextrdsds</a>(<span class="string">'n=2, all numbers, A diag'</span>, diag([2 3]),[-2.1,3.2;3.2,4.4],[4,6;6,5],[-13,-9;-9,-16]);
+0029   <a href="#_sub2" class="code" title="subfunction [ok]=onetestmextrdsds(testname,A,S1,B,S2,ref)">onetestmextrdsds</a>(<span class="string">'n=2, all numbers, A diag, B=[]'</span>, diag([2 3]),[-2.1,3.2;3.2,4.4],magic(2)+3,sparse(2,2),0);
+0030   
+0031   <span class="comment">% build special examples with very sparse matrices</span>
+0032   n=5;
+0033   A=diag(1:n);
+0034   B=magic(n)+magic(n)';
+0035   S1=sparse(n,n); S1(2,1)=2;
+0036   S1=S1+S1';
+0037   S2=sparse(n,n); S2(4,4)=9;
+0038   <a href="#_sub2" class="code" title="subfunction [ok]=onetestmextrdsds(testname,A,S1,B,S2,ref)">onetestmextrdsds</a>(<span class="string">'n=5, very sparse'</span>, A,S1,B,S2);
+0039 
+0040   n=5;
+0041   A=diag(1:n);
+0042   B=magic(n)+magic(n)';
+0043   S1=sparse(n,n); S1(2,1)=2;
+0044   S1=S1+S1';
+0045   S2=sparse(n,n); S2(2,2)=9;
+0046   <a href="#_sub2" class="code" title="subfunction [ok]=onetestmextrdsds(testname,A,S1,B,S2,ref)">onetestmextrdsds</a>(<span class="string">'n=5, very sparse2'</span>, A,S1,B,S2);
+0047 
+0048   n=5;
+0049   A=zeros(n,n);
+0050   A(:)=[1:n^2]-10;
+0051   A=A+A';
+0052   B=magic(n)+magic(n)';
+0053   S1=sparse(n,n); S1(2,1)=2;
+0054   S1=S1+S1';
+0055   S2=sparse(n,n); S2(2,2)=9;
+0056   <a href="#_sub2" class="code" title="subfunction [ok]=onetestmextrdsds(testname,A,S1,B,S2,ref)">onetestmextrdsds</a>(<span class="string">'n=5, very sparse3'</span>, A,S1,B,S2);
+0057 
+0058   n=5;
+0059   A=zeros(n,n);
+0060   A(:)=[1:n^2]-10;
+0061   A=A+A';
+0062   B=magic(n)+magic(n)';
+0063   S1=sparse(n,n); S1(2,1)=2;
+0064   S1=S1+S1';
+0065   S2=sparse(diag([5:9]));
+0066   <a href="#_sub2" class="code" title="subfunction [ok]=onetestmextrdsds(testname,A,S1,B,S2,ref)">onetestmextrdsds</a>(<span class="string">'n=5, sparse, S2 spdiag'</span>, A,S1,B,S2);
+0067 
+0068 
+0069   <span class="comment">% random of different size</span>
+0070   <span class="keyword">for</span> n=[5 5 5 10 10 10 100 100 999 1000]
+0071   <span class="comment">%for n=[2 5 5]</span>
+0072     A=rand(n,n);
+0073     A=A+A';
+0074     B=rand(n,n);
+0075     B=B+B';
+0076     S1=sprandsym(n,0.1);
+0077     S2=sprandsym(n,0.05);
+0078     testname=sprintf(<span class="string">'n=%i all random'</span>,n);
+0079     <a href="#_sub2" class="code" title="subfunction [ok]=onetestmextrdsds(testname,A,S1,B,S2,ref)">onetestmextrdsds</a>(testname, A,S1,B,S2);
+0080   <span class="keyword">end</span>
+0081 
+0082 
+0083 <span class="keyword">end</span>
+0084 
+0085 <span class="comment">% run one test with mextrdsdsmat()</span>
+0086 <span class="comment">%   testname - string to print out</span>
+0087 <span class="comment">%   A,B,S1,S2 - matrices for the test</span>
+0088 <span class="comment">%   red [optional] - reference result, if not present, computed in Matlab</span>
+0089 <a name="_sub2" href="#_subfunctions" class="code">function [ok]=onetestmextrdsds(testname,A,S1,B,S2,ref)</a>
+0090 
+0091   ok=false;
+0092 
+0093   <span class="keyword">if</span> (~issparse(S1))
+0094     S1=sparse(S1);
+0095   <span class="keyword">end</span>
+0096   <span class="keyword">if</span> (~issparse(S2))
+0097     S2=sparse(S2);
+0098   <span class="keyword">end</span>
+0099 
+0100   <span class="keyword">if</span> (nargin==5)
+0101     <span class="comment">%ref = trace(A*S1*B*S2);</span>
+0102     ref = trace(A*S1*B*S2) + trace(A*S2*B*S1);
+0103   <span class="keyword">end</span>
+0104   <span class="comment">%result = mextrdsdsmat(A,S1,B,S2);</span>
+0105   result = mextrcolumn(A,S1,B,{S2});
+0106 
+0107   <span class="keyword">if</span> (result==ref)
+0108     fprintf(<span class="string">' test %-30s: ok %15.6e\n'</span>, testname,result);
+0109     ok=true;
+0110   <span class="keyword">elseif</span> (abs(result-ref)&lt;1e-10*(abs(result+ref)))
+0111     fprintf(<span class="string">' test %-30s: ok (tol)  %15.6e %15.6e\n'</span>, testname,ref,result);
+0112     ok=true;
+0113   <span class="keyword">else</span>
+0114     fprintf(<span class="string">' test %-30s: FAILED  %15.6e %15.6e\n'</span>, testname,ref,result);
+0115   <span class="keyword">end</span>
+0116 
+0117 <span class="keyword">end</span>
+0118 
+0119 <span class="comment">% run all tests on mexsumsparse()</span>
+0120 <a name="_sub3" href="#_subfunctions" class="code">function [] = testmexsumsparse()</a>
+0121 
+0122   <span class="comment">% some of Si will be empty...</span>
+0123   <span class="comment">%onerandtestmexsumsparse('n=1, a few',1,20,0.8);</span>
+0124 
+0125   <a href="#_sub4" class="code" title="subfunction [ok] = onerandtestmexsumsparse(testname,n,m,density)">onerandtestmexsumsparse</a>(<span class="string">'n=5, a few'</span>,5,20,0.8);
+0126 
+0127   <a href="#_sub4" class="code" title="subfunction [ok] = onerandtestmexsumsparse(testname,n,m,density)">onerandtestmexsumsparse</a>(<span class="string">'n=30 x1, a few'</span>,30,1,0.3);
+0128   <a href="#_sub4" class="code" title="subfunction [ok] = onerandtestmexsumsparse(testname,n,m,density)">onerandtestmexsumsparse</a>(<span class="string">'n=30 x2, a few'</span>,30,2,0.3);
+0129   <a href="#_sub4" class="code" title="subfunction [ok] = onerandtestmexsumsparse(testname,n,m,density)">onerandtestmexsumsparse</a>(<span class="string">'n=30 x50, a few'</span>,30,50,0.1);
+0130 
+0131   <a href="#_sub4" class="code" title="subfunction [ok] = onerandtestmexsumsparse(testname,n,m,density)">onerandtestmexsumsparse</a>(<span class="string">'n=401 x50, a few'</span>,401,50,0.1);
+0132 
+0133   <span class="comment">%onerandtestmexsumsparse(testname,n,m,density);</span>
+0134 
+0135 <span class="keyword">end</span>
+0136 
+0137 <span class="comment">% run one random test of mexsumsparse</span>
+0138 <span class="comment">%   n - dimension of matrices</span>
+0139 <span class="comment">%   m - number of matrices</span>
+0140 <span class="comment">%   density (0..1) - density of the matrices</span>
+0141 <a name="_sub4" href="#_subfunctions" class="code">function [ok] = onerandtestmexsumsparse(testname,n,m,density)</a>
+0142 
+0143   ok = false;
+0144 
+0145   <span class="comment">% generate the problem data</span>
+0146   S = cell(m,1);
+0147   w = rand(m,1);
+0148   <span class="keyword">for</span> i=1:m
+0149     S{i} = sprandsym(n,density);
+0150   <span class="keyword">end</span>
+0151 
+0152   <span class="comment">% compute reference result (as dense)</span>
+0153   ref = zeros(n,n);
+0154   <span class="keyword">for</span> i=1:m
+0155     ref = ref + w(i)*S{i};
+0156   <span class="keyword">end</span>
+0157 
+0158   <span class="comment">% call mex to generate result as dense</span>
+0159   rd = mexsumsparse(w,S,-1);
+0160 
+0161   err = norm(ref-rd,inf);
+0162   nrm = norm(ref,inf);
+0163 
+0164   <span class="keyword">if</span> (err&lt;1e-10*nrm)
+0165     fprintf(<span class="string">' test (dense) %-30s: ok (tol)  %15.6e %15.6e\n'</span>, testname,err,nrm);
+0166     ok=true;
+0167   <span class="keyword">else</span>
+0168     fprintf(<span class="string">' test (dense) %-30s: FAILED  %15.6e %15.6e\n'</span>, testname,err,nrm);
+0169   <span class="keyword">end</span>
+0170 
+0171   <span class="comment">% call mex to generate result as sparse (auto)</span>
+0172   rd = mexsumsparse(w,S);
+0173 
+0174   err = norm(ref-rd,inf);
+0175 
+0176   <span class="keyword">if</span> (err&lt;1e-10*nrm)
+0177     fprintf(<span class="string">' test (auto)  %-30s: ok (tol)  %15.6e %15.6e\n'</span>, testname,err,nrm);
+0178     ok=true;
+0179   <span class="keyword">else</span>
+0180     fprintf(<span class="string">' test (auto)  %-30s: FAILED  %15.6e %15.6e\n'</span>, testname,err,nrm);
+0181   <span class="keyword">end</span>
+0182 
+0183 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

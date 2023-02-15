@@ -1,0 +1,161 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of feasm</title>
+  <meta name="keywords" content="feasm">
+  <meta name="description" content="Compute a perturbation needed for a given symmetric matrix to be pos. def.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">source</a> &gt; feasm.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for source&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>feasm
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Compute a perturbation needed for a given symmetric matrix to be pos. def.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [pert] = feasm(M, lb, ub, pstart, pstop) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Compute a perturbation needed for a given symmetric matrix to be pos. def.
+ I.e., compute a lower estimate of the smallest (negative) eigenvalue (if any).
+ Input:
+   M ... symmetric matrix to find 'pert&gt;=0' so that M+pert*I&gt;0 (pos.def.)
+   lb ... (&gt;=0) lower bound on pert, i.e., find pert&gt;=lb&gt;=0, 
+          e.g., current known feasibility of other matrix constraints
+   ub ... (&gt;0, Inf if not known), upper bound on pert which is known that
+          M+ub*I&gt;0, typically the penalty parameter
+   pstart ... if lb==0, pstart is the first perturbation to try if M not posdef
+   pstop ... tolerance of the requested perturbation, the exact perturbation
+          will be in interval [pert,pert+ptol]
+ Output:
+   pert ... estimated perturbation within the given tolerance unless
+          M+lb*I&gt;=0 is already pos def
+
+ TODO
+   how to make pstart&amp;ptol dynamic to save some time...</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Compute a perturbation needed for a given symmetric matrix to be pos. def.</span>
+0002 <span class="comment">% I.e., compute a lower estimate of the smallest (negative) eigenvalue (if any).</span>
+0003 <span class="comment">% Input:</span>
+0004 <span class="comment">%   M ... symmetric matrix to find 'pert&gt;=0' so that M+pert*I&gt;0 (pos.def.)</span>
+0005 <span class="comment">%   lb ... (&gt;=0) lower bound on pert, i.e., find pert&gt;=lb&gt;=0,</span>
+0006 <span class="comment">%          e.g., current known feasibility of other matrix constraints</span>
+0007 <span class="comment">%   ub ... (&gt;0, Inf if not known), upper bound on pert which is known that</span>
+0008 <span class="comment">%          M+ub*I&gt;0, typically the penalty parameter</span>
+0009 <span class="comment">%   pstart ... if lb==0, pstart is the first perturbation to try if M not posdef</span>
+0010 <span class="comment">%   pstop ... tolerance of the requested perturbation, the exact perturbation</span>
+0011 <span class="comment">%          will be in interval [pert,pert+ptol]</span>
+0012 <span class="comment">% Output:</span>
+0013 <span class="comment">%   pert ... estimated perturbation within the given tolerance unless</span>
+0014 <span class="comment">%          M+lb*I&gt;=0 is already pos def</span>
+0015 <span class="comment">%</span>
+0016 <span class="comment">% TODO</span>
+0017 <span class="comment">%   how to make pstart&amp;ptol dynamic to save some time...</span>
+0018 <a name="_sub0" href="#_subfunctions" class="code">function [pert] = feasm(M, lb, ub, pstart, pstop)</a>
+0019 
+0020   nfactor=0;
+0021 
+0022   <span class="comment">% Get ordering if M really sparse &amp; shuffle M to avoid recomputing</span>
+0023   [n m] = size(M);
+0024   Missparse = n&gt;10 &amp;&amp; issparse(M) &amp;&amp; nnz(M)&lt;0.15*n*n;  
+0025      <span class="comment">% nnz() used directly and behind issparse() because otherwise it</span>
+0026      <span class="comment">% counts nonzero elements even in the dense matrix</span>
+0027 
+0028   <span class="keyword">if</span> (Missparse)
+0029     perm=amd(M);
+0030     M=M(perm,perm);
+0031     I=speye(n,n);
+0032   <span class="keyword">else</span>
+0033     <span class="comment">% it is usually faster to compute with dense matrices in dense format</span>
+0034     M=full(M);
+0035     I=eye(n,n);
+0036   <span class="keyword">end</span>
+0037 
+0038   <span class="comment">% first quick try</span>
+0039   pert=max(0.0, lb);
+0040   [R,p] = chol(M+pert*I);
+0041   <span class="comment">%pert</span>
+0042   nfactor=nfactor+1;
+0043   <span class="keyword">if</span> (p==0)
+0044     <span class="comment">% first match -&gt; go</span>
+0045     <span class="keyword">return</span>;
+0046   <span class="keyword">end</span>
+0047 
+0048   <span class="comment">% guess a reasonable step how to increase the perturbation</span>
+0049   <span class="keyword">if</span> (ub&lt;Inf)
+0050     <span class="comment">% perturbation with ub should be pos. def; with 'pert' wasnt --&gt; pert&lt;ub</span>
+0051     <span class="comment">%pstep=min(20,max((ub-pert)/4, 2));</span>
+0052     pstep=min(50,max(1.01*realpow(ub/pert,1/4),2));
+0053       <span class="comment">% in 4 steps jump above the known perturbation</span>
+0054   <span class="keyword">else</span>
+0055     pstep=10;
+0056   <span class="keyword">end</span>
+0057   <span class="comment">%pstep</span>
+0058   pertlowstart = pert;
+0059   pert=max(pert,pstart/pstep);
+0060 
+0061   <span class="keyword">while</span> (p~=0)
+0062     pertlow = pert;
+0063     pert=pert*pstep;
+0064     [R,p] = chol(M+pert*I);
+0065     <span class="comment">%disp(sprintf('up   pert=%e (%i)',pert,p));</span>
+0066     nfactor=nfactor+1;
+0067   <span class="keyword">end</span>
+0068   pertup=pert;
+0069 
+0070   <span class="keyword">if</span> (nfactor==2)
+0071     <span class="comment">% this is probably not necessary but it the upper loop finishes after one</span>
+0072     <span class="comment">% step, perlow might be actually higher than the one which failed in the</span>
+0073     <span class="comment">% &quot;first quick try&quot;</span>
+0074     pertlow=pertlowstart;
+0075   <span class="keyword">end</span>
+0076   <span class="comment">%nfactor</span>
+0077 
+0078   pstopn = max(pstop,norm(pertlow)*pstop);
+0079   
+0080   <span class="keyword">while</span> (pertup-pertlow&gt;pstopn)
+0081     <span class="comment">%pert=pertlow + (pertup-pertlow)/3;</span>
+0082     pert=(pertlow+pertup)/2;
+0083     <span class="comment">%pert=realsqrt(pertlow*pertup);</span>
+0084     [R,p] = chol(M+pert*I);
+0085     <span class="comment">%disp(sprintf('down pert=%e (%i)',pert,p));</span>
+0086     nfactor=nfactor+1;
+0087     <span class="keyword">if</span> (p==0)
+0088       pertup=pert;
+0089     <span class="keyword">else</span>
+0090       pertlow=pert;
+0091     <span class="keyword">end</span>
+0092   <span class="keyword">end</span>
+0093   pert = pertup;   <span class="comment">% return upper bound on the perturbation (=overestimate)</span>
+0094   <span class="comment">% (=lower bound on the (negative) eigenvalue)</span>
+0095 
+0096   <span class="comment">%nfactor</span>
+0097 <span class="keyword">end</span>
+0098</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

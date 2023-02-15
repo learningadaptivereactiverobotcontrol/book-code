@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of ls_fullstep</title>
+  <meta name="keywords" content="ls_fullstep">
+  <meta name="description" content="rewritten line_search() @ line_search_els.c @ Pennlp v.2.3 &amp; Pennon v.0.9">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">source</a> &gt; <a href="index.html">@penlab</a> &gt; ls_fullstep.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for source/@penlab&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>ls_fullstep
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>rewritten line_search() @ line_search_els.c @ Pennlp v.2.3 &amp; Pennon v.0.9</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [rRelStep, nFlag]=ls_fullstep(obj, dir) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> rewritten line_search() @ line_search_els.c @ Pennlp v.2.3 &amp; Pennon v.0.9
+
+ changes in 'obj': xall, ALx, ALdx</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [rRelStep, nFlag]=ls_fullstep(obj, dir)</a>
+0002 <span class="comment">% rewritten line_search() @ line_search_els.c @ Pennlp v.2.3 &amp; Pennon v.0.9</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% changes in 'obj': xall, ALx, ALdx</span>
+0005 
+0006   alp = 1;
+0007   
+0008   xall0=obj.xall;
+0009   fx=obj.ALx;
+0010   obj.xall = xall0 + alp*dir;
+0011   obj.eval_alx();
+0012     f = obj.ALx;
+0013     nEff = 0;
+0014   
+0015       fx=f;
+0016       obj.eval_aldx();
+0017       
+0018     obj.lsiter_last=obj.lsiter_last + 1;
+0019   obj.print(3,Inf,<span class="string">'Step length: %f'</span>, alp);
+0020   
+0021   <span class="comment">%return alp;</span>
+0022   rRelStep=alp;
+0023   nFlag = 0;
+0024   <span class="keyword">return</span>;
+0025   
+0026</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

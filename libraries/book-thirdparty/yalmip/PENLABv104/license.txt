@@ -1,0 +1,2 @@
+This version of PENLAB is distributed under the GNU General Public License 3.0. 
+For commercial applications that may be incompatible with this license, please contact the authors to discuss alternatives. 

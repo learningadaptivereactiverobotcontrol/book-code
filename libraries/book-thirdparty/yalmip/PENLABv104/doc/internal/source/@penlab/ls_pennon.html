@@ -1,0 +1,552 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of ls_pennon</title>
+  <meta name="keywords" content="ls_pennon">
+  <meta name="description" content="rewritten line_search() @ line_search_els.c @ Pennlp v.2.3 &amp; Pennon v.0.9">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">source</a> &gt; <a href="index.html">@penlab</a> &gt; ls_pennon.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for source/@penlab&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>ls_pennon
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>rewritten line_search() @ line_search_els.c @ Pennlp v.2.3 &amp; Pennon v.0.9</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [rRelStep, nFlag]=ls_pennon(obj, dir) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> rewritten line_search() @ line_search_els.c @ Pennlp v.2.3 &amp; Pennon v.0.9
+
+ changes in 'obj': xall, ALx, ALdx</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="penlab.html" class="code" title="">penlab</a>	PenLab (Pennon Laboratory for Matlab, previously PennonM)</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [rRelStep, nFlag]=ls_pennon(obj, dir)</a>
+0002 <span class="comment">% rewritten line_search() @ line_search_els.c @ Pennlp v.2.3 &amp; Pennon v.0.9</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% changes in 'obj': xall, ALx, ALdx</span>
+0005 
+0006 <span class="comment">%%%%%%%%% Settings %%%%%%%%%%</span>
+0007   XTOL = 1.0E-1;
+0008   ETA = 0.9;
+0009 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0010 
+0011 <span class="comment">% d = dir ... computed search direction</span>
+0012   
+0013   MAX_LS_ITER = obj.allopts.max_ls_iter;
+0014 
+0015   xall0=obj.xall;   <span class="comment">% original point</span>
+0016   <span class="comment">% whenever I want to evaluate at a new point, xall&lt;-x_it</span>
+0017   fx=obj.ALx;
+0018 
+0019   <span class="comment">% double pi0, pi, mu, divs, mu1s, mu2s, eff, kappa, fact, q;</span>
+0020   mu1 = 1.; mu2 = 1.; sml=0.5;   <span class="comment">%%% fbest, f, f0, f1, f2,</span>
+0021   alp0 = 0; alp1 = 0; alp2 = 0; alps = 0; alpm = 0; alpd = 0; omega1 = 0; omega2 = 0;
+0022   stpmin = 0; stpmax = 1.0E20; alp = 1.; denom = 0.;
+0023   FTOL = 1-ETA;
+0024   
+0025   <span class="comment">% int</span>
+0026   lsiter=0;
+0027   nEff = 0; iterations = 0;
+0028   k = 0; ksh = 0; ier = 0;
+0029   bLong = 0; bSafeguard = 0;
+0030   
+0031   bLinesearch = 1;
+0032   
+0033   rRelStep=0.; nFlag=99;
+0034 
+0035   <span class="comment">%if(Uequal)</span>
+0036   <span class="comment">%  if(Uequal-&gt;dim) {</span>
+0037   <span class="comment">%    stpmax=1.0;</span>
+0038   <span class="comment">%  }</span>
+0039 
+0040  
+0041   pi=dir'*obj.ALdx;
+0042   <span class="comment">% computation of the rest of the gradient of our merit function</span>
+0043   <span class="comment">%if(Uequal) {</span>
+0044     <span class="comment">% v Src 0.9 je pouze:  (ale to je temer jiste blbe</span>
+0045   <span class="comment">%  pi -= rNu * rEqNorm;</span>
+0046     <span class="comment">% misto nasledujiciho z Pennlp 2.3(fi)</span>
+0047   <span class="comment">%  spm3v_mlt( (SPMAT3 *) gradeq, Cequal, v_tmp_short );</span>
+0048   <span class="comment">%  rTmp = in_prod(v_tmp_short, d);</span>
+0049   <span class="comment">%  pi += rNu*rTmp;</span>
+0050   <span class="comment">%  printf(&quot;pi: %e, rTmp: %e\n&quot;, pi, rTmp);</span>
+0051   <span class="comment">%}</span>
+0052   
+0053   <span class="comment">%if(Uequal) {</span>
+0054   <span class="comment">%  v_copy(Uequal, u_it);</span>
+0055   <span class="comment">%  for(i=0; i&lt;Uequal-&gt;dim; i++)</span>
+0056   <span class="comment">%    u_d-&gt;ve[i] = d-&gt;ve[X-&gt;dim+i];</span>
+0057   <span class="comment">%    // smer pro multiplikatory je &quot;schovany&quot; v d za x, ale dim je jen pro x</span>
+0058   <span class="comment">%}</span>
+0059 
+0060   <span class="comment">%if(Uequal) {</span>
+0061   <span class="comment">%  spm3v_mlt( (SPMAT3 *) gradeq, u_d, v_tmp_short );</span>
+0062   <span class="comment">%  rTmp = in_prod(v_tmp_short, d);</span>
+0063   <span class="comment">%  pi += rTmp;</span>
+0064   <span class="comment">%  printf(&quot;pi2: %e, dAv: %e&quot;, pi, rTmp);</span>
+0065   <span class="comment">%}</span>
+0066 
+0067   <span class="comment">% Is it really descent</span>
+0068   <span class="keyword">if</span> (pi &gt; 0)
+0069     obj.print(3,Inf,<span class="string">'LS (pen): No Descent'</span>); 
+0070     
+0071     bLinesearch = 0;
+0072     rRelStep=0;
+0073     nFlag=1;
+0074     <span class="keyword">return</span>;
+0075   <span class="keyword">elseif</span> (abs(pi) &lt; 1.0E-10)
+0076     alp = 1.0;
+0077     <span class="comment">%obj.xall = xall0 + alp*dir;   % not needed here</span>
+0078     <span class="comment">%if (Uequal)</span>
+0079     <span class="comment">%  UEQ = u_it + alp*u_dir;</span>
+0080     <span class="comment">%end</span>
+0081     
+0082     <span class="comment">%while((*fx =  (* objective) (x_it)) &gt;= HUGE_VAL) {</span>
+0083     <span class="comment">%  alp = alp/2;</span>
+0084     <span class="comment">%  x_it=x+alp*dir;</span>
+0085     <span class="comment">%}</span>
+0086     
+0087     <span class="keyword">if</span> (abs(pi) &lt; 1.0E-15) 
+0088       obj.ls_small_cnt=obj.ls_small_cnt+1;
+0089     <span class="keyword">else</span>
+0090       obj.ls_small_cnt=0;
+0091     <span class="keyword">end</span>
+0092 
+0093     <span class="keyword">if</span> (obj.ls_small_cnt &gt; 2)
+0094       <span class="comment">% x remains unchanged --&gt; nothing todo</span>
+0095       <span class="comment">% but objective() could be called elsewhere then at x</span>
+0096          <span class="comment">% doesn't seem so at this version (JF 4/11/11)</span>
+0097       <span class="comment">%fx = fnc.obj(x);</span>
+0098       rRelStep=0.;
+0099       nFlag=2;
+0100       obj.print(3,Inf,<span class="string">'LS (pen):  %.4e (almost not descent), no step'</span>, pi); 
+0101     <span class="keyword">else</span>        <span class="comment">% still acceptable</span>
+0102       obj.xall = xall0 + alp*dir;
+0103       <span class="comment">%x=x_it;</span>
+0104       obj.eval_alx();
+0105       obj.eval_aldx();
+0106       <span class="comment">%fx = fnc.obj(x);</span>
+0107       <span class="comment">%gradx = fnc.obj_grad(x);</span>
+0108       obj.print(3,Inf,<span class="string">'LS (pen):  %.4e (small full step)'</span>, pi); 
+0109       rRelStep=1.;
+0110       nFlag=0;   
+0111       lsiter=lsiter+1;
+0112     <span class="keyword">end</span>
+0113 
+0114     <span class="keyword">return</span>;
+0115   <span class="comment">%else</span>
+0116   <span class="comment">%  obj.print(3,Inf,'LS (pen):  %.4e', pi);   %%% ?</span>
+0117   <span class="keyword">end</span>
+0118   
+0119   obj.ls_small_cnt=0;
+0120 
+0121   <span class="comment">%*****************************************************</span>
+0122   <span class="comment">%* Initialize line search ... *</span>
+0123   <span class="comment">%*****************************************************</span>
+0124   
+0125   <span class="keyword">if</span> (FTOL &lt;= 0)
+0126     mu1s = 1./3.;
+0127     mu2s = 2./3.;
+0128     eff = 4./9.;
+0129   <span class="keyword">else</span>
+0130     mu1s = min(FTOL,1/3);
+0131     mu2s = 1-mu1s;
+0132     eff = 2*mu1s*mu2s;
+0133   <span class="keyword">end</span>
+0134   
+0135   <span class="keyword">if</span> (XTOL &gt;= 1.) 
+0136     kappa = 2.;
+0137   <span class="keyword">else</span> 
+0138     kappa = 1. / min(1.,1.-XTOL);
+0139   <span class="keyword">end</span>
+0140   
+0141   f0 = obj.ALx; f1 = obj.ALx; f2 = obj.ALx; fbest = obj.ALx;
+0142   pi0 = pi;
+0143   
+0144   <span class="comment">%*****************************************************</span>
+0145   <span class="comment">%* actual line search iteration ... *</span>
+0146   <span class="comment">%*****************************************************</span>
+0147   
+0148   nFlag=3;   <span class="comment">% max iter</span>
+0149   <span class="comment">% for equalities should be:  iterations &lt; LS_MAX_ITER &amp;&amp; (&lt; LS_MAX_EQ_ITER if equal)</span>
+0150   <span class="keyword">for</span> iterations=1:MAX_LS_ITER
+0151     ier = 0;
+0152     <span class="comment">% get new function value</span>
+0153     <span class="comment">%//printf(&quot; * %f&quot;, alp);</span>
+0154 
+0155     <span class="comment">%x_it = x+alp*dir;</span>
+0156     obj.xall = xall0+alp*dir;
+0157     <span class="comment">%if(Uequal)</span>
+0158     <span class="comment">%  UEQ = u_it + alp*u_dir;</span>
+0159     <span class="comment">%end</span>
+0160     
+0161     <span class="comment">%f = fnc.obj(x_it);</span>
+0162     obj.eval_alx();
+0163     f = obj.ALx;
+0164     nEff = 0;
+0165     
+0166     <span class="comment">%*****************************************************</span>
+0167     <span class="comment">%* get new trial step alp</span>
+0168     <span class="comment">%*****************************************************</span>
+0169     
+0170     <span class="comment">% count requested function evaluations</span>
+0171     k=k+1;
+0172     
+0173     <span class="comment">% check correctness of step</span>
+0174     <span class="comment">% note that alp1&gt;=alp2 unless alp1=0</span>
+0175     <span class="keyword">if</span> (alp &lt; stpmin || alp &lt;= alp2)
+0176       <span class="comment">% new step size too small</span>
+0177       obj.print(4,Inf,<span class="string">'LS (pen): ERROR: new step size too small'</span>);
+0178       nEff = 0;
+0179       ier = 1;
+0180       <span class="keyword">break</span>;
+0181     <span class="keyword">elseif</span> (alp &gt; stpmax || (alp &gt;= alp1 &amp;&amp; alp1 &gt; 0))
+0182       <span class="comment">% new step size too large</span>
+0183       obj.print(4,Inf,<span class="string">'LS (pen): ERROR: new step size too large'</span>);
+0184       nEff = 0;
+0185       ier = 1;
+0186       <span class="keyword">break</span>;
+0187     <span class="keyword">end</span>
+0188     
+0189     <span class="comment">% update best point</span>
+0190     <span class="keyword">if</span> (f &lt; fbest || (f == fbest &amp;&amp; f == f0))
+0191       fbest=f;
+0192       <span class="keyword">if</span> (f == f0 &amp;&amp; (ksh == 0 || alp &lt; alps))
+0193         <span class="comment">% store smallest step with f=f0 for possible restauration</span>
+0194         alps = alp;
+0195       <span class="keyword">end</span>
+0196       <span class="keyword">if</span> (f == f0 &amp;&amp; (ksh == 0 || alp &gt; alpm))
+0197         <span class="comment">% store smallest step with f=f0 for possible restauration</span>
+0198         alpm = alp;
+0199       <span class="keyword">end</span>
+0200       <span class="keyword">if</span> (f == f0)
+0201         ksh=ksh+1;
+0202       <span class="keyword">end</span>
+0203     <span class="keyword">end</span>
+0204     
+0205     <span class="comment">% get parabolic minimizer alp0</span>
+0206     <span class="keyword">if</span> (alp1*alp2 &gt; 0)
+0207       alp0 = alp1;    <span class="comment">% default if minimizer does not exist</span>
+0208       denom = (f-f1)/(alp-alp1)-(f-f2)/(alp-alp2);
+0209       <span class="keyword">if</span> (denom &gt; 0)
+0210         alp0 = 0.5*(alp1+alp2-(f1-f2)/denom);
+0211       <span class="keyword">end</span>
+0212     <span class="keyword">end</span>
+0213     
+0214     <span class="comment">% compute Goldstein quotient</span>
+0215     mu = (f-f0)/(alp*pi0);
+0216     <span class="keyword">if</span> (f == f0 &amp;&amp; f2 == f0)
+0217       <span class="comment">% check whether f=f0 due to very short step</span>
+0218       <span class="keyword">if</span> (f1 &lt; f0 || ksh &lt;= 6)
+0219         <span class="comment">% assume very short step</span>
+0220         mu = 1.;
+0221       <span class="keyword">end</span>
+0222     <span class="keyword">end</span>
+0223     
+0224     <span class="comment">% update bracket, with safeguard when f=f0</span>
+0225     bLong = (mu &lt; mu1s); <span class="comment">%%% ??? || f &gt;= HUGE_VAL/*_isnan(f)*/);</span>
+0226     <span class="keyword">if</span> (bLong)
+0227       <span class="comment">% long step, overwrite alp1</span>
+0228       alp1 = alp;   
+0229       f1 = f;
+0230       mu1 = mu;
+0231       <span class="keyword">if</span> (k == 1 &amp;&amp; mu &gt; 0.5)
+0232         mu1 = 0;
+0233       <span class="keyword">end</span>
+0234       omega1 = 2*abs(1.-mu1)/alp1;
+0235     <span class="keyword">else</span>
+0236       <span class="comment">% good step or short step, overwrite alp2</span>
+0237       alp2 = alp;   
+0238       f2 = f;
+0239       mu2 = mu;
+0240       omega2 = 2*abs(1.-mu2)/alp2;
+0241     <span class="keyword">end</span>
+0242     
+0243     <span class="keyword">if</span> (f2 == f0 &amp;&amp; f1 &gt;= f0 &amp;&amp; k &gt;= 2)
+0244       <span class="comment">% check whether f=f0 steps should be considered long</span>
+0245       <span class="comment">% ksh=7 indicates f=f0 for all large alp</span>
+0246       <span class="comment">% f1=f0 &amp;&amp; alp1=alp2*2 indicates f2=f0 by chance</span>
+0247       <span class="keyword">if</span> (ksh == 7 || (ksh == 1 &amp;&amp; f1 &gt; f0 &amp;&amp; alp1 == alp2*1.1))
+0248         ksh=9999;      <span class="comment">% ends f=f0 tests</span>
+0249         <span class="comment">% restore alp1=alps, alp2=0</span>
+0250         alp1 = alps;
+0251         f1 = f0;
+0252         mu1 = 0;
+0253         omega1 = 0;
+0254         alp2 = 0;
+0255         f2 = f0;
+0256         mu2 = 1;
+0257         omega2 = 0;
+0258       <span class="keyword">end</span>
+0259     <span class="keyword">end</span>
+0260     
+0261     <span class="comment">%**********************************</span>
+0262     <span class="comment">%* convergence tests              *</span>
+0263     <span class="comment">%**********************************</span>
+0264     
+0265     <span class="comment">%if (f0 &gt;= HUGE_VAL &amp;&amp; f &lt; f0)</span>
+0266       <span class="comment">% f0=infinity and f is finite</span>
+0267     <span class="comment">%  obj.print(4,Inf,'WARNING: infinite f0 improved to finite');</span>
+0268     <span class="comment">%  nEff = 2;</span>
+0269     <span class="comment">%  ier = 0;</span>
+0270     <span class="comment">%  break;</span>
+0271     <span class="comment">%end</span>
+0272     
+0273     <span class="keyword">if</span> (bLong)
+0274       <span class="keyword">if</span> (alp1 == stpmin &amp;&amp; alp1 ~= 0.)
+0275         <span class="comment">% stpmin too large</span>
+0276         obj.print(3,Inf,<span class="string">'WARNING: end of line search forced by stpmin'</span>);
+0277         nEff = 2;
+0278         ier = 0;
+0279         <span class="keyword">break</span>;
+0280       <span class="keyword">end</span>     
+0281     <span class="keyword">else</span>
+0282       <span class="comment">% now the sufficient decrease condition holds</span>
+0283       <span class="keyword">if</span> (0)   <span class="comment">%/*_isnan(f1)*/</span>
+0284         <span class="keyword">if</span> (k &gt;= 3 &amp;&amp; alp == alp2 &amp;&amp; alp1 &lt;= kappa*alp2)
+0285           <span class="comment">% step close to a NaN point !!!!!!</span>
+0286           nEff = 1;
+0287           ier = 0;
+0288           <span class="keyword">break</span>;
+0289         <span class="keyword">end</span>
+0290       <span class="keyword">end</span>
+0291       
+0292       <span class="keyword">if</span> (alp2*mu2*max(omega1,omega2) &gt;= eff &amp;&amp; f ~= f0)
+0293         <span class="comment">% efficiency condition holds</span>
+0294         nEff = 1;
+0295         ier = 0;
+0296         <span class="keyword">break</span>;
+0297       <span class="keyword">end</span>
+0298       
+0299       <span class="comment">% check step size restrictions</span>
+0300       <span class="keyword">if</span> (alp1 == stpmin &amp;&amp; alp1 ~= 0.)
+0301         <span class="comment">% stpmin too large</span>
+0302         obj.print(3,Inf,<span class="string">'WARNING: end of line search forced by stpmin'</span>);
+0303         nEff = 2;
+0304         ier = 0;
+0305         <span class="keyword">break</span>;
+0306       <span class="keyword">end</span>     
+0307       
+0308       <span class="keyword">if</span> (alp2 == stpmax)
+0309         <span class="comment">% stpmax too small</span>
+0310         obj.print(3,Inf,<span class="string">'WARNING: end of line search forced by stpmax'</span>);
+0311         nEff = 2;
+0312         ier = 0;
+0313         <span class="keyword">break</span>;
+0314       <span class="keyword">end</span>     
+0315     <span class="keyword">end</span>
+0316     
+0317     <span class="comment">%********************************************</span>
+0318     <span class="comment">%* compute new trial stepsize (goto150)     *</span>
+0319     <span class="comment">%********************************************</span>
+0320     
+0321     bSafeguard = 1;
+0322     
+0323     <span class="comment">% extrapolation phase</span>
+0324     <span class="keyword">if</span> (alp1 == 0.)
+0325       <span class="comment">% only short steps, mu&gt;1/2, expand</span>
+0326       <span class="keyword">if</span> (fbest == f0)
+0327         <span class="comment">% escape roundoff</span>
+0328         alp = alp2/sml;
+0329         <span class="comment">% safeguard in case fbest=f0 by chance</span>
+0330         <span class="keyword">if</span> (ksh == 1)
+0331           alp = alp2*1.1;
+0332         <span class="keyword">end</span>
+0333       <span class="keyword">elseif</span> (k == 1)
+0334         <span class="comment">% second trial point, safeguarded parabolic minimization</span>
+0335         alp = alp/max(2-2*mu,sml);
+0336       <span class="keyword">else</span>
+0337         <span class="comment">% expand by divs=cut(4*mu2,[2,4])</span>
+0338         divs = max(2.,min(4.,4.*mu2));
+0339         alp = alp2*divs;
+0340       <span class="keyword">end</span>
+0341       
+0342       bSafeguard = 0;
+0343     <span class="keyword">else</span>
+0344       <span class="comment">% interpolation phase</span>
+0345       <span class="keyword">if</span> (alp2 == 0.)
+0346         <span class="comment">% only long steps, mu&lt;1/2, contract</span>
+0347         <span class="comment">% linear interpolation to mu=0.5</span>
+0348         alpd = alp1/(2-2*mu1);
+0349       <span class="keyword">elseif</span> (fbest == f0)
+0350         <span class="comment">% escape roundoff by geometric mean step</span>
+0351         alp = alp2*sqrt(alp1/alp2);
+0352         <span class="comment">% safeguard in case fbest=f0 by chance</span>
+0353         <span class="keyword">if</span> (ksh == 1)
+0354           alp = min(alp,alp2*1.1);
+0355         <span class="keyword">end</span>
+0356         bSafeguard = 0;
+0357       <span class="keyword">else</span>
+0358         <span class="comment">% test interiority condition for parabolic minimizer alp0</span>
+0359         fact = (alp1/alp2)^(1/3);
+0360         <span class="keyword">if</span> (denom &gt; 0 &amp;&amp; (alp0 &gt;= fact*alp2 &amp;&amp; alp1 &gt;= fact*alp0))
+0361           <span class="comment">% safeguarded parabolic minimization</span>
+0362           alpd = alp0;
+0363         <span class="keyword">else</span>
+0364           alpd = alp2;    <span class="comment">% is updated by safeguards</span>
+0365         <span class="keyword">end</span>
+0366       <span class="keyword">end</span>
+0367     <span class="keyword">end</span>
+0368     
+0369     <span class="keyword">if</span> (bSafeguard)
+0370       <span class="comment">% compute relative step location</span>
+0371       q = (alpd-alp2)/(alp1-alp2);
+0372       
+0373       <span class="comment">%*********************************************</span>
+0374       <span class="comment">%* safeguards                                *</span>
+0375       <span class="comment">%*********************************************</span>
+0376       
+0377       <span class="keyword">if</span> (alp1 == 0)
+0378         error(<span class="string">'programming error in extrapolation step of line search (alp1==0)'</span>);
+0379       <span class="keyword">elseif</span> (alp2 == 0)
+0380         <span class="comment">% only long steps mu&lt;1/2</span>
+0381         <span class="keyword">if</span> (q &gt;= sml*sml &amp;&amp; q &lt;= sml)
+0382           <span class="comment">% contract by factor q &lt;= sml</span>
+0383           alp = q*alp1;
+0384         <span class="keyword">else</span>
+0385           <span class="comment">% contract by sml</span>
+0386           alp = sml*alp1;
+0387         <span class="keyword">end</span>
+0388       <span class="keyword">else</span>
+0389         <span class="comment">% force interiority condition for interpolation step</span>
+0390         alpd = alp2+q*(alp1-alp2);
+0391         fact = (alp1/alp2)^(1/3);
+0392         <span class="keyword">if</span> (0)      <span class="comment">%/*_isnan(f1)*/</span>
+0393           <span class="comment">% f1=NaN, take a short interior step</span>
+0394           alpd = fact*alp2;
+0395         <span class="keyword">else</span>
+0396           <span class="comment">% f1 is a valid number or infinite</span>
+0397           <span class="keyword">if</span> (alpd&lt;fact*alp2)
+0398             <span class="comment">% cut interpolation step</span>
+0399             alpd = fact*alp2;
+0400           <span class="keyword">end</span>
+0401         <span class="keyword">end</span>
+0402         
+0403         alp = min(alpd,alp1/fact);
+0404         <span class="keyword">if</span> (alp ~= alpd || alp &gt;= alp1 || alp&lt;=alp2)
+0405           <span class="comment">% step not interior enough, use geometric mean step</span>
+0406           alp = alp1*sqrt(alp2/alp1);
+0407         <span class="keyword">end</span>
+0408       <span class="keyword">end</span>
+0409     <span class="keyword">end</span>     <span class="comment">% of if(bSafeguard)</span>
+0410     
+0411     <span class="comment">%*********************************************</span>
+0412     <span class="comment">%* check bounds and assign task  (goto2000)  *</span>
+0413     <span class="comment">%*********************************************</span>
+0414     
+0415     <span class="comment">% check bounds on step size</span>
+0416     <span class="keyword">if</span> (alp &lt; stpmin)
+0417       alp = stpmin;
+0418     <span class="keyword">elseif</span> (alp &gt; stpmax)
+0419       alp=stpmax;
+0420     <span class="keyword">end</span>
+0421     
+0422     <span class="keyword">if</span> (alp &gt; alp2 &amp;&amp; (alp &lt; alp1 || alp1 == 0.))
+0423       <span class="comment">% good trial step; request next function value</span>
+0424       <span class="comment">% task='VALUE'</span>
+0425       ;
+0426     <span class="keyword">else</span>
+0427       <span class="comment">% interval too small for splitting</span>
+0428       <span class="keyword">if</span> (alp2*mu2*max(omega1,omega2) &gt;= eff &amp;&amp; f ~= f0)
+0429         <span class="comment">% efficiency condition holds</span>
+0430         obj.print(3,Inf,<span class="string">'WARNING: end of line search forced by machine accuracy'</span>);
+0431         nEff = 2;
+0432         ier = 0;
+0433         <span class="keyword">break</span>;
+0434       <span class="keyword">else</span>
+0435         obj.print(3,Inf,<span class="string">'WARNING: end of line search forced by machine accuracy'</span>);
+0436         nEff = 0;
+0437         ier = 1;
+0438         <span class="keyword">break</span>;
+0439       <span class="keyword">end</span>
+0440     <span class="keyword">end</span>
+0441     
+0442     <span class="keyword">if</span> (alp2 == 0) 
+0443       fact = alp1/alp;
+0444     <span class="keyword">else</span>
+0445       fact = alp/alp2;
+0446     <span class="keyword">end</span>
+0447     
+0448     <span class="comment">%******************************************************</span>
+0449     
+0450   <span class="keyword">end</span>    <span class="comment">% for iterations</span>
+0451   
+0452   
+0453   <span class="comment">%*****************************************************</span>
+0454   
+0455   <span class="keyword">if</span> (ier == 0)
+0456     <span class="keyword">if</span> (f &lt; fx)   <span class="comment">%%% by mela byt merit??</span>
+0457       <span class="comment">% x=x_it;   % already done JF041111</span>
+0458       bLinesearch = 0;
+0459       <span class="comment">% fx = fnc.obj(x);</span>
+0460       fx=f;
+0461       obj.eval_aldx();
+0462       <span class="comment">%gradx = fnc.obj_grad(x);</span>
+0463       nFlag=0;
+0464     <span class="keyword">else</span>
+0465       <span class="keyword">if</span> (ksh&gt;0 &amp;&amp; alpm &gt; 0.) <span class="comment">%fbest &lt; HUGE_VAL &amp;&amp; alpm &gt; 0.)</span>
+0466         <span class="comment">% We have descent direction, but</span>
+0467         <span class="comment">% function values cannot be improved due to</span>
+0468         <span class="comment">% numerical inexactness</span>
+0469         alp = alpm;
+0470         <span class="comment">%x_it=x+alp*dir;</span>
+0471         <span class="comment">%x=x_it;</span>
+0472         obj.xall=xall0+alp*dir;
+0473         <span class="comment">%if (Uequal)</span>
+0474     <span class="comment">%  UEQ = u_it + alp*u_dir;</span>
+0475         <span class="comment">%end</span>
+0476         
+0477         bLinesearch = 0;
+0478         
+0479         <span class="comment">%fx = fnc.obj(x);</span>
+0480         <span class="comment">%gradx = fnc.obj_grad(x);</span>
+0481         obj.eval_alx();
+0482         obj.eval_aldx();
+0483         fx = obj.ALx;
+0484         <span class="comment">%gradx = fnc.obj_grad(x);</span>
+0485     nFlag=0;
+0486       <span class="keyword">else</span>
+0487         alp = 0;
+0488       <span class="keyword">end</span>
+0489     <span class="keyword">end</span>
+0490   <span class="keyword">else</span>
+0491     alp = 0;
+0492   <span class="keyword">end</span>
+0493   
+0494   lsiter=lsiter+iterations;
+0495   obj.lsiter_last=obj.lsiter_last + lsiter;
+0496   
+0497   obj.print(3,Inf,<span class="string">'LS (pen): %.4e, %d steps, Step width: %f'</span>, pi0, iterations, alp);
+0498   
+0499   <span class="comment">%return alp;</span>
+0500   rRelStep=alp;
+0501   <span class="keyword">return</span>;
+0502   
+0503</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -19,9 +19,9 @@
 %   input -----------------------------------------------------------------
 %       o Damping_Gains      : (2 x 2), The damping gains.  (Optional)
 %  How to run -------------------------------------------------------------
-%    passive_ds([0.1 0;0 0.1])
+%    lect10_ex1([0.1 0;0 0.1])
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function passive_ds(Damping_Gains)
+function lect10_ex1(Damping_Gains)
 close all; clc;
 folder = fileparts(which('lect10_ex1.m'));
 cd(folder);
@@ -42,7 +42,7 @@ else
         disp('Damping_Gains should be diagonal.')
         return;
     end
-    if (Damping_Gains(1,1)<0)||(Damping_Gains(2,2)<0)
+    if (Damping_Gains(1,1)<=0)||(Damping_Gains(2,2)<=0)
         disp('Damping_Gains should be positive definite.')
         return;
     end

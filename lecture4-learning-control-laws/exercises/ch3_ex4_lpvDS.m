@@ -19,11 +19,14 @@
 % Public License for more details                                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%  Step 1 (DATA GENERATION): Draw 2D data with GUI or load dataset %%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 clear; close all; clc;
 filepath = fileparts(which('ch3_ex4_lpvDS.m'));
 cd(filepath);
+
+
+%%  Step 1 (DATA GENERATION): Draw 2D data with GUI or load dataset %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Choose to draw data (true) or load dataset (false)
 draw_data = false;
@@ -51,6 +54,7 @@ else
     Xi_dot_ref = Data_sh(M+1:end,:);
 end
 clearvars -except filepath M Xi_ref Xi_dot_ref x0_all Data Data_sh att
+tStart = cputime;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%  Step 2 (GMM FITTING): Fit GMM to Trajectory Data %%
@@ -99,8 +103,16 @@ est_options.length_scale     = [];  % if estimate_l=0 you can define your own
                                     % l, when setting l=0 only
                                     % directionality is taken into account
 
+%% Give acces to Lasa developper if you are on mac
+ControlFlag = readlines('../mac_setup/ControlFlag.txt');
+if ismac && (ControlFlag(1) == "LASADEVELOP = True") && (est_options.type ==0)
+    disp("Open Acces to LASA developper ")
+    system("sudo spctl --master-disable");
+end
+
 % Fit GMM to Trajectory Data
 [Priors, Mu, Sigma] = fit_gmm(Xi_ref, Xi_dot_ref, est_options);
+
 
 %% Generate GMM data structure for DS learning
 clear ds_gmm; ds_gmm.Mu = Mu; ds_gmm.Sigma = Sigma; ds_gmm.Priors = Priors; 
@@ -219,6 +231,7 @@ else
     clc;
     fprintf(2,'Lyapunov Function Plotting: Not possible for 3D data.\n')    
 end
+tEnd = cputime - tStart;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%  Step 5 (Evaluation): Compute Metrics and Visualize Velocities %%
@@ -233,6 +246,9 @@ fprintf('LPV-DS with (O%d), got velocity RMSE on training set: %d \n', constr_ty
 % Compute e_dot on training data
 edot = mean(edot_error(ds_lpv, Xi_ref, Xi_dot_ref));
 fprintf('LPV-DS with (O%d), got velocity deviation (e_dot) on training set: %d \n', constr_type+1, edot);
+
+% Display time 
+fprintf('Computation Time is %1.2f seconds \n', tEnd);
 
 % Compute DTWD between train trajectories and reproductions
 if ds_plot_options.sim_traj
@@ -249,3 +265,12 @@ end
 
 % Compare Velocities from Demonstration vs DS
 h_vel = visualizeEstimatedVelocities(Data, ds_lpv);
+
+%%
+
+if ismac && (ControlFlag(1)== "LASADEVELOP = True") && (est_options.type ==0)
+    disp("All access are restablished")
+    system("sudo spctl --master-enable");
+    writelines("LASADEVLOP = False",'../ControlFlag.txt')
+
+end

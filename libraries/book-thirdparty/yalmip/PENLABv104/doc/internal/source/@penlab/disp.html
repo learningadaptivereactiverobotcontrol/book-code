@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of disp</title>
+  <meta name="keywords" content="disp">
+  <meta name="description" content="overloading default disp()">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">source</a> &gt; <a href="index.html">@penlab</a> &gt; disp.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for source/@penlab&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>disp
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>overloading default disp()</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function disp(obj) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> overloading default disp()</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="logfile.html" class="code" title="function [] = logfile(obj,task)">logfile</a>	open/close log file based on option settings (in obj.allopts)</li><li><a href="penlab.html" class="code" title="">penlab</a>	PenLab (Pennon Laboratory for Matlab, previously PennonM)</li><li><a href="print.html" class="code" title="function [errmsg] = print(obj, minlev, maxlev, msg, varargin)">print</a>	Publisher (printing manager) for PenLab</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% overloading default disp()</span>
+0002 <a name="_sub0" href="#_subfunctions" class="code">function disp(obj)</a>
+0003 
+0004   fprintf(<span class="string">'%s problem object\n'</span>,penlab.solvername)
+0005   fprintf(<span class="string">'  Problem name: %s\n'</span>,obj.probname);
+0006   <span class="keyword">if</span> (~isempty(obj.comment))
+0007     fprintf(<span class="string">'  Description:  %s\n'</span>,obj.comment);
+0008   <span class="keyword">end</span>
+0009   <span class="keyword">switch</span>(obj.phase)
+0010     <span class="keyword">case</span> 0  <span class="comment">% empty</span>
+0011       str = <span class="string">'problem hasn''t been loaded yet'</span>;
+0012     <span class="keyword">case</span> 1  <span class="comment">% init</span>
+0013       str = <span class="string">'problem initialized and loaded'</span>;
+0014     <span class="keyword">case</span> 2  <span class="comment">% solving</span>
+0015       str = <span class="string">'problem is being solved right now'</span>;
+0016     <span class="keyword">case</span> 3  <span class="comment">% finished</span>
+0017       str = <span class="string">'solver finished'</span>;
+0018     <span class="keyword">otherwise</span>
+0019       str = sprintf(<span class="string">'unnamed phase: %i'</span>,obj.phase);
+0020   <span class="keyword">end</span>
+0021   fprintf(<span class="string">'  Phase:        %s\n\n'</span>, str);
+0022 
+0023   <span class="keyword">if</span> (obj.phase&gt;0)
+0024     nNLNineq=sum(obj.ineqmap&lt;=obj.NgNLN);
+0025     nNLNeq=sum(obj.eqmap&lt;=obj.NgNLN);
+0026     nNLNAineq=sum(obj.Amap&lt;=obj.NANLN);
+0027     fprintf(<span class="string">'                              normal    mvars (m.elems)\n'</span>);
+0028     fprintf(<span class="string">'  Number of variables        %7d  %7d (%7d)\n'</span>,obj.Nx, obj.NY, obj.NYnnz);
+0029     fprintf(<span class="string">'                                 box   linear   nonlin\n'</span>);
+0030     fprintf(<span class="string">'  (Function) inequalities    %7d  %7d  %7d\n'</span>,obj.Nxbox,obj.Nineq-nNLNineq,nNLNineq);
+0031     fprintf(<span class="string">'  (Function) equalities               %7d  %7d\n'</span>,obj.Neq-nNLNeq, nNLNeq);
+0032     fprintf(<span class="string">'  Matrix     inequalities    %7d  %7d  %7d\n'</span>,obj.NYbox,obj.NA-nNLNAineq,nNLNAineq);
+0033   <span class="keyword">end</span>
+0034 
+0035 
+0036   <span class="keyword">if</span> (obj.phase&gt;=2)
+0037     <span class="keyword">if</span> (obj.phase&lt;3)
+0038       fprintf(<span class="string">'\n  Optimality meassures in the last completed iteration:\n'</span>);
+0039     <span class="keyword">else</span>
+0040       fprintf(<span class="string">'\n  Optimality meassures in the final iteration:\n'</span>);
+0041     <span class="keyword">end</span>
+0042     fprintf(<span class="string">'  Objective                %27.16E\n'</span>,obj.objx);
+0043     fprintf(<span class="string">'  Relative precision       %27.16E\n'</span>,abs(obj.ALx-obj.objx)/max(1,obj.objx));
+0044     fprintf(<span class="string">'  Compl. Slackness         %27.16E\n'</span>,obj.rCompl);
+0045     fprintf(<span class="string">'  Grad augm. lagr.         %27.16E\n'</span>,obj.rNormG);
+0046     fprintf(<span class="string">'  Feasibility              %27.16E\n'</span>,obj.rFeas);
+0047     fprintf(<span class="string">'  Minimal penalty          %27.16E\n'</span>,min([obj.pxbox;obj.pineq]));
+0048 
+0049     fprintf(<span class="string">'  Newton steps                                   %5d\n'</span>,obj.miter);
+0050     fprintf(<span class="string">'  Inner steps                                    %5d\n'</span>,obj.initer);
+0051     fprintf(<span class="string">'  Linesearch steps                               %5d\n'</span>,obj.lsiter);
+0052     <span class="comment">%fprintf('  Time statistics:\n');</span>
+0053     <span class="comment">%fprintf('     - total process time             %14g s\n',obj.stats_time_total);</span>
+0054     <span class="comment">%fprintf('     - all minimization steps         %14g s\n',obj.stats_time_miters);</span>
+0055     <span class="comment">%fprintf('     - all factorizations             %14g s\n',obj.stats_time_fact);</span>
+0056     <span class="comment">%fprintf('     - function values evaluation     %14g s\n',obj.stats_time_alx);</span>
+0057     <span class="comment">%fprintf('     - gradient values evaluation     %14g s\n',obj.stats_time_aldx);</span>
+0058     <span class="comment">%fprintf('     - hessian values evaluation      %14g s\n',obj.stats_time_alddx);</span>
+0059   <span class="keyword">end</span>
+0060 
+0061 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

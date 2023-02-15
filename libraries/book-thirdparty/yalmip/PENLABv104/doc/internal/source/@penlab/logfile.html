@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of logfile</title>
+  <meta name="keywords" content="logfile">
+  <meta name="description" content="open/close log file based on option settings (in obj.allopts)">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">source</a> &gt; <a href="index.html">@penlab</a> &gt; logfile.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for source/@penlab&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>logfile
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>open/close log file based on option settings (in obj.allopts)</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [] = logfile(obj,task) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> open/close log file based on option settings (in obj.allopts)
+ (task==0 -&gt; close, otherwise-&gt;open)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="disp.html" class="code" title="function disp(obj)">disp</a>	overloading default disp()</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="penlab.html" class="code" title="">penlab</a>	PenLab (Pennon Laboratory for Matlab, previously PennonM)</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% open/close log file based on option settings (in obj.allopts)</span>
+0002 <span class="comment">% (task==0 -&gt; close, otherwise-&gt;open)</span>
+0003 <a name="_sub0" href="#_subfunctions" class="code">function [] = logfile(obj,task)</a>
+0004 
+0005   <span class="comment">% first of all, close it if it is open</span>
+0006   <span class="keyword">if</span> (obj.fid~=-1)
+0007     <span class="comment">%disp('PenLAB DBG: closing file');</span>
+0008     fclose(obj.fid);
+0009     obj.fid=-1;
+0010   <span class="keyword">end</span>
+0011 
+0012   <span class="keyword">if</span> (task &amp;&amp; obj.allopts.outlev_file&gt;0 &amp;&amp; ~isempty(obj.allopts.out_filename))
+0013     obj.fid = fopen(obj.allopts.out_filename, <span class="string">'wt'</span>);
+0014     <span class="keyword">if</span> (obj.fid==-1)
+0015       <a href="disp.html" class="code" title="function disp(obj)">disp</a>(<span class="string">'PenLAB DBG: warning: cannot open the log file'</span>);
+0016       warning(<span class="string">'PenLAB: Cannot open the log file for writing!'</span>)
+0017     <span class="keyword">end</span>
+0018   <span class="keyword">end</span>
+0019</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

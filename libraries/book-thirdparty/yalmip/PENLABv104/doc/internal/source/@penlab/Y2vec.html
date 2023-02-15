@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of Y2vec</title>
+  <meta name="keywords" content="Y2vec">
+  <meta name="description" content="Copy matrix data (with respect to the given pattern) to xall,">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">source</a> &gt; <a href="index.html">@penlab</a> &gt; Y2vec.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for source/@penlab&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>Y2vec
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Copy matrix data (with respect to the given pattern) to xall,</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function vec = Y2vec(obj, Y, Ydefault) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Copy matrix data (with respect to the given pattern) to xall,
+ only data from the lower triangle and on the pattern will be used (the rest
+ is ignored). Quite slow but used only during initialization (e.g., Yinit).
+
+ Be careful that here Y can be just part of full length obj.Y,
+ imagine obj.Yinit{2}=...; then Y{1}=[], Y{2}=... and there is no Y{k&gt;=3} !
+ Ydefault specifies what should be the default value if Y{k} is not present
+ on input or it is an empty matrix, possibilities:
+   -/+Inf/0 ... vector of all -/+Inf/0
+   anything else (or not present) ... the current point
+ Y{k} is empty or not present at all --&gt; default value
+      is of the same size as internal Y --&gt; only lower triangle elements
+      matching the pattern the internal Y will be considered
+      is a scalar --&gt; this value will be distributed to all Y in the pattern
+      (eg. acts as if you put Y{k}=scalar*ones(size(Ymap{k}))</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="penlab.html" class="code" title="">penlab</a>	PenLab (Pennon Laboratory for Matlab, previously PennonM)</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Copy matrix data (with respect to the given pattern) to xall,</span>
+0002 <span class="comment">% only data from the lower triangle and on the pattern will be used (the rest</span>
+0003 <span class="comment">% is ignored). Quite slow but used only during initialization (e.g., Yinit).</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% Be careful that here Y can be just part of full length obj.Y,</span>
+0006 <span class="comment">% imagine obj.Yinit{2}=...; then Y{1}=[], Y{2}=... and there is no Y{k&gt;=3} !</span>
+0007 <span class="comment">% Ydefault specifies what should be the default value if Y{k} is not present</span>
+0008 <span class="comment">% on input or it is an empty matrix, possibilities:</span>
+0009 <span class="comment">%   -/+Inf/0 ... vector of all -/+Inf/0</span>
+0010 <span class="comment">%   anything else (or not present) ... the current point</span>
+0011 <span class="comment">% Y{k} is empty or not present at all --&gt; default value</span>
+0012 <span class="comment">%      is of the same size as internal Y --&gt; only lower triangle elements</span>
+0013 <span class="comment">%      matching the pattern the internal Y will be considered</span>
+0014 <span class="comment">%      is a scalar --&gt; this value will be distributed to all Y in the pattern</span>
+0015 <span class="comment">%      (eg. acts as if you put Y{k}=scalar*ones(size(Ymap{k}))</span>
+0016 <a name="_sub0" href="#_subfunctions" class="code">function vec = Y2vec(obj, Y, Ydefault)</a>
+0017 
+0018   <span class="comment">% use a point to fill in the gabs if there are in Y</span>
+0019   <span class="comment">% if Y is a full size array, it won't influence it anyway</span>
+0020   <span class="comment">% important only for Y being partially assigned</span>
+0021   <span class="keyword">if</span> (nargin&lt;=2)
+0022     <span class="comment">% current point</span>
+0023     vec=obj.xall(obj.Nx+1:end);
+0024   <span class="keyword">else</span>
+0025     <span class="keyword">if</span> (Ydefault==-Inf)
+0026       vec=-Inf(obj.NYnnz,1);
+0027     <span class="keyword">elseif</span> (Ydefault==Inf)
+0028       vec=Inf(obj.NYnnz,1);
+0029     <span class="keyword">elseif</span> (Ydefault==0)
+0030       vec=zeros(obj.NYnnz,1);
+0031     <span class="keyword">else</span>
+0032       vec=obj.xall(obj.Nx+1:end);
+0033     <span class="keyword">end</span>
+0034   <span class="keyword">end</span>
+0035 
+0036   <span class="keyword">if</span> (length(Y)&gt;obj.NY)
+0037     error(<span class="string">'Incompatible Y on input, cannot transfer data'</span>);
+0038   <span class="keyword">end</span>
+0039 
+0040   <span class="keyword">for</span> k=1:length(Y)
+0041     <span class="keyword">if</span> (~isempty(Y{k}))
+0042       mapper=obj.vec2Ymap{k};
+0043 
+0044       [dim, dim2] = size(Y{k});
+0045       <span class="keyword">if</span> (dim==1 &amp;&amp; dim2==1)
+0046         <span class="comment">% scalar --&gt; apply this bound on all elements</span>
+0047         vec(mapper.xmap)=Y{k};
+0048 
+0049       <span class="keyword">elseif</span> (dim==dim2 &amp;&amp; dim==mapper.dim)
+0050         <span class="comment">% matching dimension, get the appropriate elements</span>
+0051 
+0052         <span class="keyword">if</span> (mapper.dense)
+0053           <span class="comment">% mapper.xmap includes double assignments (from both triangles)</span>
+0054           <span class="comment">% to be sure which half of the user's data gets used, symmetrize</span>
+0055           <span class="comment">% and use lower only</span>
+0056 
+0057           Ytmp=tril(Y{k}) + tril(Y{k},-1)';
+0058           vec(mapper.xmap)=reshape(full(Ytmp),dim*dim,1);
+0059         <span class="keyword">else</span>
+0060           len=length(mapper.xmap);
+0061           <span class="comment">% have to do it element by element because MATRIX(irow,icol) will</span>
+0062           <span class="comment">% be a submatrix not an array of arguments. Find is also not suitable</span>
+0063           <span class="comment">% because it won't register zeros (which are on the pattern of variables)</span>
+0064           <span class="keyword">for</span> idx=1:len
+0065             ridx=mapper.irow(idx);
+0066             cidx=mapper.icol(idx);
+0067             <span class="keyword">if</span> (ridx&gt;=cidx)
+0068               <span class="comment">% lower triangle only</span>
+0069               vec(mapper.xmap(idx))=Y{k}(ridx,cidx);
+0070             <span class="keyword">end</span>
+0071           <span class="keyword">end</span>
+0072         <span class="keyword">end</span>
+0073       <span class="keyword">else</span>
+0074         <span class="comment">% not matching dimension and not a scalar (dim~=dim2 || dim~=mapper.dim)</span>
+0075         error(<span class="string">'Y{k} has different size.'</span>);
+0076       <span class="keyword">end</span>
+0077     <span class="keyword">end</span>
+0078   <span class="keyword">end</span>
+0079 
+0080 
+0081</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

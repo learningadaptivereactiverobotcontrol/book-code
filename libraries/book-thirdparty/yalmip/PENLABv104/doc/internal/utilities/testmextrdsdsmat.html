@@ -1,0 +1,206 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of testmextrdsdsmat</title>
+  <meta name="keywords" content="testmextrdsdsmat">
+  <meta name="description" content="TESTMEXTRDSDSMAT tests that the behaviour of mextrdsdsmat() is correct">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">utilities</a> &gt; testmextrdsdsmat.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for utilities&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>testmextrdsdsmat
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>TESTMEXTRDSDSMAT tests that the behaviour of mextrdsdsmat() is correct</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [status] = testmextrdsdsmat(verbose,tol) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> TESTMEXTRDSDSMAT tests that the behaviour of mextrdsdsmat() is correct
+ mextrdsdsmat was the first version which is now superseeded by
+ mextrcolumn which computest the vector of traces, not just one
+ element. Thus mextrdsdsmat can retire at some point.
+
+ RETURN
+   status ...  0 failed, 1 all ok
+ INPUT
+   verbose ... 0 print only what failed, 1 print progress,
+               optional, default 1
+   tol ....... tolerance when comparing the results
+               optional, default 1e-8
+
+ See also mextrdsdsmat, penlabtest, <a href="penlabstresstest.html" class="code" title="function [] = penlabstresstest(feeder,timestats,logs)">penlabstresstest</a></pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="testmex.html" class="code" title="function []=testmex()">testmex</a>	TESTMEX tests that the behaviour of all the mex files is correct</li></ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)</a></li></ul>
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [status] = testmextrdsdsmat(verbose,tol)</a>
+0002 <span class="comment">% TESTMEXTRDSDSMAT tests that the behaviour of mextrdsdsmat() is correct</span>
+0003 <span class="comment">% mextrdsdsmat was the first version which is now superseeded by</span>
+0004 <span class="comment">% mextrcolumn which computest the vector of traces, not just one</span>
+0005 <span class="comment">% element. Thus mextrdsdsmat can retire at some point.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% RETURN</span>
+0008 <span class="comment">%   status ...  0 failed, 1 all ok</span>
+0009 <span class="comment">% INPUT</span>
+0010 <span class="comment">%   verbose ... 0 print only what failed, 1 print progress,</span>
+0011 <span class="comment">%               optional, default 1</span>
+0012 <span class="comment">%   tol ....... tolerance when comparing the results</span>
+0013 <span class="comment">%               optional, default 1e-8</span>
+0014 <span class="comment">%</span>
+0015 <span class="comment">% See also mextrdsdsmat, penlabtest, penlabstresstest</span>
+0016 <span class="comment">%</span>
+0017 
+0018 <span class="comment">% This file is a part of PENLAB package distributed under GPLv3 license</span>
+0019 <span class="comment">% Copyright (c) 2013 by  J. Fiala, M. Kocvara, M. Stingl</span>
+0020 <span class="comment">% Last Modified: 5 Dec 2013</span>
+0021 
+0022   <span class="keyword">if</span> (nargin&lt;2)
+0023     tol = 1e-8;
+0024   <span class="keyword">end</span>
+0025   <span class="keyword">if</span> (nargin&lt;1)
+0026     verbose = 1;
+0027   <span class="keyword">end</span>
+0028   status = 1;
+0029 
+0030   <span class="keyword">if</span> (verbose)
+0031     disp(<span class="string">' testing functionality of mextrdsdsmat()...'</span>)
+0032   <span class="keyword">end</span>
+0033 
+0034   <span class="comment">% is it possible to call it?</span>
+0035   <span class="keyword">try</span>
+0036     mextrdsdsmat(1,sparse(1),1,sparse(1));
+0037   <span class="keyword">catch</span>
+0038     disp(<span class="string">' Error: mextrdsdsmat - cannot call'</span>)
+0039     status = 0;
+0040     <span class="keyword">return</span>;
+0041   <span class="keyword">end</span>
+0042 
+0043   status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)">onematrixtest</a>(verbose,tol,<span class="string">'n=0, all empty'</span>, [],[],[],[],0);
+0044   status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)">onematrixtest</a>(verbose,tol,<span class="string">'n=1, all ones'</span>, 1,1,1,1,2);
+0045   status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)">onematrixtest</a>(verbose,tol,<span class="string">'n=1, all nonzeros'</span>, 2,3,-4,5,-120*2);
+0046   status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)">onematrixtest</a>(verbose,tol,<span class="string">'n=1, A=0'</span>, 0,3,-4,5,0);
+0047   status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)">onematrixtest</a>(verbose,tol,<span class="string">'n=1, S1=0'</span>, 2,0,-4,5,0);
+0048   status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)">onematrixtest</a>(verbose,tol,<span class="string">'n=1, B=0'</span>, 2,3,0,5,0);
+0049   status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)">onematrixtest</a>(verbose,tol,<span class="string">'n=1, S2=0'</span>, 2,3,-4,0,0);
+0050   status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)">onematrixtest</a>(verbose,tol,<span class="string">'n=2, all numbers, A diag'</span>, diag([2 3]),[-2.1,3.2;3.2,4.4],[4,6;6,5],[-13,-9;-9,-16]);
+0051   <span class="comment">% don't forget that magic() is not symmetric</span>
+0052   status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)">onematrixtest</a>(verbose,tol,<span class="string">'n=2, all numbers, A diag, B=[]'</span>, diag([2 3]),[-2.1,3.2;3.2,4.4],magic(2)+magic(2)'+3,sparse(2,2),0);
+0053   
+0054   <span class="comment">% build special examples with very sparse matrices</span>
+0055   n=5;
+0056   A=diag(1:n);
+0057   B=magic(n)+magic(n)';
+0058   S1=sparse(n,n); S1(2,1)=2;
+0059   S1=S1+S1';
+0060   S2=sparse(n,n); S2(4,4)=9;
+0061   status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)">onematrixtest</a>(verbose,tol,<span class="string">'n=5, very sparse'</span>, A,S1,B,S2);
+0062 
+0063   n=5;
+0064   A=diag(1:n);
+0065   B=magic(n)+magic(n)';
+0066   S1=sparse(n,n); S1(2,1)=2;
+0067   S1=S1+S1';
+0068   S2=sparse(n,n); S2(2,2)=9;
+0069   status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)">onematrixtest</a>(verbose,tol,<span class="string">'n=5, very sparse2'</span>, A,S1,B,S2);
+0070 
+0071   n=5;
+0072   A=zeros(n,n);
+0073   A(:)=[1:n^2]-10;
+0074   A=A+A';
+0075   B=magic(n)+magic(n)';
+0076   S1=sparse(n,n); S1(2,1)=2;
+0077   S1=S1+S1';
+0078   S2=sparse(n,n); S2(2,2)=9;
+0079   status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)">onematrixtest</a>(verbose,tol,<span class="string">'n=5, very sparse3'</span>, A,S1,B,S2);
+0080 
+0081   n=5;
+0082   A=zeros(n,n);
+0083   A(:)=[1:n^2]-10;
+0084   A=A+A';
+0085   B=magic(n)+magic(n)';
+0086   S1=sparse(n,n); S1(2,1)=2;
+0087   S1=S1+S1';
+0088   S2=sparse(diag([5:9]));
+0089   status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)">onematrixtest</a>(verbose,tol,<span class="string">'n=5, sparse, S2 spdiag'</span>, A,S1,B,S2);
+0090 
+0091   <span class="comment">% random of different size</span>
+0092   <span class="keyword">for</span> n=[5 5 5 10 10 10 100 100 101 101]
+0093   <span class="comment">%for n=[2 5 5]</span>
+0094     A=rand(n,n);
+0095     A=A+A';
+0096     B=rand(n,n);
+0097     B=B+B';
+0098     S1=sprandsym(n,0.2);
+0099     S2=sprandsym(n,0.1);
+0100     testname=sprintf(<span class="string">'n=%i all random'</span>,n);
+0101     status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)">onematrixtest</a>(verbose,tol,testname, A,S1,B,S2);
+0102   <span class="keyword">end</span>
+0103 
+0104 <span class="keyword">end</span>
+0105 
+0106 <a name="_sub1" href="#_subfunctions" class="code">function [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)</a>
+0107 <span class="comment">% ONEMATRIXTEST - run one test with mextrdsdsmat(), S2 has just one element</span>
+0108 <span class="comment">%   testname - string to print out</span>
+0109 <span class="comment">%   A,B,S1,S2 - matrices for the test</span>
+0110 <span class="comment">%   ref [optional] - reference result, if not present, computed in Matlab</span>
+0111 
+0112   status = 1;
+0113 
+0114   <span class="keyword">if</span> (~issparse(S1))
+0115     S1=sparse(S1);
+0116   <span class="keyword">end</span>
+0117   <span class="keyword">if</span> (~issparse(S2))
+0118     S2=sparse(S2);
+0119   <span class="keyword">end</span>
+0120 
+0121   <span class="keyword">if</span> (nargin==7)
+0122     <span class="comment">%ref = trace(A*S1*B*S2);</span>
+0123     ref = trace(A*S1*B*S2) + trace(A*S2*B*S1);
+0124   <span class="keyword">end</span>
+0125 
+0126   <span class="keyword">try</span>
+0127     result = mextrdsdsmat(A,S1,B,S2);
+0128     err = abs(result-ref);
+0129   <span class="keyword">catch</span>
+0130     err = [];
+0131   <span class="keyword">end</span>
+0132 
+0133   <span class="keyword">if</span> (isempty(err))
+0134     fprintf(<span class="string">' test %-30s: HARD FAILED\n'</span>, testname);
+0135     status = 0;
+0136   <span class="keyword">elseif</span> (err&gt;tol*abs(ref))
+0137     fprintf(<span class="string">' test %-30s: FAILED  %15.6e %15.6e\n'</span>, testname,err,ref);
+0138     status = 0;
+0139   <span class="keyword">elseif</span> (verbose)
+0140     fprintf(<span class="string">' test %-30s: ok (tol)  %15.6e %15.6e\n'</span>, testname,err,ref);
+0141   <span class="keyword">end</span>
+0142 
+0143 <span class="keyword">end</span>
+0144</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

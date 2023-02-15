@@ -63,6 +63,7 @@ time_left % = ...
 
 % Compute new trajectory starting from midpath joint state by providing
 % joint state midpath as initial configuration for the solver
+fprintf("--------- Reached intermediate target in %1.1f seconds --------- \n ", optimal_solution_full.Topt(disturbance_idx));
 optimal_solution_after_disturbance = optimal_control.solveOptimalTrajectory(target_position, q_mid, time_left);
 
 % Stitch trajectories together

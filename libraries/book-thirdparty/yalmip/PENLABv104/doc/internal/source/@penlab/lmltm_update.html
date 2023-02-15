@@ -1,0 +1,145 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of lmltm_update</title>
+  <meta name="keywords" content="lmltm_update">
+  <meta name="description" content="Lagrangian Multipliers (for Matrix constraints) update">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">source</a> &gt; <a href="index.html">@penlab</a> &gt; lmltm_update.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for source/@penlab&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>lmltm_update
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Lagrangian Multipliers (for Matrix constraints) update</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [] = lmltm_update(obj) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Lagrangian Multipliers (for Matrix constraints) update</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function [M] = m_stabilize(M)</a></li></ul>
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Lagrangian Multipliers (for Matrix constraints) update</span>
+0002 <a name="_sub0" href="#_subfunctions" class="code">function [] = lmltm_update(obj)</a>
+0003 
+0004   <span class="comment">% obviously only pen/bar</span>
+0005   <span class="comment">% I have in the object: UYbox, UYboxnew, UA, UAnew - cell array with indices</span>
+0006   <span class="comment">% matching Yboxindphi &amp; Aindphi</span>
+0007 
+0008   mu2 = obj.allopts.mmlt_update;
+0009 
+0010   <span class="comment">% compute new candidates in *new; this will be done in eval*() as a by-product</span>
+0011 
+0012   <span class="comment">% matrix variable - pen/bar</span>
+0013   <span class="keyword">for</span> k=obj.Yboxindphi
+0014     pkx=obj.PYbox(k);            <span class="comment">%2*p(sdpdata.Ng+k);</span>
+0015     <span class="comment">%Akx=evalax(x,k,sdpdata);</span>
+0016     <span class="comment">% mapping xall first !!! TODO take obj.Y{...}</span>
+0017     Ykx = obj.Y{obj.Yboxmap(k)};
+0018     Akx=obj.Yboxshift(k)*speye(size(Ykx)) + obj.Yboxmlt(k)*Ykx;
+0019     umatk=obj.UYbox{k};
+0020 
+0021     <span class="comment">%Z=(pkx*speye(size(Akx))-Akx);</span>
+0022     Z=(pkx*speye(size(Akx))-Akx);
+0023     invZ=inv(Z);
+0024     pZUZ=pkx^2*invZ*umatk*invZ;
+0025     obj.UYboxnew{k}=pZUZ;
+0026   <span class="keyword">end</span>
+0027 
+0028   <span class="comment">% matrix constraints - pen/bar</span>
+0029   <span class="keyword">for</span> k=obj.Aindphi
+0030     pkx=obj.PA(k);  <span class="comment">% I used to use 2*         !!!!!!!!</span>
+0031     <span class="comment">% TODO need to map the matrix first! - is it correct???</span>
+0032     kuser=obj.Amap(k);
+0033     [Akuserx, obj.userdata] = obj.mconfun(obj.x, obj.Y, kuser, obj.userdata);
+0034     Akx = obj.Ashift(k)*speye(size(Akuserx)) + obj.Amlt(k) .* Akuserx;
+0035     umatk=obj.UA{k};
+0036 
+0037     <span class="comment">%Z=(pkx*speye(size(Akx))-Akx);</span>
+0038     Z=(pkx*speye(size(Akx))-Akx);
+0039     invZ=inv(Z);
+0040     pZUZ=pkx^2*invZ*umatk*invZ;
+0041     obj.UAnew{k}=pZUZ;
+0042   <span class="keyword">end</span>
+0043 
+0044   <span class="comment">% update as in update_multipliers() @ pbmfnc/Pennon1.0</span>
+0045   <span class="comment">% [in SDP/BMI there is still active one more option]</span>
+0046   <span class="comment">%  rStabilize = 1.0E-16*sqrt((double)(Umat-&gt;mat[i]-&gt;m)*diagnorm(Umat-&gt;mat[i], nSparse));</span>
+0047   <span class="comment">%  m_stabilize(Umat-&gt;mat[i],  rStabilize, nSparse);</span>
+0048   <span class="comment">%    rLambda = 1-mu2;</span>
+0049   <span class="comment">%    m_ConvComb(rLambda, Umattmp-&gt;mat[i], Umat-&gt;mat[i], Umat-&gt;mat[i], nSparse);</span>
+0050   <span class="comment">%  rStabilize = 1.0E-16*sqrt((double)(Umat-&gt;mat[i]-&gt;m)*diagnorm(Umat-&gt;mat[i], nSparse));</span>
+0051   <span class="comment">%  m_stabilize(Umat-&gt;mat[i],  rStabilize, nSparse);</span>
+0052   <span class="comment">% Note that in the code Umat &amp; Umattmp are swapped (Umat is the new one in</span>
+0053   <span class="comment">% this part)</span>
+0054 
+0055   <span class="comment">% matrix variable - pen/bar</span>
+0056   <span class="keyword">for</span> k=obj.Yboxindphi
+0057     umatk = obj.UYboxnew{k};
+0058     umatk = <a href="#_sub1" class="code" title="subfunction [M] = m_stabilize(M)">m_stabilize</a>(umatk);
+0059     <span class="comment">%lambda=1-mu2;</span>
+0060     <span class="comment">%umatk = (1-lambda)*old + lambda*new;</span>
+0061     umatk = mu2*obj.UYbox{k} + (1-mu2)*umatk;
+0062     obj.UYbox{k} = <a href="#_sub1" class="code" title="subfunction [M] = m_stabilize(M)">m_stabilize</a>(umatk);
+0063     <span class="comment">% &amp; push it back but keep the 'old ones'??</span>
+0064     <span class="comment">% are they used behind update_multipliers??</span>
+0065   <span class="keyword">end</span>
+0066 
+0067   <span class="comment">% matrix constraints - pen/bar</span>
+0068   <span class="keyword">for</span> k=obj.Aindphi
+0069     umatk = obj.UAnew{k};
+0070     umatk = <a href="#_sub1" class="code" title="subfunction [M] = m_stabilize(M)">m_stabilize</a>(umatk);
+0071     <span class="comment">%lambda=1-mu2;</span>
+0072     <span class="comment">%umatk = (1-lambda)*old + lambda*new;</span>
+0073     umatk = mu2*obj.UA{k} + (1-mu2)*umatk;
+0074     obj.UA{k} = <a href="#_sub1" class="code" title="subfunction [M] = m_stabilize(M)">m_stabilize</a>(umatk);
+0075     <span class="comment">% &amp; push it back but keep the 'old ones'??</span>
+0076     <span class="comment">% are they used behind update_multipliers??</span>
+0077   <span class="keyword">end</span>
+0078 
+0079 <span class="keyword">end</span>
+0080 
+0081 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0082 <span class="comment">% stabilize M</span>
+0083 <span class="comment">% only on diag elements: m_ii = |m_ii| + r</span>
+0084 <span class="comment">% where r is given by the norm of the diag</span>
+0085 <span class="comment">% how to access the diagonal of a dense matrix?</span>
+0086 <span class="comment">%   M(1:n+1:end) = newdiag</span>
+0087 <span class="comment">%   iii=1:n+1:n^2; M(iii)=...   [slightly slower]</span>
+0088 <span class="comment">%   or normal for loop</span>
+0089 <a name="_sub1" href="#_subfunctions" class="code">function [M] = m_stabilize(M)</a>
+0090   [n m] = size(M);
+0091   Mdiag = diag(M);
+0092   rStabilize = 1.0e-16*realsqrt(n*norm(Mdiag,2)); 
+0093   M(1:n+1:end) = abs(Mdiag) + rStabilize;
+0094 <span class="keyword">end</span>
+0095 
+0096</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

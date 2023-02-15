@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of solvekkt_ldl</title>
+  <meta name="keywords" content="solvekkt_ldl">
+  <meta name="description" content="A direct solver based on LDL() function in Matlab (version 7.6, R2008a++)">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">source</a> &gt; <a href="index.html">@penlab</a> &gt; solvekkt_ldl.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for source/@penlab&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>solvekkt_ldl
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>A direct solver based on LDL() function in Matlab (version 7.6, R2008a++)</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [x_dir,ueq_dir,nFlag,pert]=solvekkt_ldl(obj,H,A,rhs1,rhs2) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> A direct solver based on LDL() function in Matlab (version 7.6, R2008a++)
+ for indefinite KKT system [H,A; A',0]
+ with inertia control and diagonal perturbations if needed
+ INPUT
+   H, A  ... matrices nxn, nxm respectively forming the system K=[H,A;A',0]
+   rhs1,2... vectors nx1, mx1, right hand side
+ OUTPUT
+   x_dir, ueq_dir ... primal &amp; dual reached solution
+   nFlag ... flag (0..OK, 1..inertia control/ldl() failed)
+   pert ... optional parameter - used perturbation of (1,1) block to make
+      the kkt matrix inertia right
+
+ 'obj' is used for option settings</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="penlab.html" class="code" title="">penlab</a>	PenLab (Pennon Laboratory for Matlab, previously PennonM)</li></ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function [e_pos, e_neg, e_zero] = inertia(D)</a></li></ul>
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [x_dir,ueq_dir,nFlag,pert]=solvekkt_ldl(obj,H,A,rhs1,rhs2)</a>
+0002 <span class="comment">% A direct solver based on LDL() function in Matlab (version 7.6, R2008a++)</span>
+0003 <span class="comment">% for indefinite KKT system [H,A; A',0]</span>
+0004 <span class="comment">% with inertia control and diagonal perturbations if needed</span>
+0005 <span class="comment">% INPUT</span>
+0006 <span class="comment">%   H, A  ... matrices nxn, nxm respectively forming the system K=[H,A;A',0]</span>
+0007 <span class="comment">%   rhs1,2... vectors nx1, mx1, right hand side</span>
+0008 <span class="comment">% OUTPUT</span>
+0009 <span class="comment">%   x_dir, ueq_dir ... primal &amp; dual reached solution</span>
+0010 <span class="comment">%   nFlag ... flag (0..OK, 1..inertia control/ldl() failed)</span>
+0011 <span class="comment">%   pert ... optional parameter - used perturbation of (1,1) block to make</span>
+0012 <span class="comment">%      the kkt matrix inertia right</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% 'obj' is used for option settings</span>
+0015 
+0016 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0017 
+0018   start_time = cputime;
+0019   [n m] = size(A);
+0020 
+0021   LMUPDATE = obj.allopts.pert_update;
+0022   LMLOW = obj.allopts.pert_min;
+0023   PERT_TRY_MAX = obj.allopts.pert_try_max;
+0024   pivot = obj.allopts.ldl_pivot;
+0025 
+0026   <span class="comment">% LDL() with inertia control</span>
+0027   block22=sparse(m,m);
+0028 
+0029   [L,D,perm] = ldl([H,A;A',block22],pivot,<span class="string">'vector'</span>);
+0030   [e_pos, e_neg, e_zero] = <a href="#_sub1" class="code" title="subfunction [e_pos, e_neg, e_zero] = inertia(D)">inertia</a>(D);
+0031 
+0032   pert_try=0;
+0033   lambda=max(obj.chol_lmlast/LMUPDATE, LMLOW);  <span class="comment">% lambda to try if it fails now</span>
+0034   lambda_last=0.;
+0035 
+0036   <span class="keyword">while</span> ((e_zero&gt;0 || e_neg&gt;m) &amp;&amp; pert_try&lt;PERT_TRY_MAX)
+0037     obj.print(4,Inf,<span class="string">'Wrong inertia: %d,%d,%d, new pert: %e'</span>,e_pos,e_neg,e_zero,lambda);
+0038     H = H + (lambda-lambda_last)*speye(n,n);
+0039     [L,D,perm] = ldl([H,A;A',block22],pivot,<span class="string">'vector'</span>);
+0040     [e_pos, e_neg, e_zero] = <a href="#_sub1" class="code" title="subfunction [e_pos, e_neg, e_zero] = inertia(D)">inertia</a>(D);
+0041 
+0042     pert_try = pert_try+1;
+0043     lambda_last=lambda;
+0044     lambda=lambda*LMUPDATE;
+0045   <span class="keyword">end</span>
+0046 
+0047   <span class="keyword">if</span> (pert_try&gt;0)
+0048     obj.chol_lmlast=lambda_last;
+0049   <span class="keyword">end</span>
+0050 
+0051   <span class="comment">% update statistics</span>
+0052   time_factor = cputime-start_time;
+0053   obj.stats_time_fact_last=obj.stats_time_fact_last+time_factor;
+0054   obj.initer_last = obj.initer_last+pert_try+1;
+0055   <span class="keyword">if</span> (nargout&gt;=4)
+0056     pert=lambda_last;
+0057   <span class="keyword">end</span>
+0058   
+0059   <span class="keyword">if</span> (e_zero~=0 || e_neg~=m)
+0060     obj.print(3,Inf,<span class="string">'Inertia control failure, wrong inertia: %d,%d,%d, last pert: %e'</span>,e_pos,e_neg,e_zero,lambda_last);
+0061     nFlag = 1;
+0062     x_dir=zeros(n,1);
+0063     ueq_dir=zeros(m,1);
+0064     <span class="keyword">return</span>;
+0065   <span class="keyword">end</span>
+0066 
+0067   rhs=[rhs1;rhs2];
+0068 <span class="comment">%  dir(perm)=L' \ (D \ (L \ rhs(perm))); % this somehow gives 1x(n+m)</span>
+0069 <span class="comment">%  vector instead of (n+m)x1, WHY ???</span>
+0070   dir=L' \ (D \ (L \ rhs(perm)));
+0071   dir(perm)=dir;
+0072   x_dir=dir(1:n);
+0073   ueq_dir=dir(n+1:n+m);
+0074   time_total=cputime - start_time;
+0075   nFlag=0;
+0076 
+0077   obj.print(4,Inf,<span class="string">'LDL KKT OK, factor in %fs, total %fs, no pert=%i, pert=%.4e'</span>,time_factor, time_total, pert_try, lambda_last);
+0078   <span class="keyword">if</span> (lambda_last&gt;0)
+0079     obj.print(3,4,<span class="string">'LDL KKT solve: OK, pert=%.4e'</span>,lambda_last);
+0080   <span class="keyword">end</span>
+0081 
+0082 <span class="keyword">end</span>
+0083 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0084 
+0085 <a name="_sub1" href="#_subfunctions" class="code">function [e_pos, e_neg, e_zero] = inertia(D)</a>
+0086 <span class="comment">% returns the inertia triplet of matrix D, expects D to be a diagonal/block</span>
+0087 <span class="comment">% diagonal symmetric matrix with at most 2-times-2 blocks on the diagonal</span>
+0088 
+0089   <span class="comment">% simple but perhaps ?slow? way how to do it</span>
+0090   [dim dim2] = size(D);
+0091   e=eig(D);
+0092   e_pos=sum(e&gt;0);
+0093   e_neg=sum(e&lt;0);
+0094   e_zero=dim-e_pos-e_neg;
+0095 
+0096   <span class="keyword">return</span>;
+0097 
+0098   <span class="comment">% faster?? but more complicated way - split it to 1-by-1 / 2-by-2 blocks</span>
+0099   e_pos=0;
+0100   e_neg=0; 
+0101 
+0102   i=1;
+0103   <span class="keyword">while</span> (i&lt;=dim)
+0104     <span class="keyword">if</span> (i&lt;dim &amp;&amp; D(i,i+1))  <span class="comment">% 2-by-2 block</span>
+0105       e=eig(D(i:i+1,i:i+1));
+0106       e_pos = e_pos + sum(e&gt;0);
+0107       e_neg = e_neg + sum(e&lt;0);
+0108       i=i+2;
+0109     <span class="keyword">else</span>           <span class="comment">% 1-by-1 block</span>
+0110       e_pos = e_pos + D(i,i)&gt;0;
+0111       e_neg = e_neg + D(i,i)&lt;0;
+0112       i=i+1;
+0113     <span class="keyword">end</span>
+0114   <span class="keyword">end</span>
+0115   e_zero=dim-e_pos-e_neg;
+0116 
+0117 <span class="keyword">end</span>
+0118</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

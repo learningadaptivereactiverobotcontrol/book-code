@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of yalmip2bmi</title>
+  <meta name="keywords" content="yalmip2bmi">
+  <meta name="description" content="YALMIP2BMI reads the output of YALMIP &quot;export&quot; command and">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">utilities</a> &gt; yalmip2bmi.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for utilities&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>yalmip2bmi
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>YALMIP2BMI reads the output of YALMIP &quot;export&quot; command and</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [bmidata]=yalmip2bmi(yalpen, name) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> YALMIP2BMI reads the output of YALMIP &quot;export&quot; command and
+ converts it into a structure accepted by 
+ PenLab via BMI or PMI modules, for details see manual or
+    modules/BMI/bmi_define.m.
+
+ See also <a href="pen2bmi.html" class="code" title="function [bmidata]=pen2bmi(pen, name)">pen2bmi</a>, ex_yalmip, bmi_define
+
+ Example of using YALMIP2BMI:
+  %YALMIP commands
+    A = [-1 2;-3 -4]; B=-[1;1];
+    P = sdpvar(2,2); K = sdpvar(1,2);
+    F = [(A+B*K)'*P+P*(A+B*K) &lt; -eye(2); P&gt;eye(2)]
+    yalpen=export(F,trace(P),sdpsettings('solver','penbmi'),[],[],1);
+  %PENLAB commands
+    bmi=yalmip2bmi(yalpen);
+    penm = bmi_define(bmi);
+    prob = penlab(penm);
+    solve(prob);</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="pen2bmi.html" class="code" title="function [bmidata]=pen2bmi(pen, name)">pen2bmi</a>	PEN2BMI converts input structure PEN for PENBMI (as described</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [bmidata]=yalmip2bmi(yalpen, name)</a>
+0002 <span class="comment">% YALMIP2BMI reads the output of YALMIP &quot;export&quot; command and</span>
+0003 <span class="comment">% converts it into a structure accepted by</span>
+0004 <span class="comment">% PenLab via BMI or PMI modules, for details see manual or</span>
+0005 <span class="comment">%    modules/BMI/bmi_define.m.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% See also pen2bmi, ex_yalmip, bmi_define</span>
+0008 <span class="comment">%</span>
+0009 <span class="comment">% Example of using YALMIP2BMI:</span>
+0010 <span class="comment">%  %YALMIP commands</span>
+0011 <span class="comment">%    A = [-1 2;-3 -4]; B=-[1;1];</span>
+0012 <span class="comment">%    P = sdpvar(2,2); K = sdpvar(1,2);</span>
+0013 <span class="comment">%    F = [(A+B*K)'*P+P*(A+B*K) &lt; -eye(2); P&gt;eye(2)]</span>
+0014 <span class="comment">%    yalpen=export(F,trace(P),sdpsettings('solver','penbmi'),[],[],1);</span>
+0015 <span class="comment">%  %PENLAB commands</span>
+0016 <span class="comment">%    bmi=yalmip2bmi(yalpen);</span>
+0017 <span class="comment">%    penm = bmi_define(bmi);</span>
+0018 <span class="comment">%    prob = penlab(penm);</span>
+0019 <span class="comment">%    solve(prob);</span>
+0020 
+0021 <span class="comment">% This file is a part of PENLAB package distributed under GPLv3 license</span>
+0022 <span class="comment">% Copyright (c) 2013 by  J. Fiala, M. Kocvara, M. Stingl</span>
+0023 <span class="comment">% Last Modified: 27 Nov 2013</span>
+0024 
+0025 
+0026 
+0027   <span class="keyword">if</span> (nargin&lt;=1)
+0028     name=<span class="string">'BMI2 from convertor pen2bmi2()'</span>;
+0029   <span class="keyword">end</span>
+0030 
+0031   bmidata=<a href="pen2bmi.html" class="code" title="function [bmidata]=pen2bmi(pen, name)">pen2bmi</a>(yalpen.penstruct, name);</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

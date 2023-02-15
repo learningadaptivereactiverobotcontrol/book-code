@@ -1,0 +1,237 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of eval_aldx</title>
+  <meta name="keywords" content="eval_aldx">
+  <meta name="description" content="As eval_alx(), evaluate gradient of the Augmented Lagrangian and Jacobian">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">source</a> &gt; <a href="index.html">@penlab</a> &gt; eval_aldx.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for source/@penlab&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>eval_aldx
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>As eval_alx(), evaluate gradient of the Augmented Lagrangian and Jacobian</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [status] = eval_aldx(obj) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> As eval_alx(), evaluate gradient of the Augmented Lagrangian and Jacobian
+ of the equality constraints. The results are stored in obj.ALdx, obj.eqdx
+ and tickers updated.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="penlab.html" class="code" title="">penlab</a>	PenLab (Pennon Laboratory for Matlab, previously PennonM)</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% As eval_alx(), evaluate gradient of the Augmented Lagrangian and Jacobian</span>
+0002 <span class="comment">% of the equality constraints. The results are stored in obj.ALdx, obj.eqdx</span>
+0003 <span class="comment">% and tickers updated.</span>
+0004 <a name="_sub0" href="#_subfunctions" class="code">function [status] = eval_aldx(obj)</a>
+0005 
+0006   <span class="comment">% status TODO</span>
+0007   status = 0;
+0008 
+0009   <span class="keyword">if</span> (obj.ALdxtck &lt; obj.ticker)
+0010     starttime = cputime;
+0011 
+0012     <span class="comment">% create local copies of obj.x,obj.Y to avoid checking repetitively if they</span>
+0013     <span class="comment">% are 'up-to-date' with obj.xall, they get used many times in calls to</span>
+0014     <span class="comment">% user's functions</span>
+0015     x=obj.x;
+0016     Y=obj.Y;
+0017     <span class="comment">% same for obj.userdata, it might be quite expensive to get&amp;store it in</span>
+0018     <span class="comment">% the object</span>
+0019     userdata=obj.userdata;
+0020 
+0021     <span class="comment">% TODO reuse it + 'pointchanged' flag</span>
+0022     [fx, userdata] = obj.objfun(x, Y, userdata);
+0023     [fdx, userdata] = obj.objgrad(x, Y, userdata);
+0024 
+0025     <span class="comment">% function inequal &amp; equal</span>
+0026     <span class="keyword">if</span> (obj.NgNLN + obj.NgLIN&gt;0)
+0027       [gx, userdata] = obj.confun(x, Y, userdata);
+0028       ineqx = obj.ineqshift + obj.ineqmlt .* gx(obj.ineqmap);
+0029       obj.eqx = obj.eqshift + gx(obj.eqmap);
+0030 
+0031       [gdx, userdata] = obj.congrad(x, Y, userdata);
+0032       <span class="comment">% because of stupid spdiags() which doesn't accept ([],0,0,0)</span>
+0033       <span class="keyword">if</span> (obj.Nineq&gt;0)
+0034         ineqdx = gdx(:,obj.ineqmap) * spdiags(obj.ineqmlt,0,obj.Nineq,obj.Nineq);
+0035       <span class="keyword">else</span>
+0036         ineqdx = [];
+0037       <span class="keyword">end</span>
+0038       <span class="comment">% TODO update ticker eqdx</span>
+0039       obj.eqdx = gdx(:,obj.eqmap);
+0040     <span class="keyword">end</span>
+0041 
+0042     <span class="comment">% box constraints</span>
+0043     <span class="keyword">if</span> (obj.Nxbox&gt;0)
+0044       xboxx = obj.xboxshift + obj.xboxmlt .* obj.xall(obj.xboxmap);
+0045       xboxdx = sparse(obj.xboxmap,[1:obj.Nxbox],obj.xboxmlt,obj.Nx,obj.Nxbox);
+0046     <span class="keyword">end</span>
+0047 
+0048     ALdx=fdx;
+0049     
+0050     <span class="comment">% box constraints</span>
+0051     ind=obj.xboxindbar;
+0052     <span class="keyword">if</span> (~isempty(ind))
+0053       ALdx = ALdx + xboxdx(:,ind)*(obj.uxbox(ind).*obj.pxbox(ind).*obj.phibar_D(xboxx(ind)));
+0054     <span class="keyword">end</span>
+0055 
+0056     ind=obj.xboxindphi;
+0057     <span class="keyword">if</span> (~isempty(ind))
+0058       ALdx = ALdx + xboxdx(:,ind)*(obj.uxbox(ind).*obj.phi2_D(xboxx(ind)./obj.pxbox(ind)));
+0059     <span class="keyword">end</span>
+0060 
+0061     <span class="comment">% function inequalitites</span>
+0062     <span class="comment">%ind=obj.ineqindbar;</span>
+0063     <span class="comment">%... TODO</span>
+0064 
+0065     ind=obj.ineqindphi;
+0066     <span class="keyword">if</span> (~isempty(ind))
+0067       ALdx = ALdx + ineqdx(:,ind)*(obj.uineq(ind).*obj.phi2_D(ineqx(ind)./obj.pineq(ind)));
+0068     <span class="keyword">end</span>
+0069 
+0070     <span class="comment">% (function) equalities</span>
+0071     <span class="keyword">if</span> (obj.Neq&gt;0)
+0072       ALdx = ALdx + obj.eqdx*obj.ueq;
+0073     <span class="keyword">end</span>
+0074 
+0075     <span class="comment">% matrix variable - log barrier (strict feasibility)</span>
+0076     <span class="keyword">if</span> ~isempty(obj.Yboxindbar)
+0077     <span class="keyword">for</span> k=obj.Yboxindbar
+0078       <span class="comment">% convert the matrix box constraint to the form:   +/-Y +/-bound &gt;=0</span>
+0079       pkx=obj.PYbox(k);
+0080       Ykx = Y{obj.Yboxmap(k)};
+0081       Akx=-obj.Yboxshift(k)*speye(size(Ykx)) - obj.Yboxmlt(k)*Ykx;
+0082 
+0083       <span class="comment">% can assume that ALx was computed before ALdx --&gt; Akx must be pos. def.</span>
+0084       chol(Akx);
+0085       invAkx = full(inv(Akx));
+0086 
+0087       <span class="comment">% compute partial derivatives of the penalty term:</span>
+0088       <span class="comment">%    d/dxi... = -p*trace( (A^-1) * (d/dxi A) )</span>
+0089 
+0090       <span class="comment">% there should be just one dependant with obvious value (+-1) in each</span>
+0091       <span class="comment">% triangle of every Y{k} derivative</span>
+0092       mlt=-obj.Yboxmlt(k);  <span class="comment">% +/-1</span>
+0093       mapper=obj.vec2Ymap{obj.Yboxmap(k)};
+0094       dim=mapper.dim;
+0095       offset=obj.Nx + mapper.xmap(1) - 1;
+0096       irow=mapper.irow;
+0097       icol=mapper.icol;
+0098       <span class="keyword">for</span> idx=1:mapper.nelem
+0099         <span class="keyword">if</span> (irow(idx)==icol(idx))
+0100           <span class="comment">% diagonal element</span>
+0101           Akdx = sparse(irow(idx),icol(idx),mlt,dim,dim);
+0102         <span class="keyword">else</span>
+0103           <span class="comment">% nondiag element --&gt; add two</span>
+0104           Akdx = sparse([irow(idx),icol(idx)],[icol(idx),irow(idx)],[mlt,mlt],dim,dim);
+0105         <span class="keyword">end</span>
+0106         <span class="comment">% but this can be done directly...!</span>
+0107         ALdx(offset+idx) = ALdx(offset+idx) - pkx*trace(invAkx*Akdx);
+0108       <span class="keyword">end</span>
+0109 
+0110     <span class="keyword">end</span>
+0111     <span class="keyword">end</span>
+0112 
+0113     <span class="comment">% matrix variable - pen/bar</span>
+0114     <span class="keyword">if</span> ~isempty(obj.Yboxindphi)
+0115     <span class="keyword">for</span> k=obj.Yboxindphi
+0116       pkx=obj.PYbox(k);            <span class="comment">%2*p(sdpdata.Ng+k);</span>
+0117       Ykx = obj.Y{obj.Yboxmap(k)};
+0118       Akx=obj.Yboxshift(k)*speye(size(Ykx)) + obj.Yboxmlt(k)*Ykx;
+0119       umatk=obj.UYbox{k};
+0120 
+0121       <span class="comment">%Z=(pkx*speye(size(Akx))-Akx);</span>
+0122       Z=(pkx*speye(size(Akx))-Akx);
+0123       <span class="comment">%invZ=inv(Z);</span>
+0124       invZ=full(inv(Z));
+0125       pZUZ=pkx^2*invZ*umatk*invZ;
+0126 
+0127       <span class="comment">% there should be just one dependant with obvious value (+-1) in each</span>
+0128       <span class="comment">% triangle of every Y{k} derivative</span>
+0129       mlt=obj.Yboxmlt(k);  <span class="comment">% +/-1</span>
+0130       mapper=obj.vec2Ymap{obj.Yboxmap(k)};
+0131       dim=mapper.dim;
+0132       offset=obj.Nx + mapper.xmap(1) - 1;
+0133       irow=mapper.irow;
+0134       icol=mapper.icol;
+0135       <span class="keyword">for</span> idx=1:mapper.nelem
+0136         <span class="keyword">if</span> (irow(idx)==icol(idx))
+0137           <span class="comment">% diagonal element</span>
+0138           Akdx = sparse(irow(idx),icol(idx),mlt,dim,dim);
+0139         <span class="keyword">else</span>
+0140           <span class="comment">% nondiag element --&gt; add two</span>
+0141           Akdx = sparse([irow(idx),icol(idx)],[icol(idx),irow(idx)],[mlt,mlt],dim,dim);
+0142         <span class="keyword">end</span>
+0143         <span class="comment">% but this can be done directly...!</span>
+0144         ALdx(offset+idx) = ALdx(offset+idx) + trace(pZUZ*Akdx);
+0145       <span class="keyword">end</span>
+0146     <span class="keyword">end</span>
+0147     <span class="keyword">end</span>
+0148 
+0149     <span class="comment">% matrix constraints - pen/bar</span>
+0150     <span class="keyword">if</span> ~isempty(obj.Aindphi)
+0151     <span class="keyword">for</span> k=obj.Aindphi
+0152       pkx=obj.PA(k);  <span class="comment">% I used to use 2*         !!!!!!!!</span>
+0153       <span class="comment">% TODO need to map the matrix first! - is it correct???</span>
+0154       kuser=obj.Amap(k);
+0155       [Akuserx, userdata] = obj.mconfun(x, Y, kuser, userdata);
+0156       Akx = obj.Ashift(k)*speye(size(Akuserx)) + obj.Amlt(k) .* Akuserx;
+0157       umatk=obj.UA{k};
+0158 
+0159       <span class="comment">%Z=(pkx*speye(size(Akx))-Akx);</span>
+0160       Z=(pkx*speye(size(Akx))-Akx);
+0161       <span class="comment">%invZ=inv(Z);</span>
+0162       invZ=full(inv(Z));
+0163       pZUZ=pkx^2*invZ*umatk*invZ;
+0164       
+0165       <span class="comment">% MAPPING &amp; transformation !!!</span>
+0166       <span class="keyword">for</span> i=obj.Adep{kuser}
+0167         [Akdx, userdata] = obj.mcongrad(x,Y,kuser,i,userdata);
+0168         Akdx = obj.Amlt(k)*Akdx;
+0169         <span class="comment">%ALdx(i) = ALdx(i) + trace(pZUZ*Akdx);</span>
+0170         ALdx(i) = ALdx(i) + pZUZ(:)'*Akdx(:);
+0171       <span class="keyword">end</span>
+0172     <span class="keyword">end</span>
+0173     <span class="keyword">end</span>
+0174 
+0175     <span class="comment">% store user's data back in the object if it got changed</span>
+0176     obj.userdata=userdata;
+0177 
+0178     <span class="comment">% update ticker</span>
+0179     obj.ALdx = ALdx;
+0180     obj.ALdxtck = obj.ticker;
+0181 
+0182     <span class="comment">% update stats</span>
+0183     obj.stats_ncall_aldx = obj.stats_ncall_aldx + 1;
+0184     obj.stats_time_aldx = obj.stats_time_aldx + cputime - starttime;
+0185 
+0186   <span class="keyword">end</span>
+0187 
+0188</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

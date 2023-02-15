@@ -1,0 +1,183 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of unconstr_min</title>
+  <meta name="keywords" content="unconstr_min">
+  <meta name="description" content="unconstrained minimization">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">source</a> &gt; <a href="index.html">@penlab</a> &gt; unconstr_min.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for source/@penlab&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>unconstr_min
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>unconstrained minimization</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [nFlag,rResults]=unconstr_min(obj) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> unconstrained minimization
+ returns in rResults=[aug_lagr(xBest),norm(grad(xBest)), norm(grad(x_0))]
+
+ obj() etc. should work with one parameter x and return first parameter value/grad/hess
+ expects an open nl-file?, N, N_EQUAL, ... global variables
+
+ in the structure called 'fnc' there should be obj, obj_grad, obj_hess - functions to evaluate
+ the equality constrainted problem</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="penlab.html" class="code" title="">penlab</a>	PenLab (Pennon Laboratory for Matlab, previously PennonM)</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [nFlag,rResults]=unconstr_min(obj)</a>
+0002 <span class="comment">% unconstrained minimization</span>
+0003 <span class="comment">% returns in rResults=[aug_lagr(xBest),norm(grad(xBest)), norm(grad(x_0))]</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% obj() etc. should work with one parameter x and return first parameter value/grad/hess</span>
+0006 <span class="comment">% expects an open nl-file?, N, N_EQUAL, ... global variables</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% in the structure called 'fnc' there should be obj, obj_grad, obj_hess - functions to evaluate</span>
+0009 <span class="comment">% the equality constrainted problem</span>
+0010 
+0011 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0012 
+0013   starttime=cputime;
+0014   <span class="comment">% reset default parameters if necessary</span>
+0015   MAX_MITER = obj.allopts.max_inner_iter;
+0016   ALPHA = obj.allopts.inner_stop_limit;
+0017   TOL_DIR = obj.allopts.unc_dir_stop_limit;
+0018   solver = obj.allopts.unc_solver;
+0019   linesearch = obj.allopts.unc_linesearch;
+0020 
+0021   miter=0;
+0022 
+0023   <span class="comment">% x0 = xall as a starting point</span>
+0024   <span class="comment">%fx=fnc.obj(x);</span>
+0025   <span class="comment">%gradx=fnc.obj_grad(x);</span>
+0026   obj.eval_alx();
+0027   obj.eval_aldx();
+0028   fx_start = obj.ALx;
+0029   rNormG = norm(obj.ALdx);
+0030   rNormG_start = rNormG;
+0031 
+0032   obj.print(3,Inf,<span class="string">'object(x_%3i) = %24.16E'</span>,miter,obj.ALx);
+0033   obj.print(3,Inf,<span class="string">'||grad(x)||_2 = %24.16E'</span>,rNormG);
+0034   obj.print(4,Inf,<span class="string">'        --- start of inner iter ---'</span>);
+0035   obj.print(4,Inf,<span class="string">' '</span>);
+0036   obj.print(3,4,<span class="string">'     ----'</span>);
+0037 
+0038   nFlag=1; <span class="comment">% max it limit reached</span>
+0039   rResults=[];
+0040   obj.initer_last=0;
+0041   obj.lsiter_last=0;
+0042   obj.stats_time_fact_last=0;
+0043 
+0044     <span class="keyword">while</span> (miter &lt; MAX_MITER)
+0045 
+0046       <span class="comment">%hessx=fnc.obj_hess(x);</span>
+0047       obj.eval_alddx();
+0048 
+0049       <span class="comment">%%%%%%%% Newton solver %%%%%%%%%</span>
+0050       <span class="keyword">switch</span> solver
+0051       <span class="keyword">case</span> 0  <span class="comment">% (Modified) Cholesky factorization</span>
+0052     [dir,nFlagSol] = obj.solve_chol(obj.ALddx,-obj.ALdx);
+0053       <span class="comment">%case 1  % CG+??</span>
+0054       <span class="comment">%case   %</span>
+0055       <span class="comment">%case   %</span>
+0056       <span class="keyword">otherwise</span>
+0057         obj.print(1,Inf,<span class="string">'unconstr_min() error: Sorry, no such solver, terminating...'</span>);
+0058     nFlag=100;
+0059     <span class="keyword">break</span>;
+0060       <span class="keyword">end</span>
+0061 
+0062       <span class="keyword">if</span> (nFlagSol&gt;0)
+0063         nFlag=2; <span class="comment">% solver failed, cannot continue</span>
+0064     obj.print(3,Inf,<span class="string">'FAILURE: Newton solver (%i) cannot continue (flag %i)'</span>,solver,nFlagSol);
+0065         <span class="keyword">break</span>;
+0066       <span class="keyword">end</span>
+0067 
+0068       <span class="comment">%%%%%%%% linesearch %%%%%%%%%</span>
+0069       <span class="keyword">switch</span> linesearch
+0070       <span class="keyword">case</span> 0  <span class="comment">% Do nothing, leave original data</span>
+0071      <span class="comment">% such as x, grad_x (useful for TR, ...)</span>
+0072         nFlagLS = 0;
+0073       <span class="keyword">case</span> 1  <span class="comment">% Do full steps, no linesearch at all</span>
+0074         [rRelStep, nFlagLS] = obj.ls_fullstep(dir);
+0075       <span class="keyword">case</span> 2  <span class="comment">% Armijo linesearch</span>
+0076         [rRelStep, nFlagLS] = obj.ls_armijo(dir);
+0077       <span class="keyword">case</span> 3  <span class="comment">% Pennlp/Pennon (&quot;els) linesearch</span>
+0078         [rRelStep, nFlagLS] = obj.ls_pennon(dir);
+0079       <span class="comment">%case   %</span>
+0080       <span class="keyword">otherwise</span>
+0081         obj.print(1,Inf,<span class="string">'unconstr_min() error: Sorry, no such LS, terminating...'</span>);
+0082     nFlag=100;
+0083     <span class="keyword">break</span>;
+0084       <span class="keyword">end</span>
+0085 
+0086       <span class="keyword">if</span> (nFlagLS&gt;0)
+0087         nFlag=3; <span class="comment">% LS failed, cannot continue</span>
+0088     obj.print(3,Inf,<span class="string">'FAILURE: Linesearch (%i) cannot continue (flag %i)'</span>,linesearch,nFlagLS);
+0089         <span class="keyword">break</span>;
+0090       <span class="keyword">end</span>
+0091 
+0092       <span class="comment">%%%%%%%% %%%%%%%%%</span>
+0093       rNormG = norm(obj.ALdx);
+0094       miter=miter+1;
+0095 
+0096       obj.print(4,Inf,<span class="string">' '</span>);
+0097       obj.print(3,Inf,<span class="string">'object(x_%3i) = %24.16E'</span>,miter,obj.ALx);
+0098       obj.print(3,Inf,<span class="string">'||grad(x)||_2 = %24.16E'</span>,rNormG);
+0099       obj.print(4,Inf,<span class="string">'        --- end of %3i in. iter ---\n'</span>,miter);
+0100       obj.print(3,4,<span class="string">'     ----'</span>);
+0101 
+0102       <span class="comment">%%%%%%%% stopping criterion %%%%%%%%%</span>
+0103       <span class="comment">% just make it simple at the begining</span>
+0104       <span class="keyword">if</span> (rNormG &lt; ALPHA)
+0105         nFlag=0;
+0106     <span class="keyword">break</span>;
+0107       <span class="keyword">end</span>
+0108 
+0109     <span class="keyword">end</span> <span class="comment">% of while</span>
+0110 
+0111   <span class="keyword">if</span> (nFlag==1)
+0112     obj.print(3,Inf,<span class="string">'FAILURE: Unconstr minimization max iter (%i) reached.'</span>,miter);
+0113   <span class="keyword">elseif</span> (nFlag==0)
+0114     obj.print(4,Inf,<span class="string">'Unconstr min OK'</span>);
+0115   <span class="keyword">end</span>
+0116 
+0117   rResults=[obj.ALx,rNormG, rNormG_start];
+0118 
+0119   <span class="comment">% update stats</span>
+0120   obj.initer = obj.initer+obj.initer_last;
+0121   obj.lsiter = obj.lsiter+obj.lsiter_last;
+0122   obj.miter=obj.miter+miter;
+0123   obj.miter_last=miter;
+0124   obj.stats_time_miter_last = cputime - starttime;
+0125   obj.stats_time_miters = obj.stats_time_miters + obj.stats_time_miter_last;
+0126   obj.stats_time_fact = obj.stats_time_fact + obj.stats_time_fact_last;
+0127 
+0128   <span class="keyword">return</span>;
+0129</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

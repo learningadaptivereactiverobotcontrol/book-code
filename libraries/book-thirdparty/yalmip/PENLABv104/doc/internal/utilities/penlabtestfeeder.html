@@ -1,0 +1,315 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of penlabtestfeeder</title>
+  <meta name="keywords" content="penlabtestfeeder">
+  <meta name="description" content="PENLABTESTFEEDER sets up one test to be run at a time.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">utilities</a> &gt; penlabtestfeeder.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for utilities&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>penlabtestfeeder
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>PENLABTESTFEEDER sets up one test to be run at a time.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [status,name,prob,res] = penlabtestfeeder(no,testset) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> PENLABTESTFEEDER sets up one test to be run at a time.
+
+ INPUT:
+   no - number of the test problem, 1..length(testset)
+   testset - (optional) is a list of all tests, their type
+        and the location of the datafile; if not set
+        the default selection of tests is used.
+
+ OUTPUT:
+   status - 0  = test is set up;
+            &lt;0 = problem with initialization of the requested test;
+            1  = wrong test number (maximal no of tests reached?)
+   name - name of the problem, this is used to show with the result
+   prob - if status==0, penlab structure with the test, otherwise []
+   res - expected result (objective function at the solution) or []
+
+ Description of the testset: TODO (see to the default one below at the moment)
+
+ See also <a href="penlabstresstest.html" class="code" title="function [] = penlabstresstest(feeder,timestats,logs)">penlabstresstest</a></pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="readsdpa.html" class="code" title="function sdpdata = readsdpa(filename);">readsdpa</a>	READSDPA - Read a linear SDP problem from a Sparse SDPA file</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="penlabstresstest.html" class="code" title="function [] = penlabstresstest(feeder,timestats,logs)">penlabstresstest</a>	PENLABSTRESSTEST runs a series of tests on the solver.</li></ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function [status,name,prob] = sdpa_feeder(sdpafile)</a></li><li><a href="#_sub2" class="code">function [status,name,prob] = bmi_feeder(bmifile)</a></li><li><a href="#_sub3" class="code">function [status,name,prob] = pmi_feeder(pmifile)</a></li><li><a href="#_sub4" class="code">function [status,name,prob] = ampl_feeder(amplfile)</a></li></ul>
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [status,name,prob,res] = penlabtestfeeder(no,testset)</a>
+0002 <span class="comment">% PENLABTESTFEEDER sets up one test to be run at a time.</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% INPUT:</span>
+0005 <span class="comment">%   no - number of the test problem, 1..length(testset)</span>
+0006 <span class="comment">%   testset - (optional) is a list of all tests, their type</span>
+0007 <span class="comment">%        and the location of the datafile; if not set</span>
+0008 <span class="comment">%        the default selection of tests is used.</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% OUTPUT:</span>
+0011 <span class="comment">%   status - 0  = test is set up;</span>
+0012 <span class="comment">%            &lt;0 = problem with initialization of the requested test;</span>
+0013 <span class="comment">%            1  = wrong test number (maximal no of tests reached?)</span>
+0014 <span class="comment">%   name - name of the problem, this is used to show with the result</span>
+0015 <span class="comment">%   prob - if status==0, penlab structure with the test, otherwise []</span>
+0016 <span class="comment">%   res - expected result (objective function at the solution) or []</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">% Description of the testset: TODO (see to the default one below at the moment)</span>
+0019 <span class="comment">%</span>
+0020 <span class="comment">% See also penlabstresstest</span>
+0021 <span class="comment">%</span>
+0022 
+0023 <span class="comment">% This file is a part of PENLAB package distributed under GPLv3 license</span>
+0024 <span class="comment">% Copyright (c) 2013 by  J. Fiala, M. Kocvara, M. Stingl</span>
+0025 <span class="comment">% Last Modified: 3/12/2013</span>
+0026 
+0027   <span class="keyword">if</span> (nargin&lt;1)
+0028     no = 0;
+0029   <span class="keyword">end</span>
+0030 
+0031   <span class="keyword">if</span> (nargin&lt;2)
+0032     <span class="comment">% create the default testset</span>
+0033     <span class="comment">% TODO later expand with (optional) expected result (e.g., the objective)</span>
+0034     testset = { <span class="keyword">...</span>
+0035       { <span class="string">'sdpa'</span>, <span class="string">'datafiles/control1.dat-s'</span>, 1.778463e+01 }, <span class="keyword">...</span>
+0036       { <span class="string">'sdpa'</span>, <span class="string">'datafiles/control2.dat-s'</span>, 8.300000e+00 }, <span class="keyword">...</span>
+0037       { <span class="string">'sdpa'</span>, <span class="string">'datafiles/theta1.dat-s'</span>, 2.300000e+01 }, <span class="keyword">...</span>
+0038       { <span class="string">'sdpa'</span>, <span class="string">'datafiles/theta2.dat-s'</span>, 3.287917e+01 }, <span class="keyword">...</span>
+0039       { <span class="string">'sdpa'</span>, <span class="string">'datafiles/truss1.dat-s'</span>, -8.999996e+00 }, <span class="keyword">...</span>
+0040       { <span class="string">'sdpa'</span>, <span class="string">'datafiles/arch0.dat-s'</span>, 5.66517e-01 }, <span class="keyword">...</span>
+0041       { <span class="string">'sdpa'</span>, <span class="string">'datafiles/mcp100.dat-s'</span>, 2.261574e+02 }, <span class="keyword">...</span>
+0042       { <span class="string">'ampl'</span>, <span class="string">'datafiles/camshape100.nl'</span> }, <span class="keyword">...</span>
+0043       { <span class="string">'ampl'</span>, <span class="string">'datafiles/chain100.nl'</span> }, <span class="keyword">...</span>
+0044       { <span class="string">'ampl'</span>, <span class="string">'datafiles/cosine.nl'</span> }, <span class="keyword">...</span>
+0045       { <span class="string">'ampl'</span>, <span class="string">'datafiles/israel.nl'</span> }, <span class="keyword">...</span>
+0046       { <span class="string">'ampl'</span>, <span class="string">'datafiles/polygon25.nl'</span> }, <span class="keyword">...</span>
+0047       { <span class="string">'ampl'</span>, <span class="string">'datafiles/seba.nl'</span> }, <span class="keyword">...</span>
+0048       { <span class="string">'bmi'</span>, <span class="string">'datafiles/bmi_example.mat'</span> }, <span class="keyword">...</span>
+0049       { <span class="string">'bmi'</span>, <span class="string">'datafiles/bmi_f4e.mat'</span> }, <span class="keyword">...</span>
+0050       { <span class="string">'bmi'</span>, <span class="string">'datafiles/bmi_interval1_0.mat'</span> }, <span class="keyword">...</span>
+0051       { <span class="string">'bmi'</span>, <span class="string">'datafiles/bmi_interval1_1.mat'</span> }, <span class="keyword">...</span>
+0052       { <span class="string">'bmi'</span>, <span class="string">'datafiles/bmi_interval2_0.mat'</span> }, <span class="keyword">...</span>
+0053       { <span class="string">'bmi'</span>, <span class="string">'datafiles/bmi_interval2_1.mat'</span> }, <span class="keyword">...</span>
+0054       { <span class="string">'bmi'</span>, <span class="string">'datafiles/bmi_jia.mat'</span> }, <span class="keyword">...</span>
+0055       { <span class="string">'bmi'</span>, <span class="string">'datafiles/bmi_patel5.mat'</span> }, <span class="keyword">...</span>
+0056       { <span class="string">'bmi'</span>, <span class="string">'datafiles/bmi_toy2.mat'</span> }, <span class="keyword">...</span>
+0057       { <span class="string">'pmi'</span>, <span class="string">'datafiles/pmi_example.mat'</span> }, <span class="keyword">...</span>
+0058       { <span class="string">'pmi'</span>, <span class="string">'datafiles/pmi_AC1.mat'</span> }, <span class="keyword">...</span>
+0059       { <span class="string">'pmi'</span>, <span class="string">'datafiles/pmi_NN4.mat'</span> }, <span class="keyword">...</span>
+0060     };
+0061     <span class="comment">% { 'bmi', 'datafiles/bmi_helicopter.mat' }, ...</span>
+0062     <span class="comment">% { 'sdpa', 'datafiles/maxG11.dat-s' }, ...</span>
+0063     <span class="comment">% { 'bmi', 'datafiles/bmi_toy1.mat' }, ...</span>
+0064   <span class="keyword">end</span>
+0065 
+0066   ntests = length(testset);
+0067   <span class="keyword">if</span> (no&lt;1 || no&gt;ntests)
+0068     status = 1;
+0069     name = <span class="string">'NONEXISTENT'</span>;
+0070     prob = [];
+0071     res = [];
+0072     <span class="keyword">return</span>;
+0073   <span class="keyword">end</span>
+0074 
+0075   test = testset{no};
+0076   <span class="keyword">if</span> (length(test)&gt;=3)
+0077     res = test{3};
+0078   <span class="keyword">else</span>
+0079     res = [];
+0080   <span class="keyword">end</span>
+0081   <span class="keyword">if</span> (strcmpi(test{1},<span class="string">'sdpa'</span>))
+0082     [status,name,prob] = <a href="#_sub1" class="code" title="subfunction [status,name,prob] = sdpa_feeder(sdpafile)">sdpa_feeder</a>(test{2});
+0083   <span class="keyword">elseif</span> (strcmpi(test{1},<span class="string">'bmi'</span>))
+0084     [status,name,prob] = <a href="#_sub2" class="code" title="subfunction [status,name,prob] = bmi_feeder(bmifile)">bmi_feeder</a>(test{2});
+0085   <span class="keyword">elseif</span> (strcmpi(test{1},<span class="string">'pmi'</span>))
+0086     [status,name,prob] = <a href="#_sub3" class="code" title="subfunction [status,name,prob] = pmi_feeder(pmifile)">pmi_feeder</a>(test{2});
+0087   <span class="keyword">elseif</span> (strcmpi(test{1},<span class="string">'ampl'</span>))
+0088     [status,name,prob] = <a href="#_sub4" class="code" title="subfunction [status,name,prob] = ampl_feeder(amplfile)">ampl_feeder</a>(test{2});
+0089   <span class="keyword">else</span>
+0090     <span class="comment">% unknown test type</span>
+0091     status = -10;
+0092     name = <span class="string">'unknowntype'</span>;
+0093     prob = [];
+0094     res = [];
+0095     <span class="keyword">return</span>;
+0096   <span class="keyword">end</span>
+0097 
+0098 <span class="keyword">end</span>
+0099 
+0100 <a name="_sub1" href="#_subfunctions" class="code">function [status,name,prob] = sdpa_feeder(sdpafile)</a>
+0101 <span class="comment">% SDPA_FEEDER reads Linear SDP problem from a SDPA file into penlab object.</span>
+0102 <span class="comment">% Returns</span>
+0103 <span class="comment">%   status~=0 if the file doesn't exist or there is a formating error,</span>
+0104 <span class="comment">%     or any other error with initialization, otherwise 0 if all OK</span>
+0105 <span class="comment">%   name name of the problem (basename of the SDPA data file)</span>
+0106 <span class="comment">%   prob penlab object</span>
+0107 <span class="comment">%</span>
+0108 
+0109   <span class="keyword">if</span> (isempty(sdpafile) || ~ischar(sdpafile))
+0110     status = -2;
+0111     name = <span class="string">'EMPTY'</span>;
+0112     prob = [];
+0113     <span class="keyword">return</span>;
+0114   <span class="keyword">end</span>
+0115 
+0116   [path,name,ext] = fileparts(sdpafile);
+0117 
+0118   <span class="keyword">try</span> 
+0119     sdpdata = <a href="readsdpa.html" class="code" title="function sdpdata = readsdpa(filename);">readsdpa</a>(sdpafile);
+0120   <span class="keyword">catch</span>
+0121     status = -1;
+0122     prob = [];
+0123     <span class="keyword">return</span>;
+0124   <span class="keyword">end</span>
+0125 
+0126   <span class="keyword">try</span>
+0127     penm = sdp_define(sdpdata);
+0128     prob = penlab(penm);
+0129     status = 0;
+0130   <span class="keyword">catch</span>
+0131     status = -3;
+0132     prob = [];
+0133   <span class="keyword">end</span>
+0134 
+0135 <span class="keyword">end</span>
+0136 
+0137 <a name="_sub2" href="#_subfunctions" class="code">function [status,name,prob] = bmi_feeder(bmifile)</a>
+0138 <span class="comment">% BMI_FEEDER loads bmidata from Matlab mat-file into penlab object.</span>
+0139 <span class="comment">% Returns</span>
+0140 <span class="comment">%   status~=0 if the file doesn't exist or there is a formating error,</span>
+0141 <span class="comment">%     or any other error with initialization, otherwise 0 if all OK</span>
+0142 <span class="comment">%   name name of the problem (basename of the data file)</span>
+0143 <span class="comment">%   prob penlab object</span>
+0144 <span class="comment">%</span>
+0145 
+0146   <span class="keyword">if</span> (isempty(bmifile) || ~ischar(bmifile))
+0147     status = -2;
+0148     name = <span class="string">'EMPTY'</span>;
+0149     prob = [];
+0150     <span class="keyword">return</span>;
+0151   <span class="keyword">end</span>
+0152 
+0153   [path,name,ext] = fileparts(bmifile);
+0154 
+0155   <span class="keyword">try</span> 
+0156     <span class="comment">% this mat-file should store bmidata struct</span>
+0157     load(bmifile);
+0158   <span class="keyword">catch</span>
+0159     status = -1;
+0160     prob = [];
+0161     <span class="keyword">return</span>;
+0162   <span class="keyword">end</span>
+0163 
+0164   <span class="keyword">try</span>
+0165     penm = bmi_define(bmidata);
+0166     prob = penlab(penm);
+0167     status = 0;
+0168   <span class="keyword">catch</span>
+0169     status = -3;
+0170     prob = [];
+0171   <span class="keyword">end</span>
+0172 
+0173 <span class="keyword">end</span>
+0174 
+0175 <a name="_sub3" href="#_subfunctions" class="code">function [status,name,prob] = pmi_feeder(pmifile)</a>
+0176 <span class="comment">% PMI_FEEDER loads pmidata from Matlab mat-file into penlab object.</span>
+0177 <span class="comment">% Returns</span>
+0178 <span class="comment">%   status~=0 if the file doesn't exist or there is a formating error,</span>
+0179 <span class="comment">%     or any other error with initialization, otherwise 0 if all OK</span>
+0180 <span class="comment">%   name name of the problem (basename of the data file)</span>
+0181 <span class="comment">%   prob penlab object</span>
+0182 <span class="comment">%</span>
+0183 
+0184   <span class="keyword">if</span> (isempty(pmifile) || ~ischar(pmifile))
+0185     status = -2;
+0186     name = <span class="string">'EMPTY'</span>;
+0187     prob = [];
+0188     <span class="keyword">return</span>;
+0189   <span class="keyword">end</span>
+0190 
+0191   [path,name,ext] = fileparts(pmifile);
+0192 
+0193   <span class="keyword">try</span> 
+0194     <span class="comment">% this mat-file should store pmidata struct</span>
+0195     load(pmifile);
+0196   <span class="keyword">catch</span>
+0197     status = -1;
+0198     prob = [];
+0199     <span class="keyword">return</span>;
+0200   <span class="keyword">end</span>
+0201 
+0202   <span class="keyword">try</span>
+0203     penm = pmi_define(pmidata);
+0204     prob = penlab(penm);
+0205     status = 0;
+0206   <span class="keyword">catch</span>
+0207     status = -3;
+0208     prob = [];
+0209   <span class="keyword">end</span>
+0210 
+0211 <span class="keyword">end</span>
+0212 
+0213 <a name="_sub4" href="#_subfunctions" class="code">function [status,name,prob] = ampl_feeder(amplfile)</a>
+0214 <span class="comment">% AMPL_FEEDER reads AMPL nl file and sets up a penlab object.</span>
+0215 <span class="comment">% Returns</span>
+0216 <span class="comment">%   status~=0 if the file doesn't exist or there is a formating error,</span>
+0217 <span class="comment">%     or any other error with initialization, otherwise 0 if all OK</span>
+0218 <span class="comment">%   name name of the problem (basename of the data file)</span>
+0219 <span class="comment">%   prob penlab object</span>
+0220 <span class="comment">%</span>
+0221 
+0222   <span class="keyword">if</span> (isempty(amplfile) || ~ischar(amplfile))
+0223     status = -2;
+0224     name = <span class="string">'EMPTY'</span>;
+0225     prob = [];
+0226     <span class="keyword">return</span>;
+0227   <span class="keyword">end</span>
+0228 
+0229   [path,name,ext] = fileparts(amplfile);
+0230 
+0231   <span class="keyword">try</span> 
+0232     penm = nlp_define(amplfile);
+0233   <span class="keyword">catch</span>
+0234     status = -1;
+0235     prob = [];
+0236     <span class="keyword">return</span>;
+0237   <span class="keyword">end</span>
+0238 
+0239   <span class="keyword">try</span>
+0240     prob = penlab(penm);
+0241     status = 0;
+0242   <span class="keyword">catch</span>
+0243     status = -3;
+0244     prob = [];
+0245   <span class="keyword">end</span>
+0246 
+0247 <span class="keyword">end</span>
+0248</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

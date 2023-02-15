@@ -1,0 +1,138 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of get_maxstep</title>
+  <meta name="keywords" content="get_maxstep">
+  <meta name="description" content="Computes the maximal step length at point 'x' in direction 'dir'">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">source</a> &gt; <a href="index.html">@penlab</a> &gt; get_maxstep.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for source/@penlab&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>get_maxstep
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Computes the maximal step length at point 'x' in direction 'dir'</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [rRelLength] = get_maxstep(obj,x,dir,varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Computes the maximal step length at point 'x' in direction 'dir'
+ to be still in the inner area of barriered constraints
+ At the moment, the only supported constraints in a barrier are
+ box constraints. For others it is necessary to change this func.
+
+ Function has to be initiated from the outer loop level (where constraints
+ are not composed to the augmented Lagrangian yet). To init call:
+ get_maxstep(x,[],barind,gx,dgx);
+ where 'barind' is a list of indicies of the constraints in the barrier,
+ gx, dgx are function and gradient values of inequality constraints
+
+ After the initialization it is possible to use the function in
+ the inner loop: rMaxStep=get_maxstep(x,dir);
+ The step length is limited to maximal length 1.0.
+
+ If the function is not initializated or no restrictions are given,
+ returns 1.0 always.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [rRelLength] = get_maxstep(obj,x,dir,varargin)</a>
+0002 <span class="comment">% Computes the maximal step length at point 'x' in direction 'dir'</span>
+0003 <span class="comment">% to be still in the inner area of barriered constraints</span>
+0004 <span class="comment">% At the moment, the only supported constraints in a barrier are</span>
+0005 <span class="comment">% box constraints. For others it is necessary to change this func.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% Function has to be initiated from the outer loop level (where constraints</span>
+0008 <span class="comment">% are not composed to the augmented Lagrangian yet). To init call:</span>
+0009 <span class="comment">% get_maxstep(x,[],barind,gx,dgx);</span>
+0010 <span class="comment">% where 'barind' is a list of indicies of the constraints in the barrier,</span>
+0011 <span class="comment">% gx, dgx are function and gradient values of inequality constraints</span>
+0012 <span class="comment">%</span>
+0013 <span class="comment">% After the initialization it is possible to use the function in</span>
+0014 <span class="comment">% the inner loop: rMaxStep=get_maxstep(x,dir);</span>
+0015 <span class="comment">% The step length is limited to maximal length 1.0.</span>
+0016 <span class="comment">%</span>
+0017 <span class="comment">% If the function is not initializated or no restrictions are given,</span>
+0018 <span class="comment">% returns 1.0 always.</span>
+0019 <span class="comment">%</span>
+0020 
+0021 <span class="comment">%</span>
+0022 <span class="comment">% last update: 10/08/2009</span>
+0023 <span class="comment">%</span>
+0024 
+0025   error(<span class="string">'not adjusted for PenLab yet.'</span>);
+0026   <span class="comment">% all considered barriered constraints are of the form: +/-1*x_i + c_j&lt;=0</span>
+0027   <span class="comment">% the j-th constraint is: xsgn(j) * x(xidx(j)) + constants(j) &lt;=0</span>
+0028   <span class="keyword">persistent</span> no_bconst;  <span class="comment">% number of these (barriered) constraints</span>
+0029   <span class="keyword">persistent</span> constants;  <span class="comment">% constants c_j, j=1:no_constr</span>
+0030   <span class="keyword">persistent</span> xidx;       <span class="comment">% there is x(xidx(j)) in the j-th constraint</span>
+0031   <span class="keyword">persistent</span> xsgn;       <span class="comment">%   ... with sign xsgn(j)</span>
+0032 
+0033   <span class="comment">% distance from the boundary?</span>
+0034   bound_margin = 0.95;
+0035 
+0036   <span class="comment">% initialization</span>
+0037   <span class="keyword">if</span> (size(varargin,2) &gt; 0)
+0038     rRelLength=1.0;  <span class="comment">% doesn't really matter</span>
+0039     <span class="keyword">if</span> (size(varargin,2) ~= 3)
+0040       pen_out(5,Inf,<span class="string">'Error@get_maxstep.m: Inconsistant call, user error?'</span>);
+0041       <span class="keyword">return</span>;
+0042     <span class="keyword">end</span>
+0043     barind=varargin{1};
+0044     gx=varargin{2};
+0045     dgx=varargin{3};
+0046 
+0047     no_bconst=length(barind);
+0048     <span class="keyword">if</span> (no_bconst~=0)
+0049       [xidx,col_ignore,xsgn]=find(dgx(:,barind));
+0050       <span class="comment">% in each column there should be exactly one entry +1 or -1</span>
+0051       <span class="comment">% in the row appropriate to the index of 'x'</span>
+0052       <span class="comment">% sorted column-wise</span>
+0053       constants=gx(barind)-xsgn.*x(xidx);
+0054     <span class="keyword">else</span>
+0055       constants=[];
+0056       xidx=[];
+0057       xsgn=[];
+0058     <span class="keyword">end</span>
+0059     <span class="keyword">return</span>;
+0060   <span class="keyword">end</span>
+0061 
+0062   <span class="comment">% normal usage - no restriction/not init</span>
+0063   <span class="keyword">if</span> (isempty(no_bconst) || no_bconst==0)
+0064     rRelLength = 1.0;
+0065     <span class="keyword">return</span>;
+0066   <span class="keyword">end</span>
+0067 
+0068   <span class="comment">% normal usage - restrictions apply</span>
+0069   sdir=xsgn.*dir(xidx);
+0070   idx=find(sdir &gt; 0);
+0071   rRelLength=min([-bound_margin*(constants(idx) + xsgn(idx).*x(xidx(idx)))./sdir(idx); 1.0]);
+0072   <span class="comment">%rRelLength=min(1.0, rRelLength);</span>
+0073 
+0074   <span class="keyword">return</span>;
+0075</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

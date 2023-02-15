@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of vec2Y</title>
+  <meta name="keywords" content="vec2Y">
+  <meta name="description" content="Map 'vectorized' matrix decision variables back to cell array of matrices Y">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">source</a> &gt; <a href="index.html">@penlab</a> &gt; vec2Y.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for source/@penlab&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>vec2Y
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Map 'vectorized' matrix decision variables back to cell array of matrices Y</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function  Y=vec2Y(obj, vec) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Map 'vectorized' matrix decision variables back to cell array of matrices Y
+ by usage of obj.vec2Ymap, see createY1map() for details 
+   vec  ... vector of length obj.NYnnz
+   Y  ... cell array obj.NY x 1 with filled in 'vec' to the proper nnz places
+       Y is returned as symmetric</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="penlab.html" class="code" title="">penlab</a>	PenLab (Pennon Laboratory for Matlab, previously PennonM)</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Map 'vectorized' matrix decision variables back to cell array of matrices Y</span>
+0002 <span class="comment">% by usage of obj.vec2Ymap, see createY1map() for details</span>
+0003 <span class="comment">%   vec  ... vector of length obj.NYnnz</span>
+0004 <span class="comment">%   Y  ... cell array obj.NY x 1 with filled in 'vec' to the proper nnz places</span>
+0005 <span class="comment">%       Y is returned as symmetric</span>
+0006 <a name="_sub0" href="#_subfunctions" class="code">function  Y=vec2Y(obj, vec)</a>
+0007   
+0008   <span class="comment">% perhaps skip this?</span>
+0009   <span class="keyword">if</span> (length(vec) ~= obj.NYnnz)
+0010     error(<span class="string">'map vec-&gt;Y, wrong length of vec'</span>);
+0011   <span class="keyword">end</span>
+0012 
+0013   <span class="keyword">if</span> (obj.NY&gt;0)
+0014     Y=cell(obj.NY,1);
+0015 
+0016     <span class="keyword">for</span> k=1:obj.NY
+0017       <span class="comment">% create Y{k} as appropriate</span>
+0018       mapper=obj.vec2Ymap{k};
+0019       <span class="keyword">if</span> (mapper.dense)
+0020         <span class="comment">%Y{k}=zeros(mapper.dim);</span>
+0021         <span class="comment">%Y{k}(:)=mapper.xmap(vec);</span>
+0022         Y{k}=reshape(vec(mapper.xmap),mapper.dim, mapper.dim);
+0023       <span class="keyword">else</span>
+0024         <span class="comment">% sparse</span>
+0025         Y{k}=sparse(mapper.irow, mapper.icol, vec(mapper.xmap), mapper.dim, mapper.dim);
+0026         <span class="comment">%sparse(i,j,s,m,n)</span>
+0027       <span class="keyword">end</span>
+0028     <span class="keyword">end</span>
+0029 
+0030   <span class="keyword">else</span>
+0031     Y=[];
+0032   <span class="keyword">end</span>
+0033 <span class="keyword">end</span></pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

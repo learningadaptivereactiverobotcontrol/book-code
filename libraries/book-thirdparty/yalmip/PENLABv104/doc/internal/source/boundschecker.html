@@ -1,0 +1,160 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of boundschecker</title>
+  <meta name="keywords" content="boundschecker">
+  <meta name="description" content="Checks bounds that the dimension is correct and make sense w.r.t. the">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">source</a> &gt; boundschecker.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for source&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>boundschecker
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Checks bounds that the dimension is correct and make sense w.r.t. the</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [ineqmap, ineqmlt, ineqshift, eqmap, eqshift]=boundschecker(dim,lb,ub,equalok,unconstrok,filterout) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Checks bounds that the dimension is correct and make sense w.r.t. the
+ settings (equality allowed? unconstrained allowed?) and create mapping from
+   lb &lt;= sth &lt;= ub    to    constr &lt;=0   or   constr==0
+   lb_i &lt;= sth_i    becomes     constr_k=lb-sth_i &lt;=0   
+         with  ineqmap(k)=i, ineqmlt(k)=-1, ineqshift(k)=lb_i   i.e.
+         constr_k = ineqshift(k) + ineqmlt(k)*sth_{ineqmap(k)}
+   if(equalok&gt;0) ... equalities are allowed and treated as equalities
+   if(equalok&lt;0) ... equalities are allowed and treated as 2 inequalities
+            (temporary solution for box equality constriants on matrices)
+   if(unconstrok) ... unconstrained row (lb=-inf,ub=inf) is allowed
+            (and won't be included in any map, e.g. unbounded variable)
+   filterout ... array of indicies 1..dim which shouldn't be considered at all
+      (e.g., constraints on empty matrix variables)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Checks bounds that the dimension is correct and make sense w.r.t. the</span>
+0002 <span class="comment">% settings (equality allowed? unconstrained allowed?) and create mapping from</span>
+0003 <span class="comment">%   lb &lt;= sth &lt;= ub    to    constr &lt;=0   or   constr==0</span>
+0004 <span class="comment">%   lb_i &lt;= sth_i    becomes     constr_k=lb-sth_i &lt;=0</span>
+0005 <span class="comment">%         with  ineqmap(k)=i, ineqmlt(k)=-1, ineqshift(k)=lb_i   i.e.</span>
+0006 <span class="comment">%         constr_k = ineqshift(k) + ineqmlt(k)*sth_{ineqmap(k)}</span>
+0007 <span class="comment">%   if(equalok&gt;0) ... equalities are allowed and treated as equalities</span>
+0008 <span class="comment">%   if(equalok&lt;0) ... equalities are allowed and treated as 2 inequalities</span>
+0009 <span class="comment">%            (temporary solution for box equality constriants on matrices)</span>
+0010 <span class="comment">%   if(unconstrok) ... unconstrained row (lb=-inf,ub=inf) is allowed</span>
+0011 <span class="comment">%            (and won't be included in any map, e.g. unbounded variable)</span>
+0012 <span class="comment">%   filterout ... array of indicies 1..dim which shouldn't be considered at all</span>
+0013 <span class="comment">%      (e.g., constraints on empty matrix variables)</span>
+0014 <a name="_sub0" href="#_subfunctions" class="code">function [ineqmap, ineqmlt, ineqshift, eqmap, eqshift]=boundschecker(dim,lb,ub,equalok,unconstrok,filterout)</a>
+0015 
+0016   ineqmap=[];
+0017   ineqmlt=[];
+0018   ineqshift=[];
+0019   eqmap=[];
+0020   eqshift=[];
+0021 
+0022   <span class="keyword">if</span> (dim&gt;0)
+0023     <span class="keyword">if</span> (~isvector(lb) || ~isvector(ub) || <span class="keyword">...</span>
+0024         (~isscalar(lb) &amp;&amp; length(lb)~=dim) || <span class="keyword">...</span>
+0025         (~isscalar(ub) &amp;&amp; length(ub)~=dim))
+0026       error(<span class="string">'Error in dim or shape lb or ub'</span>);
+0027       <span class="keyword">return</span>;
+0028     <span class="keyword">end</span>
+0029     <span class="keyword">if</span> (isscalar(lb))
+0030       lb=lb.*ones(dim,1);
+0031     <span class="keyword">end</span>
+0032     <span class="keyword">if</span> (isscalar(ub))
+0033       ub=ub.*ones(dim,1);
+0034     <span class="keyword">end</span>
+0035     <span class="keyword">if</span> (size(lb,1)&lt;size(lb,2))
+0036       lb=lb';
+0037     <span class="keyword">end</span>
+0038     <span class="keyword">if</span> (size(ub,1)&lt;size(ub,2))
+0039       ub=ub';
+0040     <span class="keyword">end</span>
+0041 
+0042     <span class="comment">% what if lb/ub row/column vector?</span>
+0043     <span class="keyword">if</span> (any(lb==Inf | ub==-Inf | lb&gt;ub))
+0044       error(<span class="string">'Error in values lb and/or ub'</span>);
+0045       <span class="keyword">return</span>;
+0046     <span class="keyword">end</span>
+0047 
+0048     Nineq=0;
+0049     Neq=0;
+0050 
+0051     indices=setdiff([1:dim],filterout);
+0052     <span class="keyword">for</span> i=indices
+0053       <span class="keyword">if</span> (lb(i)==ub(i))
+0054         <span class="keyword">if</span> (equalok&gt;0)
+0055           <span class="comment">% as equality</span>
+0056           Neq=Neq+1;
+0057           eqmap(Neq)=i;
+0058           eqshift(Neq)=-lb(i);
+0059           <span class="comment">%eqmap = [eqmap; i];</span>
+0060           <span class="comment">%eqshift = [eqshift; -lb(i)];</span>
+0061         <span class="keyword">elseif</span> (equalok&lt;0)
+0062           <span class="comment">% as two inequalitites</span>
+0063           Nineq=Nineq+1;
+0064           ineqmap(Nineq)=i;
+0065           ineqmlt(Nineq)=-1;
+0066           ineqshift(Nineq)=lb(i);
+0067 
+0068           Nineq=Nineq+1;
+0069           ineqmap(Nineq)=i;
+0070           ineqmlt(Nineq)=1;
+0071           ineqshift(Nineq)=-ub(i);
+0072         <span class="keyword">else</span>
+0073           error(<span class="string">'equality here and forbidden!'</span>);
+0074           <span class="keyword">return</span>;
+0075         <span class="keyword">end</span>
+0076       <span class="keyword">else</span>
+0077         <span class="keyword">if</span> (lb(i)&gt;-Inf)
+0078           Nineq=Nineq+1;
+0079           ineqmap(Nineq)=i;
+0080           ineqmlt(Nineq)=-1;
+0081           ineqshift(Nineq)=lb(i);
+0082         <span class="keyword">end</span>
+0083         <span class="keyword">if</span> (ub(i)&lt;Inf)
+0084           Nineq=Nineq+1;
+0085           ineqmap(Nineq)=i;
+0086           ineqmlt(Nineq)=1;
+0087           ineqshift(Nineq)=-ub(i);
+0088         <span class="keyword">elseif</span> (lb(i)==-Inf &amp;&amp; ~unconstrok)
+0089           error(<span class="string">'err: unconstr &amp; not allowed!'</span>);
+0090           <span class="keyword">return</span>;
+0091         <span class="keyword">end</span>
+0092       <span class="keyword">end</span>
+0093     <span class="keyword">end</span>
+0094     <span class="comment">% transpose all to get column vectors instead of rows</span>
+0095     ineqmap=ineqmap';
+0096     ineqmlt=ineqmlt';
+0097     ineqshift=ineqshift';
+0098     eqmap=eqmap';
+0099     eqshift=eqshift';
+0100   <span class="keyword">end</span>
+0101</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,518 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of solve</title>
+  <meta name="keywords" content="solve">
+  <meta name="description" content="main solver loop (&quot;pennon/pbm&quot; iterations)">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">source</a> &gt; <a href="index.html">@penlab</a> &gt; solve.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for source/@penlab&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>solve
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>main solver loop (&quot;pennon/pbm&quot; iterations)</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [ifail] = solve(obj) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> main solver loop (&quot;pennon/pbm&quot; iterations)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function [b]=stop_crit(f1,f2,eps)</a></li><li><a href="#_sub2" class="code">function [u] = lmlt_update(u,u_updt,phiind,mu,umin)</a></li></ul>
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% main solver loop (&quot;pennon/pbm&quot; iterations)</span>
+0002 <a name="_sub0" href="#_subfunctions" class="code">function [ifail] = solve(obj)</a>
+0003 
+0004   ifail = 0;
+0005 
+0006   <span class="comment">% right phase?</span>
+0007   <span class="keyword">if</span> (obj.phase&lt;1)
+0008     error(<span class="string">'The problem needs to be initialized first.'</span>);
+0009   <span class="keyword">else</span>
+0010     obj.phase=2;  <span class="comment">% solving</span>
+0011   <span class="keyword">end</span>
+0012 
+0013   PENALTY_UPDT = obj.allopts.penalty_update;
+0014   PENALTY_UPDT_BAR = obj.allopts.penalty_update_bar;
+0015   MAX_PBMITER = obj.allopts.max_outer_iter;
+0016   PBMALPHA = obj.allopts.outer_stop_limit;
+0017   KKTALPHA = obj.allopts.kkt_stop_limit;
+0018   MU = obj.allopts.mlt_update;
+0019   UINIT = obj.allopts.uinit;
+0020   UINIT_BOX = obj.allopts.uinit_box;
+0021   UINIT_EQ = obj.allopts.uinit_eq;
+0022   UMIN = obj.allopts.umin;
+0023   PINIT = obj.allopts.pinit;
+0024   PINIT_BAR = obj.allopts.pinit_bar;
+0025   USEBARRIER = obj.allopts.usebarrier;
+0026   <span class="comment">%visual = obj.allopts.visualisation;</span>
+0027   GAP_NOPROGRESS = 1e20;
+0028   OBJ_UNBOUNDED = -1e20;
+0029   MIN_MAX_FAILED = 3;
+0030 
+0031   <span class="comment">% clear stats</span>
+0032   obj.clearstats();
+0033   
+0034   nFlag=length(penlab.solvermsg);  <span class="comment">% last message: not finished yet</span>
+0035   starttime=cputime;
+0036 
+0037   <span class="comment">%x=x0;  % xall? it gets projected automatically</span>
+0038   nGapNoProgress=0;
+0039   nGrowingGap=0;
+0040   nMinFailed=0;
+0041 
+0042   <span class="comment">% do we have any constraints? (because of printing)</span>
+0043   bConstrIneq=obj.Nxbox+obj.Nineq+obj.NYbox+obj.NA&gt;0;
+0044   bConstrEq=obj.Neq&gt;0;
+0045 
+0046   <span class="comment">% print out basic information for better orientation in log files</span>
+0047   obj.print(3,Inf,<span class="string">'Problem name: %s'</span>,obj.probname);
+0048   <span class="keyword">if</span> (~isempty(obj.comment))
+0049     obj.print(3,Inf,<span class="string">'Description:  %s'</span>,obj.comment);
+0050   <span class="keyword">end</span>
+0051   obj.print(3,Inf,<span class="string">'Start time:   %s'</span>,datestr(now,0));
+0052   obj.print_opts(3,Inf);
+0053   obj.print(3,Inf,<span class="string">' '</span>);
+0054 
+0055   <span class="comment">% Initialize penalty parameters and Lagrangian multipliers based on</span>
+0056   <span class="comment">% option settings if there are not valid values yet.</span>
+0057   obj.init(false);
+0058 
+0059   <span class="comment">% automatic modification of the starting point</span>
+0060   <span class="comment">% reconstruct from Nxbox constraints lbx and ubx. This is a bit silly</span>
+0061   <span class="comment">% because in penlab() we have them, however, the point modification</span>
+0062   <span class="comment">% should be done before each solve() (if necessary/required) thus here.</span>
+0063   lbx = -Inf(obj.Nx+obj.NYnnz,1);
+0064   ubx = Inf(obj.Nx+obj.NYnnz,1);
+0065   ind = find(obj.xboxmlt&lt;0);
+0066   lbx(ind) = obj.xboxshift(ind);
+0067   ind = find(obj.xboxmlt&gt;0);
+0068   ubx(ind) = -obj.xboxshift(ind);
+0069   <span class="keyword">if</span> (obj.allopts.xinit_mod)
+0070     <span class="comment">% push x within the box bounds even if not treated by barrier</span>
+0071     <span class="comment">% so that they are at least relative 'frac'tion from the boundary</span>
+0072     frac = 0.01;
+0073     dist = frac*min(ubx - lbx,1);
+0074     obj.xall=max(lbx+dist,obj.xall);
+0075     obj.xall=min(ubx-dist,obj.xall);
+0076   <span class="keyword">elseif</span> (~isempty(obj.xboxindbar))
+0077     <span class="comment">% modify only x in barrier not satisfying the constraints</span>
+0078     <span class="comment">% or very close to the boundary to set up a valid point</span>
+0079     xboxx = obj.xboxshift + obj.xboxmlt .* obj.xall(obj.xboxmap);
+0080     ind=find(xboxx(obj.xboxindbar)&gt;=-1e-7);
+0081     <span class="keyword">if</span> (~isempty(ind))
+0082       <span class="comment">% from box constraint numbers find variable numbers x involved</span>
+0083       xind=unique(obj.xboxmap(obj.xboxindbar(ind)));
+0084       frac = 1e-5;
+0085       dist = frac*min(ubx(xind) - lbx(xind),1);
+0086       obj.xall(xind)=max(lbx(xind)+dist,obj.xall(xind));
+0087       obj.xall(xind)=min(ubx(xind)-dist,obj.xall(xind));
+0088     <span class="keyword">end</span>
+0089   <span class="keyword">end</span>
+0090 
+0091   <span class="comment">% problem information output</span>
+0092   nNLNineq=sum(obj.ineqmap&lt;=obj.NgNLN);
+0093   nNLNeq=sum(obj.eqmap&lt;=obj.NgNLN);
+0094   nNLNAineq=sum(obj.Amap&lt;=obj.NANLN);
+0095   obj.print(2,Inf,<span class="string">'*******************************************************************************'</span>);
+0096   obj.print(2,Inf,penlab.solvername);
+0097   obj.print(2,Inf,<span class="string">'*******************************************************************************'</span>);
+0098   obj.print(2,Inf,<span class="string">'Number of variables                      %7d'</span>,obj.Nx);
+0099   obj.print(2,Inf,<span class="string">'Number of matrix variables               %7d'</span>,obj.NY);
+0100   obj.print(2,Inf,<span class="string">'   - degrees of freedom (var. elements)  %7d'</span>,obj.NYnnz);
+0101   obj.print(2,Inf,<span class="string">'(Function) constraints'</span>);
+0102   obj.print(2,Inf,<span class="string">'   - box inequalities                    %7d'</span>,obj.Nxbox);
+0103   obj.print(2,Inf,<span class="string">'   - linear inequalities                 %7d'</span>,obj.Nineq-nNLNineq);
+0104   obj.print(2,Inf,<span class="string">'   - nonlinear inequalities              %7d'</span>,nNLNineq);
+0105   obj.print(2,Inf,<span class="string">'   - linear equalities                   %7d'</span>,obj.Neq-nNLNeq);
+0106   obj.print(2,Inf,<span class="string">'   - nonlinear equalities                %7d'</span>,nNLNeq);
+0107   obj.print(2,Inf,<span class="string">'Matrix constraints'</span>);
+0108   obj.print(2,Inf,<span class="string">'   - box inequalities                    %7d'</span>,obj.NYbox);
+0109   obj.print(2,Inf,<span class="string">'   - linear inequalities                 %7d'</span>,obj.NA-nNLNAineq);
+0110   obj.print(2,Inf,<span class="string">'   - nonlinear inequalities              %7d'</span>,nNLNAineq);
+0111   obj.print(2,Inf,<span class="string">' '</span>);
+0112   <span class="keyword">if</span> (obj.Nxbox&gt;0)
+0113     obj.print(2,Inf,<span class="string">'Min./Max. box-mult.:   %9f / %9f'</span>,min(obj.uxbox),max(obj.uxbox));
+0114   <span class="keyword">end</span>
+0115   <span class="keyword">if</span> (obj.Nineq&gt;0)
+0116     obj.print(2,Inf,<span class="string">'Min./Max. ineq-mult.:  %9f / %9f'</span>,min(obj.uineq),max(obj.uineq));
+0117   <span class="keyword">end</span>
+0118   <span class="keyword">if</span> (obj.Neq&gt;0)
+0119     obj.print(2,Inf,<span class="string">'Min./Max. equal-mult.: %9f / %9f'</span>,min(obj.ueq),max(obj.ueq));
+0120   <span class="keyword">end</span>
+0121 
+0122   <span class="comment">% evaluation of AL will update all objx, xboxx, ineqx, eqx ...</span>
+0123   <span class="comment">% and we nned its derivative anyway...</span>
+0124   obj.eval_alx();
+0125   obj.eval_aldx();
+0126   <span class="comment">% just in case I use old notation... TODO remove it later and use obj.*</span>
+0127   <span class="comment">% directly</span>
+0128   f=obj.objx;
+0129   constrx=[obj.xboxx;obj.ineqx];
+0130   eqx=obj.eqx;
+0131   lagrx=obj.ALx;
+0132   gradx=obj.ALdx;
+0133   gradeqx=obj.eqdx;
+0134   uineq_updt = [];
+0135   uxbox_updt = [];
+0136 
+0137   obj.rNormG=norm(obj.ALdx);
+0138   rFeasM=obj.feas_ay();
+0139   obj.rFeas=max([abs(obj.eqx);max(0,obj.xboxx);max(0,obj.ineqx);rFeasM;0]);
+0140   rGap=abs(obj.objx-obj.ALx);
+0141   <span class="keyword">if</span> (bConstrIneq)
+0142     rPmin=min([obj.pxbox;obj.pineq;obj.PYbox;obj.PA]);
+0143   <span class="keyword">else</span>
+0144     rPmin=0;
+0145   <span class="keyword">end</span>
+0146   <span class="keyword">if</span> (bConstrIneq || bConstrEq)
+0147     <span class="comment">%rCompl=max(abs(u.*constrx));</span>
+0148     <span class="comment">% TODO ... what if is somewhere barrier?? (and using uxbox??)</span>
+0149     <span class="comment">% TODO matrix complementarity??</span>
+0150     obj.rCompl=max([0;abs(obj.uxbox.*obj.xboxx);abs(obj.uineq.*obj.ineqx);abs(obj.eqx.*obj.ueq)]);
+0151       <span class="comment">%%% ^^^ all right? but ueq is 0 (if by default) anyway... but might be by DCF</span>
+0152   <span class="keyword">else</span>
+0153     obj.rCompl=0;
+0154   <span class="keyword">end</span>
+0155   <span class="comment">% detailed starting information</span>
+0156   obj.print(3,Inf,<span class="string">'******************** Start *********************'</span>);
+0157   obj.print(3,Inf,<span class="string">'Objective            %27.16E'</span>,obj.objx);
+0158   obj.print(3,Inf,<span class="string">'Augmented Lagrangian %27.16E'</span>,obj.ALx);
+0159   obj.print(3,Inf,<span class="string">'|f(x) - Lagr(x)|     %27.16E'</span>,rGap);
+0160   obj.print(3,Inf,<span class="string">'Grad augm. lagr.     %27.16E'</span>,obj.rNormG);
+0161   obj.print(3,Inf,<span class="string">'Feasibility (max)    %27.16E'</span>,obj.rFeas);
+0162   obj.print(3,Inf,<span class="string">'Feasibility eqx      %27.16E'</span>,max(abs(obj.eqx)));
+0163   obj.print(3,Inf,<span class="string">'Feasibility ineq     %27.16E'</span>,max(max(0,obj.ineqx)));
+0164   obj.print(3,Inf,<span class="string">'Feasibility box      %27.16E'</span>,max(max(0,obj.xboxx)));
+0165   obj.print(3,Inf,<span class="string">'Feasibility m.ineq   %27.16E'</span>,rFeasM);
+0166   obj.print(3,Inf,<span class="string">'Complementarity      %27.16E'</span>,obj.rCompl);
+0167   obj.print(3,Inf,<span class="string">'Minimal penalty      %27.16E'</span>,rPmin);
+0168   obj.print(3,Inf,<span class="string">'************************************************'</span>);
+0169   obj.print(3,Inf,<span class="string">' '</span>);
+0170 
+0171   obj.print(2,3,<span class="string">'*******************************************************************************'</span>);
+0172   obj.print(2,3,<span class="string">'* it |     obj      | (U,G(x)) |  ||dF||  |   feas   |   pmin   |  Nwt | InIt |'</span>);
+0173   obj.print(2,3,<span class="string">'*******************************************************************************'</span>);
+0174   <span class="keyword">if</span> (bConstrIneq || bConstrEq)
+0175     obj.print(2,3,<span class="string">'| %3d|%13.5e |%9.1e |%9.1e |%9.1e |%9.1e | %4d | %4d |'</span>,0,obj.objx,obj.rCompl,obj.rNormG,obj.rFeas,rPmin,obj.miter_last,obj.initer_last);
+0176   <span class="keyword">else</span>
+0177     obj.print(2,3,<span class="string">'| %3d|%13.5e |          |%9.1e |          |          | %4d | %4d |'</span>,0,obj.objx,obj.rNormG,obj.miter_last,obj.initer_last);
+0178   <span class="keyword">end</span>
+0179 
+0180   <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0181   nFlag=7;
+0182   <span class="keyword">for</span> pbmiter=1:MAX_PBMITER
+0183 
+0184     f_old = obj.objx;
+0185     rGap_old = rGap;
+0186 
+0187     obj.print(3,Inf,<span class="string">'************* Start of outer step %3i **********'</span>,pbmiter);
+0188 
+0189     <span class="comment">% TODO tracing information?</span>
+0190 
+0191     <span class="comment">% unconstr minimization step</span>
+0192     <span class="keyword">if</span> (obj.Neq==0)
+0193         <span class="comment">%fnc.obj=@(xtmp) auglagr(xtmp,u,p,'',ps);</span>
+0194         <span class="comment">%fnc.obj_grad=@(xtmp) auglagr_D(xtmp,u,p,'',ps);</span>
+0195         <span class="comment">%fnc.obj_hess=@(xtmp) auglagr_D2(xtmp,u,p,'',ps);</span>
+0196 
+0197         [nFlagMin,rResults]=obj.unconstr_min();
+0198         lagrx=rResults(1);
+0199         obj.rNormG=rResults(2);
+0200         <span class="comment">% or without rResults??</span>
+0201         <span class="comment">%lagrx=obj.ALx;</span>
+0202         <span class="comment">%obj.rNormG=norm(obj.ALdx);</span>
+0203     <span class="keyword">else</span>
+0204         <span class="comment">%fnc.obj=@(xtmp,ueqtmp) auglagr(xtmp,u,p,ueqtmp,ps);</span>
+0205         <span class="comment">%fnc.obj_grad=@(xtmp,ueqtmp) auglagr_D(xtmp,u,p,ueqtmp,ps);</span>
+0206         <span class="comment">%fnc.obj_hess=@(xtmp,ueqtmp) auglagr_D2(xtmp,u,p,ueqtmp,ps);</span>
+0207 
+0208         [nFlagMin,rResults]=obj.eqconstr_min();
+0209         lagrx=rResults(1);
+0210         obj.rNormG=rResults(2);
+0211         <span class="comment">% or directly?</span>
+0212         <span class="comment">%lagrx=obj.ALdx</span>
+0213         <span class="comment">%obj.rNormG=norm(obj.ALddx);</span>
+0214     <span class="keyword">end</span>
+0215 
+0216     <span class="comment">% these should be already evaluated by linesearch ... just to be sure</span>
+0217     <span class="comment">% evaluation of AL will update all objx, xboxx, ineqx, eqx ...</span>
+0218     <span class="comment">% and we nned its derivative anyway...</span>
+0219     obj.eval_alx();
+0220     obj.eval_aldx();
+0221 
+0222     <span class="comment">% trial (full) update of Lagrangian multipliers</span>
+0223     <span class="comment">% (compute update of the multipliers as if it wasn't restricted by MU)</span>
+0224     <span class="keyword">if</span> (obj.Nxbox+obj.Nineq~=0)
+0225       <span class="comment">%if (USEBARRIER)   % update only multipliers for 'non-barriered' constraints</span>
+0226       <span class="comment">%  indbar=[1:ps.N_BOUNDS];</span>
+0227       <span class="comment">%  ind=[ps.N_BOUNDS+1:ps.N_CONSTR-ps.N_EQUAL];</span>
+0228       <span class="comment">%else</span>
+0229       <span class="comment">%  indbar=[];</span>
+0230       <span class="comment">%  ind=[1:ps.N_CONSTR-ps.N_EQUAL];</span>
+0231       <span class="comment">%end</span>
+0232 
+0233       <span class="comment">%u_updt(barind) = p(barind).*phibar_D(constrx(barind));</span>
+0234       <span class="comment">%u_updt(phiind) = phi2_D(constrx(phiind)./p(phiind));</span>
+0235       uineq_updt = obj.phi2_D(obj.ineqx./obj.pineq);
+0236       uxbox_updt = obj.phi2_D(obj.xboxx./obj.pxbox);
+0237     <span class="keyword">end</span>
+0238 
+0239     <span class="comment">% print results</span>
+0240     <span class="comment">% just in case I use old notation... TODO remove it later and use obj.*</span>
+0241     <span class="comment">% directly</span>
+0242     f=obj.objx;
+0243     constrx=[obj.xboxx;obj.ineqx];
+0244     eqx=obj.eqx;
+0245     lagrx=obj.ALx;
+0246     gradx=obj.ALdx;
+0247     gradeqx=obj.eqdx;
+0248 
+0249     obj.rNormG=norm(obj.ALdx);
+0250     rFeasM=obj.feas_ay();
+0251     obj.rFeas=max([abs(obj.eqx);max(0,obj.xboxx);max(0,obj.ineqx);rFeasM;0]);
+0252     rGap=abs(obj.objx-obj.ALx);
+0253     <span class="keyword">if</span> (bConstrIneq)
+0254       <span class="comment">% TODO this hasn't been change, has it?</span>
+0255       rPmin=min([obj.pxbox;obj.pineq;obj.PYbox;obj.PA]);
+0256     <span class="keyword">end</span>
+0257     <span class="keyword">if</span> (bConstrIneq || bConstrEq)
+0258       <span class="comment">% TODO ... what if is somewhere barrier?? (and using uxbox??)</span>
+0259       <span class="comment">% TODO matrix complementarity??</span>
+0260       obj.rCompl=max([0;abs(obj.uxbox.*uxbox_updt.*obj.xboxx);abs(obj.uineq.*uineq_updt.*obj.ineqx);abs(obj.eqx.*obj.ueq)]);
+0261     <span class="keyword">end</span>
+0262 
+0263     <span class="keyword">if</span> (nFlagMin&gt;0)  <span class="comment">% solver failed</span>
+0264       obj.print(3,Inf,<span class="string">'*****!!!!!!! Result of outer step %3i !!!!!*****'</span>,pbmiter);
+0265     <span class="keyword">else</span>
+0266       obj.print(3,Inf,<span class="string">'************ Result of outer step %3i **********'</span>,pbmiter);
+0267     <span class="keyword">end</span>
+0268     obj.print(3,Inf,<span class="string">'Objective            %27.16E'</span>,obj.objx);
+0269     obj.print(3,Inf,<span class="string">'Augmented Lagrangian %27.16E'</span>,obj.ALx);
+0270     obj.print(3,Inf,<span class="string">'|f(x) - f(x_old)|    %27.16E'</span>,abs(f-f_old));
+0271     obj.print(3,Inf,<span class="string">'|f(x) - Lagr(x)|     %27.16E'</span>,rGap);
+0272     obj.print(3,Inf,<span class="string">'Grad augm. lagr.     %27.16E'</span>,obj.rNormG);
+0273     obj.print(3,Inf,<span class="string">'Feasibility (max)    %27.16E'</span>,obj.rFeas);
+0274     obj.print(3,Inf,<span class="string">'Feasibility eqx      %27.16E'</span>,max(abs(obj.eqx)));
+0275     obj.print(3,Inf,<span class="string">'Feasibility ineq     %27.16E'</span>,max(max(0,obj.ineqx)));
+0276     obj.print(3,Inf,<span class="string">'Feasibility box      %27.16E'</span>,max(max(0,obj.xboxx)));
+0277     obj.print(3,Inf,<span class="string">'Feasibility m.ineq   %27.16E'</span>,rFeasM);
+0278     obj.print(3,Inf,<span class="string">'Complementarity      %27.16E'</span>,obj.rCompl);
+0279     obj.print(3,Inf,<span class="string">'Minimal penalty      %27.16E'</span>,rPmin);
+0280     obj.print(3,Inf,<span class="string">'Newton steps                               %5d'</span>,obj.miter_last);
+0281     obj.print(3,Inf,<span class="string">'Inner steps                                %5d'</span>,obj.initer_last);
+0282     obj.print(3,Inf,<span class="string">'Linesearch steps                           %5d'</span>,obj.lsiter_last);
+0283     obj.print(3,Inf,<span class="string">'Time of the minimization step   %14g s'</span>,obj.stats_time_miter_last);
+0284     obj.print(3,Inf,<span class="string">'  - factorizations in the step  %14g s'</span>,obj.stats_time_fact_last);
+0285     <span class="keyword">if</span> (nFlagMin&gt;0)   <span class="comment">% solver failed</span>
+0286       obj.print(3,Inf,<span class="string">'*****!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*****'</span>);
+0287       warn_sign=<span class="string">'!'</span>;
+0288     <span class="keyword">else</span>
+0289       obj.print(3,Inf,<span class="string">'************************************************'</span>);
+0290       warn_sign=<span class="string">' '</span>;
+0291     <span class="keyword">end</span> 
+0292     obj.print(3,Inf,<span class="string">' '</span>);
+0293 
+0294     <span class="keyword">if</span> (bConstrIneq || bConstrEq)
+0295       obj.print(2,3,<span class="string">'| %3d|%13.5e |%9.1e |%9.1e |%9.1e |%9.1e | %4d | %4d%s|'</span>,pbmiter,obj.objx,obj.rCompl,obj.rNormG,obj.rFeas,rPmin,obj.miter_last,obj.initer_last,warn_sign);
+0296     <span class="keyword">else</span>
+0297       obj.print(2,3,<span class="string">'| %3d|%13.5e |          |%9.1e |          |          | %4d | %4d%s|'</span>,pbmiter,obj.objx,obj.rNormG,obj.miter_last,obj.initer_last,warn_sign);
+0298     <span class="keyword">end</span>
+0299 
+0300     <span class="comment">% visualisation of VTS problems??</span>
+0301     <span class="comment">%if (visual)</span>
+0302     <span class="comment">%  vis_vts3('',x);</span>
+0303     <span class="comment">%end</span>
+0304 
+0305     <span class="comment">% stoping criterion</span>
+0306     <span class="keyword">if</span> (nFlagMin&gt;0)
+0307       nMinFailed=nMinFailed+1;
+0308       obj.print(3,Inf,<span class="string">'Warning: Unconstr/eqconstr. min failed (flag %i), remaing attepmts: %i'</span>,nFlagMin,MIN_MAX_FAILED-nMinFailed);
+0309       <span class="comment">% perhaps don't update penalty so strongly?</span>
+0310     <span class="keyword">else</span>
+0311       nMinFailed=0;
+0312     <span class="keyword">end</span>
+0313     <span class="keyword">if</span> (nMinFailed &gt;= MIN_MAX_FAILED)
+0314       nFlag=5;
+0315       <span class="keyword">break</span>;
+0316     <span class="keyword">end</span>
+0317 
+0318     <span class="comment">%if (obj.rNormG&lt;PBMALPHA)</span>
+0319     <span class="comment">%if (obj.rNormG&lt;PBMALPHA &amp;&amp; (isempty(obj.rFeas) || obj.rFeas&lt;PBMALPHA))</span>
+0320     <span class="keyword">if</span> (<a href="#_sub1" class="code" title="subfunction [b]=stop_crit(f1,f2,eps)">stop_crit</a>(obj.objx, f_old, PBMALPHA) &amp;&amp; <a href="#_sub1" class="code" title="subfunction [b]=stop_crit(f1,f2,eps)">stop_crit</a>(obj.objx, obj.ALx, 10*PBMALPHA) &amp;&amp; (obj.rFeas&lt;1e-4*abs(obj.ALx) || obj.rFeas&lt;1e-3))
+0321       <span class="keyword">if</span> ( (obj.rNormG&lt;KKTALPHA &amp;&amp; obj.rCompl&lt;KKTALPHA &amp;&amp; obj.rFeas&lt;KKTALPHA) || (obj.rNormG&lt;10*KKTALPHA &amp;&amp; obj.rCompl&lt;0.01*KKTALPHA &amp;&amp; obj.rFeas&lt;0.01*KKTALPHA) )
+0322         nFlag=1;
+0323         <span class="keyword">break</span>;
+0324       <span class="keyword">end</span>
+0325     <span class="keyword">end</span>
+0326     <span class="keyword">if</span> (rGap &gt; GAP_NOPROGRESS)
+0327       nGapNoProgress=nGapNoProgress+1;
+0328     <span class="keyword">else</span>
+0329       nGapNoProgress=0;
+0330     <span class="keyword">end</span>
+0331     <span class="keyword">if</span> (rGap &gt; rGap_old)
+0332       nGrowingGap=nGrowingGap+1;
+0333     <span class="keyword">else</span>
+0334       nGrowingGap=0;
+0335     <span class="keyword">end</span>
+0336     <span class="keyword">if</span> (nGapNoProgress&gt;2 || nGrowingGap&gt;40)
+0337       nFlag=6;  <span class="comment">% no progress, stop it</span>
+0338       <span class="keyword">break</span>;
+0339     <span class="keyword">end</span>
+0340     <span class="keyword">if</span> (obj.ALx&lt;OBJ_UNBOUNDED)
+0341       nFlag=4;  <span class="comment">% objective seems to be unbounded, stop it</span>
+0342       <span class="keyword">break</span>;
+0343     <span class="keyword">end</span>
+0344 
+0345     <span class="comment">% (restricted) multipliers update</span>
+0346     obj.uxbox = <a href="#_sub2" class="code" title="subfunction [u] = lmlt_update(u,u_updt,phiind,mu,umin)">lmlt_update</a>(obj.uxbox,uxbox_updt,obj.xboxindphi,MU,UMIN);
+0347     obj.uineq = <a href="#_sub2" class="code" title="subfunction [u] = lmlt_update(u,u_updt,phiind,mu,umin)">lmlt_update</a>(obj.uineq,uineq_updt,obj.ineqindphi,MU,UMIN);
+0348     <span class="comment">% (restricted) matrix multipliers update</span>
+0349     obj.lmltm_update();
+0350     <span class="comment">% penalty update</span>
+0351     <span class="keyword">if</span> (obj.Nxbox&gt;0)
+0352       obj.pxbox(obj.xboxindbar) = obj.pxbox(obj.xboxindbar).*PENALTY_UPDT_BAR;
+0353       obj.pxbox(obj.xboxindphi) = obj.pxbox(obj.xboxindphi).*PENALTY_UPDT;
+0354     <span class="keyword">end</span>
+0355     <span class="keyword">if</span> (obj.Nineq&gt;0)
+0356       <span class="comment">%obj.pineq(obj.ineqindbar) = obj.pineq(obj.ineqindbar).*PENALTY_UPDT_BAR;</span>
+0357       obj.pineq(obj.ineqindphi) = obj.pineq(obj.ineqindphi).*PENALTY_UPDT;
+0358     <span class="keyword">end</span>
+0359     <span class="comment">% matrix penalty update</span>
+0360     obj.mpen_update();
+0361     
+0362     <span class="comment">% force recompute ALx, ALdx, ALddx (point hasn't change so</span>
+0363     <span class="comment">% still valid ticker but because penalties and Lagrangian</span>
+0364     <span class="comment">% changed, AL*x is actually not valid)</span>
+0365     <span class="comment">% this is a bit dirty, ideally P(:) and U(:) should have</span>
+0366     <span class="comment">% a counter as well and ALx would be max(xTck, PTck, UTck)</span>
+0367     obj.ALxtck=0;
+0368     obj.ALdxtck=0;
+0369     obj.ALddxtck=0;
+0370 
+0371   <span class="keyword">end</span>    <span class="comment">% of pbmiter cycle</span>
+0372   <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0373 
+0374   <span class="comment">% full multipliers update if not terminated by maxit</span>
+0375   <span class="comment">%[f,constrx,eqx] = ps.func_val(x); % not necessary, x unchanged</span>
+0376   <span class="comment">%if (nFlag~=4 &amp;&amp; ps.N_CONSTR-ps.N_EQUAL~=0)</span>
+0377   <span class="comment">%  u = u.*u_updt;</span>
+0378   <span class="comment">%end</span>
+0379   <span class="comment">% (full) multipliers update</span>
+0380   <span class="comment">% TODO update it always? even if error occured</span>
+0381   obj.uxbox(obj.xboxindphi) = obj.uxbox(obj.xboxindphi).*uxbox_updt(obj.xboxindphi);
+0382   obj.uineq(obj.ineqindphi) = obj.uineq(obj.ineqindphi).*uineq_updt(obj.ineqindphi);
+0383 
+0384   <span class="comment">% print results</span>
+0385   obj.rNormG=norm(obj.ALdx);
+0386   obj.rFeas=max([abs(obj.eqx);max(0,obj.xboxx);max(0,obj.ineqx);0]);
+0387   rGap=abs(obj.objx-obj.ALx);
+0388   <span class="keyword">if</span> (obj.Nxbox + obj.Nineq&gt;0)
+0389     <span class="comment">% TODO this hasn't been change, has it?</span>
+0390     rPmin=min([obj.pxbox;obj.pineq]);
+0391   <span class="keyword">end</span>
+0392   <span class="keyword">if</span> (obj.Nxbox + obj.Nineq + obj.Neq&gt;0)
+0393     <span class="comment">% TODO ... what if is somewhere barrier?? (and using uxbox??)</span>
+0394     obj.rCompl=max([abs(obj.uxbox.*obj.xboxx);abs(obj.uineq.*obj.ineqx);abs(obj.eqx.*obj.ueq)]);
+0395   <span class="keyword">end</span>
+0396   <span class="comment">%  ??? not necessary to recompute?</span>
+0397   <span class="comment">% Note: if finished with maxit -&gt; lagrangian multipliers weren't fully updated --&gt; printed slackness may be absolutely wrong; better to leave the earlier computed one</span>
+0398     
+0399   <span class="keyword">if</span> (nFlag==1)
+0400     <span class="keyword">if</span> (obj.rNormG&gt;1.0e-4*abs(obj.ALx) &amp;&amp; obj.rNormG&gt;1.0e-3)
+0401       nFlag=2;
+0402     <span class="keyword">end</span>
+0403     <span class="keyword">if</span>(obj.rFeas&gt;1.0e-4*abs(obj.ALx) &amp;&amp; obj.rFeas&gt;1.0e-3)
+0404       nFlag=3;
+0405     <span class="keyword">end</span>
+0406   <span class="keyword">end</span>
+0407   obj.stats_time_total = cputime - starttime;
+0408 
+0409   obj.print(2,Inf,<span class="string">'*******************************************************************************'</span>);
+0410   <span class="keyword">if</span> (nFlag&gt;=1 &amp;&amp; nFlag&lt;length(penlab.solvermsg)-1)
+0411     obj.print(2,Inf,<span class="string">'PenLab %s'</span>,penlab.solvermsg{nFlag});
+0412   <span class="keyword">else</span>
+0413     obj.print(2,Inf,<span class="string">'PenLab: Unknow error (%i)'</span>,nFlag);
+0414   <span class="keyword">end</span>
+0415   obj.print(2,Inf,<span class="string">'*******************************************************************************'</span>);
+0416   obj.print(2,Inf,<span class="string">'Objective            %27.16E'</span>,obj.objx);
+0417   obj.print(3,Inf,<span class="string">'Augmented Lagrangian %27.16E'</span>,obj.ALx);
+0418   obj.print(2,Inf,<span class="string">'Relative precision   %27.16E'</span>,abs(obj.ALx-obj.objx)/max(1,obj.objx));
+0419   obj.print(2,Inf,<span class="string">'Compl. Slackness     %27.16E'</span>,obj.rCompl);
+0420   obj.print(2,Inf,<span class="string">'Grad augm. lagr.     %27.16E'</span>,obj.rNormG);
+0421   obj.print(2,Inf,<span class="string">'Feasibility (max)    %27.16E'</span>,obj.rFeas);
+0422   obj.print(3,Inf,<span class="string">'Feasibility eqx      %27.16E'</span>,max(abs(obj.eqx)));
+0423   obj.print(3,Inf,<span class="string">'Feasibility ineq     %27.16E'</span>,max(max(0,obj.ineqx)));
+0424   obj.print(3,Inf,<span class="string">'Feasibility box      %27.16E'</span>,max(max(0,obj.xboxx)));
+0425   obj.print(3,Inf,<span class="string">'Minimal penalty      %27.16E'</span>,rPmin);
+0426   obj.print(2,Inf,<span class="string">'Newton steps                               %5d'</span>,obj.miter);
+0427   obj.print(2,Inf,<span class="string">'Inner steps                                %5d'</span>,obj.initer);
+0428   obj.print(2,Inf,<span class="string">'Linesearch steps                           %5d'</span>,obj.lsiter);
+0429   obj.print(2,Inf,<span class="string">'Number of evaluations of'</span>);
+0430   obj.print(2,Inf,<span class="string">'   - function values                       %5d'</span>,obj.stats_ncall_alx);
+0431   obj.print(2,Inf,<span class="string">'   - gradient values                       %5d'</span>,obj.stats_ncall_aldx);
+0432   obj.print(2,Inf,<span class="string">'   - hessian values                        %5d'</span>,obj.stats_ncall_alddx);
+0433   obj.print(2,Inf,<span class="string">'Time statistics'</span>);
+0434   obj.print(2,Inf,<span class="string">'   - total process time         %14g s'</span>,obj.stats_time_total);
+0435   obj.print(2,Inf,<span class="string">'   - all minimization steps     %14g s'</span>,obj.stats_time_miters);
+0436   obj.print(2,Inf,<span class="string">'   - all factorizations         %14g s'</span>,obj.stats_time_fact);
+0437   obj.print(2,Inf,<span class="string">'   - function values evaluation %14g s'</span>,obj.stats_time_alx);
+0438   obj.print(2,Inf,<span class="string">'   - gradient values evaluation %14g s'</span>,obj.stats_time_aldx);
+0439   obj.print(2,Inf,<span class="string">'   - hessian values evaluation  %14g s'</span>,obj.stats_time_alddx);
+0440   obj.print(2,Inf,<span class="string">'*******************************************************************************'</span>);
+0441   obj.print(2,Inf,<span class="string">' '</span>);
+0442 
+0443   obj.phase=3;   <span class="comment">% solver finished</span>
+0444 
+0445   ifail = nFlag;
+0446 <span class="keyword">end</span>
+0447 
+0448 <span class="comment">%%%%%%%%%%%%%%% Helper routines %%%%%%%%%%%%%%%%%</span>
+0449 
+0450 <span class="comment">% basic stopping criterion</span>
+0451 <a name="_sub1" href="#_subfunctions" class="code">function [b]=stop_crit(f1,f2,eps)</a>
+0452 
+0453   b = abs(f1 - f2) &lt; eps*(1+.5*(abs(f2)+abs(f1)));
+0454   <span class="keyword">return</span>
+0455 <span class="keyword">end</span>
+0456 
+0457 <span class="comment">% update of lagrangian multipliers with 'mu' limitation and minimum</span>
+0458 <span class="comment">% value check</span>
+0459 <a name="_sub2" href="#_subfunctions" class="code">function [u] = lmlt_update(u,u_updt,phiind,mu,umin)</a>
+0460   <span class="keyword">if</span> (~isempty(phiind))
+0461     utmp = u(phiind).*u_updt(phiind);
+0462     utmp = min((1/mu)*u(phiind), utmp);
+0463     u(phiind) = max(mu*u(phiind), utmp);
+0464     <span class="comment">% check for multiplier minima (UMIN)</span>
+0465     xchange=abs(u)&lt;umin &amp; u~=0;
+0466     u(xchange)=sign(u(xchange))*umin;
+0467   <span class="keyword">end</span>
+0468 <span class="keyword">end</span>
+0469</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

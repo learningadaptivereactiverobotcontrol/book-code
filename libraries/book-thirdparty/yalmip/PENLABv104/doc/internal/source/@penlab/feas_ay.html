@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of feas_ay</title>
+  <meta name="keywords" content="feas_ay">
+  <meta name="description" content="Compute feasibility of the matrix constraints (A) and matrix variables (Y)">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">source</a> &gt; <a href="index.html">@penlab</a> &gt; feas_ay.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for source/@penlab&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>feas_ay
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Compute feasibility of the matrix constraints (A) and matrix variables (Y)</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [mfeas] = feas_ay(obj) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Compute feasibility of the matrix constraints (A) and matrix variables (Y)
+ Note that only these in pen/bar (non-strict treatment) are considered
+ because these in the strict barrier are feasible by design.
+ (This routine is called only during computation so any point must be 
+ feasibile with respect to constraints in log-barrier. Similarly, it cannot 
+ be more infeasible than the matrix penalty parameter.)
+ TODO
+ Suggested but not implemented...
+   nFast = 0 ... no speed up; if infeasible, go back with perturbation
+       to compute the feasibility up to PRECISION
+   nFast = 1 ... if infeasible, stop on first infeasible matrix constr.
+       and don't go back (==&gt; the (in)feasibility is overestimated
+       up to SCALEUP factor times for this constraint and the other
+       are not checked --&gt; could be even worse)
+   nFast = 2 ... if infeasible, don't go back with the perturbation
+       but at least check all the constraints that there is nothing
+       worse
+
+   how to make pstart&amp;ptol dynamic to save some time...
+     + allow how to refine it-if it looks big, tolerance 1e-10 is time wasting
+   add changing order? start with the worst one from the last step??</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="penlab.html" class="code" title="">penlab</a>	PenLab (Pennon Laboratory for Matlab, previously PennonM)</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Compute feasibility of the matrix constraints (A) and matrix variables (Y)</span>
+0002 <span class="comment">% Note that only these in pen/bar (non-strict treatment) are considered</span>
+0003 <span class="comment">% because these in the strict barrier are feasible by design.</span>
+0004 <span class="comment">% (This routine is called only during computation so any point must be</span>
+0005 <span class="comment">% feasibile with respect to constraints in log-barrier. Similarly, it cannot</span>
+0006 <span class="comment">% be more infeasible than the matrix penalty parameter.)</span>
+0007 <span class="comment">% TODO</span>
+0008 <span class="comment">% Suggested but not implemented...</span>
+0009 <span class="comment">%   nFast = 0 ... no speed up; if infeasible, go back with perturbation</span>
+0010 <span class="comment">%       to compute the feasibility up to PRECISION</span>
+0011 <span class="comment">%   nFast = 1 ... if infeasible, stop on first infeasible matrix constr.</span>
+0012 <span class="comment">%       and don't go back (==&gt; the (in)feasibility is overestimated</span>
+0013 <span class="comment">%       up to SCALEUP factor times for this constraint and the other</span>
+0014 <span class="comment">%       are not checked --&gt; could be even worse)</span>
+0015 <span class="comment">%   nFast = 2 ... if infeasible, don't go back with the perturbation</span>
+0016 <span class="comment">%       but at least check all the constraints that there is nothing</span>
+0017 <span class="comment">%       worse</span>
+0018 <span class="comment">%</span>
+0019 <span class="comment">%   how to make pstart&amp;ptol dynamic to save some time...</span>
+0020 <span class="comment">%     + allow how to refine it-if it looks big, tolerance 1e-10 is time wasting</span>
+0021 <span class="comment">%   add changing order? start with the worst one from the last step??</span>
+0022 <span class="comment">%</span>
+0023 <a name="_sub0" href="#_subfunctions" class="code">function [mfeas] = feas_ay(obj)</a>
+0024 
+0025   mfeas=0;
+0026   pstart=1e-10;
+0027   pstop=1e-7;
+0028 
+0029   <span class="comment">% check only pen/bar; strict barrier must be feasible by design</span>
+0030   <span class="keyword">for</span> k=obj.Yboxindphi
+0031 
+0032     pkx=obj.PYbox(k);            <span class="comment">%2*p(sdpdata.Ng+k);</span>
+0033     Ykx = obj.Y{obj.Yboxmap(k)};
+0034     M=obj.Yboxshift(k)*speye(size(Ykx)) + obj.Yboxmlt(k)*Ykx;
+0035     <span class="comment">% so far negative definite ... feasm is posdef checker</span>
+0036     <span class="comment">%mfeas = feasm(-M, mfeas, Inf, pstart, pstop);</span>
+0037     mfeas = feasm(-M, mfeas, pkx, pstart, pstop);
+0038   <span class="keyword">end</span>
+0039 
+0040   <span class="keyword">for</span> k=obj.Aindphi
+0041 
+0042     pkx=obj.PA(k);  <span class="comment">% I used to use 2*         !!!!!!!!</span>
+0043     <span class="comment">% TODO need to map the matrix first! - is it correct???</span>
+0044     kuser=obj.Amap(k);
+0045     [Akuserx, obj.userdata] = obj.mconfun(obj.x, obj.Y, kuser, obj.userdata);
+0046     M = obj.Ashift(k)*speye(size(Akuserx)) + obj.Amlt(k) .* Akuserx;
+0047     <span class="comment">%mfeas = feasm(-M, mfeas, Inf, pstart, pstop);</span>
+0048     mfeas = feasm(-M, mfeas, pkx, pstart, pstop);
+0049   <span class="keyword">end</span>
+0050 
+0051 
+0052 <span class="keyword">end</span>
+0053 
+0054</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

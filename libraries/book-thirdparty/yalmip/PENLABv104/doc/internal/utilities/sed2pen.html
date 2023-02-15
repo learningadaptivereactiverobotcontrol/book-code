@@ -1,0 +1,274 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of sed2pen</title>
+  <meta name="keywords" content="sed2pen">
+  <meta name="description" content="%*******************************************************************">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">utilities</a> &gt; sed2pen.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for utilities&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>sed2pen
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>%*******************************************************************</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function pen=sed2pen(fname, compressed); </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">%*******************************************************************
+ SED2PEN converts problem data in SeDuMi format to expanded SDPA format.      
+
+ [pen] = sdpa2pen(fname)
+
+ Input: fname...name of the file containing SDP data in SDPA format
+
+ Output: pen...structure with data arrays in PENLIB format
+
+ Copyright (c) 2002 by M. Kocvara and M. Stingl
+ Version 02/12/2002
+******************************************************************</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">%%*******************************************************************</span>
+0002 <span class="comment">% SED2PEN converts problem data in SeDuMi format to expanded SDPA format.</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% [pen] = sdpa2pen(fname)</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Input: fname...name of the file containing SDP data in SDPA format</span>
+0007 <span class="comment">%</span>
+0008 <span class="comment">% Output: pen...structure with data arrays in PENLIB format</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Copyright (c) 2002 by M. Kocvara and M. Stingl</span>
+0011 <span class="comment">% Version 02/12/2002</span>
+0012 <span class="comment">%******************************************************************</span>
+0013 
+0014   <a name="_sub0" href="#_subfunctions" class="code">function pen=sed2pen(fname, compressed);</a>
+0015 <span class="comment">%%</span>
+0016 <span class="comment">%  First, load the matlab file containing At, c, b, and K</span>
+0017 <span class="comment">%%</span>
+0018 
+0019 clear pen;
+0020 
+0021   K.q = [];
+0022   K.l = [];
+0023   A = 0;
+0024   At = 0;
+0025   AAk = 0;
+0026   ii = 0;
+0027   ss = 0;
+0028   fname2 = strcat(fname,<span class="string">'.dat-s'</span>);
+0029   
+0030   compressed=0;
+0031   <span class="keyword">if</span> (compressed == 1);
+0032      fprintf(<span class="string">'** Unzip Problem. \n'</span>);
+0033      unix([<span class="string">'gunzip '</span>, fname,<span class="string">'.mat.gz'</span>]);
+0034   <span class="keyword">elseif</span> (compressed == 2);
+0035      unix([<span class="string">'uncompress '</span>, fname,<span class="string">'.mat.Z'</span>]);
+0036   <span class="keyword">end</span>
+0037   <span class="keyword">if</span> exist([fname,<span class="string">'.mat'</span>]) | exist(fname) 
+0038      eval([<span class="string">'load '</span>, fname]);
+0039   <span class="keyword">else</span>
+0040      fprintf(<span class="string">'** Problem not found, please specify the correct path. \n'</span>);
+0041      <span class="keyword">return</span>;
+0042   <span class="keyword">end</span>
+0043   <span class="keyword">if</span> (compressed == 1)
+0044      unix([<span class="string">'gzip '</span>, fname,<span class="string">'.mat'</span>]);
+0045   <span class="keyword">elseif</span> (compressed == 2)
+0046      unix([<span class="string">'compress '</span>, fname,<span class="string">'.mat'</span>]);
+0047   <span class="keyword">end</span>
+0048 
+0049 <span class="comment">%%</span>
+0050   <span class="keyword">if</span> (size(c,1) == 1), c = c'; <span class="keyword">end</span>;
+0051   <span class="keyword">if</span> (size(b,1) == 1), b = b'; <span class="keyword">end</span>;
+0052   <span class="keyword">if</span> (At == 0), At = A'; <span class="keyword">end</span>;  clear A; 
+0053 <span class="comment">%  if (At == 0), At = A'; end;  clear A;</span>
+0054   [nn,mm] = size(At); 
+0055   <span class="keyword">if</span> length(b)==nn, At=At'; [nn,mm] = size(At); <span class="keyword">end</span>
+0056   <span class="keyword">if</span> (max(size(c)) == 1); c = c*ones(nn,1); <span class="keyword">end</span>; 
+0057   
+0058   <span class="keyword">if</span> ~isfield(K,<span class="string">'l'</span>); K.l = 0; <span class="keyword">end</span>  
+0059   <span class="keyword">if</span> ~isfield(K,<span class="string">'f'</span>); K.f = 0; <span class="keyword">end</span> 
+0060   <span class="comment">%if ~isfield(K,'q'); K.q = 0; end</span>
+0061   <span class="keyword">if</span> ~isfield(K,<span class="string">'s'</span>); K.s = 0; <span class="keyword">end</span>
+0062   <span class="keyword">if</span> isempty(K.l) | K.l == 0; K.l = 0; <span class="keyword">end</span>;
+0063   <span class="keyword">if</span> isempty(K.f) | K.f == 0; K.f = 0; <span class="keyword">end</span>;
+0064   <span class="comment">%if sum(K.q) == 0 | isempty(K.q); K.q = 0; end</span>
+0065   <span class="keyword">if</span> sum(K.s) == 0 | isempty(K.s); K.s = 0; <span class="keyword">end</span> 
+0066   m = length(b);
+0067   pen.vars = m;
+0068   <span class="comment">%fprintf(fid,'%d\n',m);</span>
+0069   llen = 0;
+0070   offset1 = 0;
+0071   offset2 = 0;
+0072   <span class="keyword">if</span>(K.l &gt; 0); llen = llen + length(K.l); <span class="keyword">end</span>;
+0073   offset1 = llen; 
+0074   <span class="comment">%if(K.q &gt; 0); llen = llen + length(K.q); end;</span>
+0075   offset2 = llen;
+0076   <span class="keyword">if</span>(K.s &gt; 0); llen = llen + length(K.s); <span class="keyword">end</span>;
+0077   <span class="comment">%fprintf(fid,'%d\n',llen);</span>
+0078   
+0079   pen.fobj = full(b);
+0080   
+0081   rowidx = 0;  idxblk = 0;  aidx = 0; bk1 = 1; hidx = 0;
+0082   
+0083   pen.constr = 0; pen.ci = 0; pen.bi_dim = 0; pen.bi_idx = 0; pen.bi_val = 0;
+0084    <span class="keyword">if</span> ~(K.l == 0) | ~(K.f == 0)
+0085       len = K.l + K.f; 
+0086       pen.constr = len + K.f;
+0087       pen.ci = c(1:len);
+0088       <span class="keyword">if</span> (K.l == 0)
+0089          <span class="keyword">if</span> (K.f ~= 0), pen.ci = full([c(1:K.f);-c(1:K.f)]);<span class="keyword">end</span>;
+0090       <span class="keyword">else</span>
+0091          <span class="keyword">if</span> (K.f ~= 0), pen.ci = full([c(1:K.f);-c(1:K.f)';c(K.f+1,len)]);<span class="keyword">end</span>;
+0092       <span class="keyword">end</span>   
+0093       idxblk = idxblk + 1; 
+0094       <span class="keyword">if</span>(K.f == 0)   
+0095          <span class="keyword">for</span> k = 1:len
+0096              Atmp = At(rowidx+k,:); 
+0097             [ii,jj,ss] = find(Atmp);
+0098             pen.bi_dim(k) = nnz(Atmp);
+0099             pen.bi_idx(bk1:bk1+nnz(Atmp)-1) = jj-1;
+0100             pen.bi_val(bk1:bk1+nnz(Atmp)-1) = -ss;
+0101             bk1 = bk1 + nnz(Atmp);
+0102             <span class="comment">% for kk = 1:nnz(Atmp)</span>
+0103            <span class="comment">%    fprintf(fid,'%5d %5d %5d %5d %.16f\n',jj(kk),1,k,k,-ss(kk));</span>
+0104            <span class="comment">% end</span>
+0105          <span class="keyword">end</span>
+0106       <span class="keyword">else</span>      
+0107          <span class="keyword">for</span> k = 1:K.f
+0108              Atmp = At(rowidx+k,:); 
+0109             [ii,jj,ss] = find(Atmp);
+0110             pen.bi_dim(k) = nnz(Atmp);
+0111             pen.bi_idx(bk1:bk1+nnz(Atmp)-1) = jj-1;
+0112             pen.bi_val(bk1:bk1+nnz(Atmp)-1) = -ss;
+0113             bk1 = bk1 + nnz(Atmp);
+0114              <span class="comment">% for kk = 1:nnz(Atmp)</span>
+0115             <span class="comment">%    fprintf(fid,'%5d %5d %5d %5d %.16f\n',jj(kk),1,k,k,-ss(kk));</span>
+0116             <span class="comment">% end</span>
+0117          <span class="keyword">end</span>
+0118          <span class="keyword">for</span> k = 1:K.f
+0119              Atmp = At(rowidx+k,:); 
+0120             [ii,jj,ss] = find(Atmp);
+0121             pen.bi_dim(K.f+k) = nnz(Atmp);
+0122             pen.bi_idx(bk1:bk1+nnz(Atmp)-1) = jj-1;
+0123             pen.bi_val(bk1:bk1+nnz(Atmp)-1) = ss;
+0124             bk1 = bk1 + nnz(Atmp);
+0125              <span class="comment">% for kk = 1:nnz(Atmp)</span>
+0126             <span class="comment">%    fprintf(fid,'%5d %5d %5d %5d %.16f\n',jj(kk),1,k,k,-ss(kk));</span>
+0127             <span class="comment">% end</span>
+0128          <span class="keyword">end</span>
+0129          <span class="keyword">if</span> (K.l ~= 0)
+0130             <span class="keyword">for</span> k = K.f+1,len
+0131                 Atmp = At(rowidx+k,:); 
+0132                [ii,jj,ss] = find(Atmp);
+0133                pen.bi_dim(K.f+k) = nnz(Atmp);
+0134                pen.bi_idx(bk1:bk1+nnz(Atmp)-1) = jj-1;
+0135                pen.bi_val(bk1:bk1+nnz(Atmp)-1) = -ss;
+0136                bk1 = bk1 + nnz(Atmp);
+0137                 <span class="comment">% for kk = 1:nnz(Atmp)</span>
+0138                <span class="comment">%    fprintf(fid,'%5d %5d %5d %5d %.16f\n',jj(kk),1,k,k,-ss(kk));</span>
+0139                <span class="comment">% end</span>
+0140             <span class="keyword">end</span>
+0141          <span class="keyword">end</span>
+0142       <span class="keyword">end</span>  
+0143       rowidx = rowidx + len; 
+0144    <span class="keyword">end</span>
+0145 
+0146    <span class="keyword">if</span> ~(K.s == 0) 
+0147       blksize = K.s;  
+0148       <span class="keyword">if</span> size(blksize,2) == 1; blksize = blksize'; <span class="keyword">end</span>
+0149       pen.ai_dim = zeros(1,length(blksize));
+0150       pen.msizes = blksize;
+0151       pen.mconstr = length(blksize);
+0152       blknnz = [0 cumsum(blksize.*blksize)];   
+0153       <span class="keyword">for</span> p = 1:length(blksize)
+0154              idxblk = idxblk + 1; 
+0155           n = blksize(p); 
+0156           Ctmp = c(rowidx+blknnz(p)+[1:n*n]);
+0157           nn = nnz(Ctmp);
+0158           <span class="keyword">if</span>(nn&gt;0)
+0159              aidx = aidx + 1;
+0160              pen.ai_dim(p) = 1;
+0161              pen.ai_idx(aidx) = 0;
+0162              [ii,jj,ss] = find(Ctmp);
+0163              iinz = 0;
+0164              <span class="keyword">for</span> kk = 1:nn
+0165                 idxi = fix(((ii(kk)-1)./n)+1);
+0166                 idxj = mod(ii(kk)-1,n)+1;
+0167                 <span class="keyword">if</span> ~(idxi &gt; idxj)
+0168                    hidx = hidx + 1;   
+0169                    iinz = iinz + 1;
+0170                    pen.ai_val(hidx) = -ss(kk);
+0171                    pen.ai_row(hidx) = idxi-1;
+0172                    pen.ai_col(hidx) = idxj-1;
+0173                    <span class="comment">%fprintf(fid,'%5d %5d %5d %5d %.16f\n',0,p+offset2,idxi,idxj,-ss(kk));</span>
+0174                 <span class="keyword">end</span>              
+0175              <span class="keyword">end</span>
+0176              pen.ai_nzs(aidx) = iinz;
+0177           <span class="keyword">end</span>  
+0178        
+0179           Atmp = At(rowidx+blknnz(p)+[1:n*n],:);
+0180           <span class="keyword">for</span> k = 1:m
+0181              AAk = Atmp(:,k);
+0182              nn = nnz(AAk);
+0183              <span class="keyword">if</span>(nn&gt;0)
+0184                 aidx = aidx + 1;
+0185                 pen.ai_dim(p) = pen.ai_dim(p) + 1;
+0186                 pen.ai_idx(aidx) = k;
+0187                 iinz = 0;
+0188                 [ii,jj,ss] = find(AAk);
+0189                 <span class="keyword">for</span> kk = 1:nn
+0190                    idxi = fix(((ii(kk)-1)./n)+1);
+0191                    idxj = mod(ii(kk)-1,n)+1;
+0192                    <span class="keyword">if</span> ~(idxi &gt; idxj)
+0193                       hidx = hidx + 1;  
+0194                       iinz = iinz + 1;
+0195                       pen.ai_val(hidx) = -ss(kk);
+0196                       pen.ai_row(hidx) = idxi-1;
+0197                       pen.ai_col(hidx) = idxj-1;                       
+0198                       <span class="comment">%fprintf(fid,'%5d %5d %5d %5d %.16f\n',k,p+offset2,idxi,idxj,-ss(kk));</span>
+0199                    <span class="keyword">end</span>
+0200                 <span class="keyword">end</span>
+0201                 pen.ai_nzs(aidx) = iinz;             
+0202              <span class="keyword">end</span>
+0203           <span class="keyword">end</span>
+0204        <span class="keyword">end</span>
+0205     <span class="keyword">end</span>   
+0206 <span class="comment">%%</span>
+0207 pen.x0 = zeros(1,pen.vars);
+0208 
+0209 <span class="comment">%pen.ioptions = [0];</span>
+0210 
+0211 <span class="comment">%pen.foptions = [0];</span>
+0212 
+0213 
+0214 pen.ioptions = [1 50 100 2 0 1 0 0 3 2 0 0 2 1 1];
+0215 
+0216 pen.foptions = [1 0.7 0.1 1.0E-4 1.0E-7 1.0E-14 1.0E-2 1.0 0.5 1.0 1.0e-6 0.05];</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

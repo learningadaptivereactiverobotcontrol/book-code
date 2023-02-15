@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of trdsdsmat</title>
+  <meta name="keywords" content="trdsdsmat">
+  <meta name="description" content="compute trace(A*S1*B*S2) where A,B are dense symmetric matrices, S1,S2 are sparse">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">source</a> &gt; trdsdsmat.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for source&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>trdsdsmat
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>compute trace(A*S1*B*S2) where A,B are dense symmetric matrices, S1,S2 are sparse</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [tr]=trdsdsmat(A,S1,B,S2) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> compute trace(A*S1*B*S2) where A,B are dense symmetric matrices, S1,S2 are sparse
+ typically, it would be: trdsdsmat(pZUZ, Akdix, invZ, Akdjx)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% compute trace(A*S1*B*S2) where A,B are dense symmetric matrices, S1,S2 are sparse</span>
+0002 <span class="comment">% typically, it would be: trdsdsmat(pZUZ, Akdix, invZ, Akdjx)</span>
+0003 <a name="_sub0" href="#_subfunctions" class="code">function [tr]=trdsdsmat(A,S1,B,S2)</a>
+0004 
+0005   <span class="comment">%tic;</span>
+0006   <span class="comment">%S1BS2=S1*B*S2;</span>
+0007   <span class="comment">%tr = trace(A*S1BS2);</span>
+0008   <span class="comment">%toc</span>
+0009 
+0010   <span class="comment">%tic;</span>
+0011   <span class="comment">%S1BS2=sparse(S1*(full(B)*S2)); % or sparse(full(B)*S2)...?</span>
+0012   <span class="comment">%tr = trace(A*S1BS2);</span>
+0013   <span class="comment">%toc</span>
+0014 
+0015   <span class="comment">% USE ME (if not mex)!   % --&gt;7.5s (sparse), ?? (dense)</span>
+0016   <span class="comment">%tic;</span>
+0017   S1BS2=S1*(B*S2); <span class="comment">% or sparse(full(B)*S2)...?</span>
+0018   tr = A(:)'*S1BS2(:);
+0019   <span class="comment">%toc</span>
+0020 
+0021   <span class="comment">% or use mex</span>
+0022   <span class="comment">%tr=mextrdsdsmat(A,S1,full(B),S2);  % very slow... --&gt; 15s</span>
+0023   <span class="comment">%%tr=mextrdsdsmat(A,S1,B,S2);  % with full one above --&gt; ~6s</span>
+0024 
+0025   <span class="comment">%S1BS2=S1*sparse((full(B)*S2)); % or sparse(full(B)*S2)...?</span>
+0026   <span class="comment">%tr = A(:)'*S1BS2(:);</span>
+0027 
+0028   <span class="comment">% rather list the elements...?</span>
+0029   <span class="comment">% zkusit tr(A,B) = sum A_ij * B_ij = svec(A)'svec(B)</span>
+0030   <span class="comment">% careful about svec on symmetric matrices (sqrt(2)...)</span>
+0031 
+0032</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

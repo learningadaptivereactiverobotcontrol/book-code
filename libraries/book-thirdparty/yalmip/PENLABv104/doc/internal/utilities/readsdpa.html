@@ -1,0 +1,298 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of readsdpa</title>
+  <meta name="keywords" content="readsdpa">
+  <meta name="description" content="READSDPA - Read a linear SDP problem from a Sparse SDPA file">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">utilities</a> &gt; readsdpa.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for utilities&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>readsdpa
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>READSDPA - Read a linear SDP problem from a Sparse SDPA file</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function sdpdata = readsdpa(filename); </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> READSDPA - Read a linear SDP problem from a Sparse SDPA file
+  separate the linear constraint matrix, return
+ the problem in the following structure:
+  
+ Elements of the structure
+   name ... filename of the input file
+   Nx ..... number of primal variables
+   Na ..... number of linear matrix inequalities (or diagonal blocks of the
+            matrix constraint)
+   Ng ..... number of linear inequalitites
+   B ...... matrix defining the linear inequality constraints Bx&lt;=d
+            dimension Ng x Nx
+   d ...... rhs for linear constraints
+   c ...... dim (Nx,1), coefficients of the linear objective function
+   NaDims . vector of sizes of matrix constraints (diagonal blocks)
+   A ...... cell array (matrix) of A{k,l} for k=1,...,Na matrix constraint
+            for l=1 ~ absolute term, l=2..Nx+1 coeficient matrices
+            (some of them might be empty)
+   Adep ... dependency list for each matrix constraint
+
+ See also sdp_define, <a href="pen2bmi.html" class="code" title="function [bmidata]=pen2bmi(pen, name)">pen2bmi</a></pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="alselftest.html" class="code" title="function [prob]=alselftest(testID)">alselftest</a>	ALSELFTEST is a self test of evaluation of the Augmented Lagrangian and its</li><li><a href="penlabtestfeeder.html" class="code" title="function [status,name,prob,res] = penlabtestfeeder(no,testset)">penlabtestfeeder</a>	PENLABTESTFEEDER sets up one test to be run at a time.</li><li><a href="sdpastats.html" class="code" title="function []=sdpastats(filename)">sdpastats</a>	SDPASTATS gets some statistics (& vision) how the given SDPA problem looks</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function sdpdata = readsdpa(filename); </a>
+0002 <span class="comment">% READSDPA - Read a linear SDP problem from a Sparse SDPA file</span>
+0003 <span class="comment">%  separate the linear constraint matrix, return</span>
+0004 <span class="comment">% the problem in the following structure:</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Elements of the structure</span>
+0007 <span class="comment">%   name ... filename of the input file</span>
+0008 <span class="comment">%   Nx ..... number of primal variables</span>
+0009 <span class="comment">%   Na ..... number of linear matrix inequalities (or diagonal blocks of the</span>
+0010 <span class="comment">%            matrix constraint)</span>
+0011 <span class="comment">%   Ng ..... number of linear inequalitites</span>
+0012 <span class="comment">%   B ...... matrix defining the linear inequality constraints Bx&lt;=d</span>
+0013 <span class="comment">%            dimension Ng x Nx</span>
+0014 <span class="comment">%   d ...... rhs for linear constraints</span>
+0015 <span class="comment">%   c ...... dim (Nx,1), coefficients of the linear objective function</span>
+0016 <span class="comment">%   NaDims . vector of sizes of matrix constraints (diagonal blocks)</span>
+0017 <span class="comment">%   A ...... cell array (matrix) of A{k,l} for k=1,...,Na matrix constraint</span>
+0018 <span class="comment">%            for l=1 ~ absolute term, l=2..Nx+1 coeficient matrices</span>
+0019 <span class="comment">%            (some of them might be empty)</span>
+0020 <span class="comment">%   Adep ... dependency list for each matrix constraint</span>
+0021 <span class="comment">%</span>
+0022 <span class="comment">% See also sdp_define, pen2bmi</span>
+0023 
+0024 <span class="comment">% This file is a part of PENLAB package distributed under GPLv3 license</span>
+0025 <span class="comment">% Copyright (c) 2013 by  J. Fiala, M. Kocvara, M. Stingl</span>
+0026 <span class="comment">% Last Modified: 4 Dec 2013</span>
+0027 
+0028   sdpdata=[];
+0029 
+0030   <span class="comment">% open file</span>
+0031   fid=fopen(filename,<span class="string">'r'</span>);
+0032   <span class="keyword">if</span> (fid==-1)
+0033     error(sprintf(<span class="string">'Cannot open file &quot;%s&quot;'</span>,filename));
+0034   <span class="keyword">end</span>
+0035 
+0036   nline=0;
+0037   phase=0;
+0038   nx=0;
+0039   nblocks=0;
+0040   msizes=[];
+0041   c=[];
+0042   nentries=0;
+0043   maxentries=0;
+0044   alldata=[];
+0045   <span class="keyword">while</span> 1
+0046     line=fgetl(fid);
+0047     nline=nline+1;
+0048     <span class="keyword">if</span> (~ischar(line))
+0049       <span class="comment">% end of file</span>
+0050       <span class="keyword">break</span>;
+0051     <span class="keyword">end</span>
+0052     <span class="comment">%fprintf('line %d: &gt;&gt;%s&lt;&lt;\n',nline,line);</span>
+0053 
+0054     <span class="comment">% skip comments or empty lines</span>
+0055     <span class="keyword">if</span> (isempty(line) || line(1)==<span class="string">'*'</span> || line(1) ==<span class="string">'&quot;'</span>)
+0056       <span class="keyword">continue</span>;
+0057     <span class="keyword">end</span>
+0058 
+0059     <span class="keyword">switch</span> (phase)
+0060     <span class="keyword">case</span> 0
+0061       <span class="comment">% expecting number of variables</span>
+0062       [nx,count]=sscanf(line,<span class="string">'%d'</span>,1);
+0063       <span class="keyword">if</span> (count~=1)
+0064         error(sprintf(<span class="string">'Line %d, cannot read number of variables.'</span>,nline));
+0065       <span class="keyword">elseif</span> (nx&lt;=0)
+0066         error(sprintf(<span class="string">'Line %d, wrong number of variables.'</span>,nline));
+0067       <span class="keyword">end</span>
+0068       phase=phase+1;
+0069       <span class="comment">%nx</span>
+0070 
+0071     <span class="keyword">case</span> 1
+0072       <span class="comment">% expecting number of matrix constraints (=blocks)</span>
+0073       [nblocks,count]=sscanf(line,<span class="string">'%d'</span>,1);
+0074       <span class="keyword">if</span> (count~=1)
+0075         error(sprintf(<span class="string">'Line %d, cannot read number of blocks.'</span>,nline));
+0076       <span class="keyword">elseif</span> (nblocks&lt;=0)
+0077         error(sprintf(<span class="string">'Line %d, wrong number of blocks.'</span>,nline));
+0078       <span class="keyword">end</span>
+0079       phase=phase+1;
+0080       <span class="comment">%nblocks</span>
+0081 
+0082     <span class="keyword">case</span> 2
+0083       <span class="comment">% expecting block sizes which might be separated by foreign</span>
+0084       <span class="comment">% characters such as {,},(,),... Add space at the beginning</span>
+0085       <span class="comment">% of the line in case there is nothing</span>
+0086       [msizes,count]=sscanf([<span class="string">' '</span> line],<span class="string">'%*[^0-9+-]%d'</span>,nblocks);
+0087       <span class="keyword">if</span> (count~=nblocks)
+0088         error(sprintf(<span class="string">'Line %d, cannot read block sizes.'</span>,nline));
+0089       <span class="keyword">elseif</span> (any(msizes==0))
+0090         error(sprintf(<span class="string">'Line %d, block sizes are incorrect.'</span>,nline));
+0091       <span class="keyword">end</span>
+0092       phase=phase+1;
+0093       <span class="comment">%msizes</span>
+0094 
+0095     <span class="keyword">case</span> 3
+0096       <span class="comment">% expecting the objective vector perhaps mixed with some garbage</span>
+0097       [c,count]=sscanf([<span class="string">' '</span> line],<span class="string">'%*[^0-9eE.+-]%lg'</span>,nx);
+0098       <span class="keyword">if</span> (count~=nx)
+0099         error(sprintf(<span class="string">'Line %d, cannot read the objective vector.'</span>,nline));
+0100       <span class="keyword">end</span>
+0101       phase=phase+1;
+0102       <span class="comment">%c</span>
+0103 
+0104     <span class="keyword">case</span> 4
+0105       <span class="comment">% expecting a data line</span>
+0106       [data,count]=sscanf(line,<span class="string">'%i %i %i %i %lg'</span>,5);
+0107       <span class="keyword">if</span> (count~=5)
+0108         error(sprintf(<span class="string">'Line %d, cannot read the data line.'</span>,nline));
+0109       <span class="keyword">end</span>
+0110       nentries=nentries+1;
+0111       <span class="keyword">if</span> (nentries&gt;maxentries)
+0112         alldata=[alldata,zeros(5,2500)];
+0113         maxentries=maxentries+2500;
+0114       <span class="keyword">end</span>
+0115       alldata(:,nentries)=data;
+0116       <span class="comment">%alldata(:,1:nentries)</span>
+0117 
+0118     <span class="keyword">end</span>
+0119 
+0120   <span class="keyword">end</span>
+0121 
+0122   <span class="comment">% close file</span>
+0123   fclose(fid);
+0124 
+0125   <span class="keyword">if</span> (nx&lt;=0 || nblocks&lt;=0 || isempty(msizes) || isempty(c) || nentries&lt;=0)
+0126     error(<span class="string">'The file seems to be incomplete.'</span>);
+0127   <span class="keyword">end</span>
+0128 
+0129   <span class="comment">% remove empty entries</span>
+0130   alldata=alldata(:,1:nentries);
+0131 
+0132   <span class="comment">% check the correctness of the data lines</span>
+0133   <span class="keyword">if</span> (any(alldata(1,:)&lt;0 | alldata(1,:)&gt;nx))
+0134     error(<span class="string">'Some of the data lines have matrix_number out of range.'</span>);
+0135   <span class="keyword">end</span>
+0136   <span class="keyword">if</span> (any(alldata(2,:)&lt;1 | alldata(2,:)&gt;nblocks))
+0137     error(<span class="string">'Some of the data lines have block_number out of range.'</span>);
+0138   <span class="keyword">end</span>
+0139 
+0140   <span class="comment">% extract the linear constraints</span>
+0141   <span class="comment">% turn 1-size matrix blocks into linear constraints</span>
+0142   idx=find(msizes==1);
+0143   msizes(idx)=-1;
+0144   linblk=find(msizes&lt;0);
+0145   nlin=sum(abs(msizes(linblk)));
+0146   nnzlin=length(find(msizes(alldata(2,:))&lt;0));
+0147   <span class="comment">% accummulate data into B matrix</span>
+0148   B=sparse([],[],[],nx,nlin,nnzlin);
+0149   d=zeros(nlin,1);
+0150   ng=0;    <span class="comment">% no of the constraint written so far</span>
+0151   <span class="keyword">for</span> iblk=linblk'
+0152     dim=-msizes(iblk);
+0153     idxentries=find(alldata(2,:)==iblk);
+0154     thisblock=alldata(:,idxentries);
+0155     <span class="keyword">if</span> (any(thisblock(3,:)&lt;1 | thisblock(3,:)&gt;dim | <span class="keyword">...</span>
+0156       thisblock(3,:)~=thisblock(4,:)))
+0157       error(sprintf(<span class="string">'Diagonal block %d have indices nondiag. or out of range elements.'</span>,iblk));
+0158     <span class="keyword">end</span>
+0159     <span class="comment">% extract RHS</span>
+0160     idx=find(thisblock(1,:)==0);
+0161     <span class="keyword">if</span> (~isempty(idx))
+0162       d(ng+thisblock(3,idx))=thisblock(5,idx);
+0163     <span class="keyword">end</span>
+0164     <span class="comment">% extract linear constraints bodies</span>
+0165     idx=find(thisblock(1,:)&gt;0);
+0166     <span class="keyword">if</span> (~isempty(idx))
+0167       B(:,ng+1:ng+dim)=sparse(thisblock(1,idx),thisblock(3,idx),thisblock(5,idx),nx,dim);
+0168     <span class="keyword">end</span>
+0169     ng=ng+dim;
+0170   <span class="keyword">end</span>
+0171   <span class="comment">%d</span>
+0172   <span class="comment">%spy(B)</span>
+0173   
+0174   <span class="comment">% extract matrix constraints</span>
+0175   matblk=find(msizes&gt;0);
+0176   na=length(matblk);
+0177   A=cell(na,nx+1);
+0178   <span class="keyword">for</span> iblk=matblk'
+0179     dim=msizes(iblk);
+0180     idxentries=find(alldata(2,:)==iblk);
+0181     thisblock=alldata(:,idxentries);
+0182     <span class="keyword">if</span> (any(thisblock(3,:)&lt;1 | thisblock(3,:)&gt;dim | thisblock(4,:)&lt;1 | <span class="keyword">...</span>
+0183       thisblock(4,:)&gt;dim))
+0184       error(sprintf(<span class="string">'Block %d have indices not matching its dim=%d.'</span>,iblk,dim));
+0185     <span class="keyword">end</span>
+0186     <span class="comment">% if i&gt;j --&gt; lower triangle which is not allowed</span>
+0187     <span class="keyword">if</span> (any(thisblock(3,:)&gt;thisblock(4,:)))
+0188       error(sprintf(<span class="string">'Block %d have elements outside upper triangle.'</span>,iblk));
+0189     <span class="keyword">end</span>
+0190     <span class="comment">% extract each of the matrices in this block</span>
+0191     <span class="keyword">for</span> i=0:nx
+0192       idx=find(thisblock(1,:)==i);
+0193       <span class="keyword">if</span> (isempty(idx))
+0194         A{iblk,i+1}=sparse(dim,dim);
+0195       <span class="keyword">else</span>
+0196         M=sparse(thisblock(3,idx),thisblock(4,idx),thisblock(5,idx),dim,dim);
+0197         A{iblk,i+1}=M+triu(M,1)';
+0198       <span class="keyword">end</span>
+0199     <span class="keyword">end</span>
+0200   <span class="keyword">end</span>
+0201 
+0202   <span class="comment">% put everything together into one structure</span>
+0203   sdpdata.name=filename;
+0204   sdpdata.Nx=nx;
+0205   sdpdata.Na=na;
+0206   sdpdata.Ng=nlin;
+0207   sdpdata.B=B';
+0208   sdpdata.d=d;
+0209   sdpdata.c=c;
+0210   sdpdata.NaDims=msizes;
+0211   sdpdata.A=A;
+0212 
+0213 
+0214 <span class="comment">%  if 0</span>
+0215 
+0216 
+0217 <span class="comment">% create dependency table, Adep(k) = vector of all x indices which Ak depends on</span>
+0218 sdpdata.Adep=cell(sdpdata.Na,1);
+0219 <span class="keyword">for</span> k=1:sdpdata.Na
+0220   list=[];
+0221   <span class="keyword">for</span> i=2:nx+1
+0222     <span class="keyword">if</span> (~isempty(sdpdata.A{k,i}) &amp;&amp; nnz(sdpdata.A{k,i})&gt;0)
+0223       list=[list,i-1];
+0224     <span class="keyword">end</span>
+0225   <span class="keyword">end</span>
+0226   sdpdata.Adep{k}=list;
+0227 <span class="keyword">end</span>
+0228 
+0229 
+0230 <span class="keyword">end</span>
+0231</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

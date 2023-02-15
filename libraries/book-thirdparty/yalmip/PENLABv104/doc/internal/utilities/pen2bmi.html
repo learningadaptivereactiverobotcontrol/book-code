@@ -1,0 +1,314 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of pen2bmi</title>
+  <meta name="keywords" content="pen2bmi">
+  <meta name="description" content="PEN2BMI converts input structure PEN for PENBMI (as described">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">utilities</a> &gt; pen2bmi.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for utilities&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>pen2bmi
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>PEN2BMI converts input structure PEN for PENBMI (as described</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [bmidata]=pen2bmi(pen, name) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> PEN2BMI converts input structure PEN for PENBMI (as described 
+ in PENOPT/PENBMI manual Section 5.2) into a structure accepted by 
+ PENLAB via BMI or PMI modules, for details see manual or
+    modules/BMI/bmi_define.m.
+ Note that the convertor doesn't do any heavy checking on the input
+ structure. If there were any inconsistencies in 'pen' it might be
+ noticed either here or in bmi2_define().
+
+ Structure 'pen' can be also obtained via YALMIP.
+
+ See also <a href="yalmip2bmi.html" class="code" title="function [bmidata]=yalmip2bmi(yalpen, name)">yalmip2bmi</a>, example_yalmip, bmi_define
+
+ Example:
+    bmi=pen2bmi(pen);
+    penm = bmi_define(bmi);
+    prob = penlab(penm);
+    solve(prob);</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="yalmip2bmi.html" class="code" title="function [bmidata]=yalmip2bmi(yalpen, name)">yalmip2bmi</a>	YALMIP2BMI reads the output of YALMIP "export" command and</li></ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function [Ak] = copy_mconstr(dim,nA,nK,A_idx,K_idx,K_jdx,</a></li></ul>
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [bmidata]=pen2bmi(pen, name)</a>
+0002 <span class="comment">% PEN2BMI converts input structure PEN for PENBMI (as described</span>
+0003 <span class="comment">% in PENOPT/PENBMI manual Section 5.2) into a structure accepted by</span>
+0004 <span class="comment">% PENLAB via BMI or PMI modules, for details see manual or</span>
+0005 <span class="comment">%    modules/BMI/bmi_define.m.</span>
+0006 <span class="comment">% Note that the convertor doesn't do any heavy checking on the input</span>
+0007 <span class="comment">% structure. If there were any inconsistencies in 'pen' it might be</span>
+0008 <span class="comment">% noticed either here or in bmi2_define().</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% Structure 'pen' can be also obtained via YALMIP.</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">% See also yalmip2bmi, example_yalmip, bmi_define</span>
+0013 <span class="comment">%</span>
+0014 <span class="comment">% Example:</span>
+0015 <span class="comment">%    bmi=pen2bmi(pen);</span>
+0016 <span class="comment">%    penm = bmi_define(bmi);</span>
+0017 <span class="comment">%    prob = penlab(penm);</span>
+0018 <span class="comment">%    solve(prob);</span>
+0019 
+0020 <span class="comment">% This file is a part of PENLAB package distributed under GPLv3 license</span>
+0021 <span class="comment">% Copyright (c) 2013 by  J. Fiala, M. Kocvara, M. Stingl</span>
+0022 <span class="comment">% Last Modified: 27 Nov 2013</span>
+0023 
+0024   <span class="keyword">if</span> (nargin&lt;=1)
+0025     name=<span class="string">'BMI2 from convertor pen2bmi2()'</span>;
+0026   <span class="keyword">end</span>
+0027 
+0028   <span class="comment">%%%%%%%%%  Convert the data %%%%%%%%%</span>
+0029 
+0030   bmidata = [];
+0031   bmidata.name = name;
+0032 <span class="comment">%   bmidata.Nx=0;</span>
+0033 <span class="comment">%   bmidata.Na=0;</span>
+0034 <span class="comment">%   bmidata.Ng=0;</span>
+0035 <span class="comment">%   bmidata.B=[];</span>
+0036 <span class="comment">%   bmidata.d=[];</span>
+0037 <span class="comment">%   bmidata.c=[];</span>
+0038 <span class="comment">%   bmidata.NaDims=[];</span>
+0039 <span class="comment">%   bmidata.A=[];</span>
+0040 
+0041   <span class="comment">% no of variables</span>
+0042   <span class="keyword">if</span> (~isfield(pen,<span class="string">'vars'</span>) || pen.vars&lt;=0)
+0043     error(<span class="string">'Input: wrong or missing vars component in pen.'</span>);
+0044   <span class="keyword">end</span>
+0045   bmidata.Nx = pen.vars;
+0046   Nx = pen.vars;
+0047 
+0048   <span class="comment">% if present, copy starting point</span>
+0049   <span class="keyword">if</span> (isfield(pen,<span class="string">'x0'</span>))
+0050     <span class="keyword">if</span> (isempty(pen.x0) || ~isvector(pen.x0) || length(pen.x0)~=Nx)
+0051       error(<span class="string">'Input: starting point x0 is incompatible.'</span>);
+0052     <span class="keyword">end</span>
+0053     bmidata.xinit = pen.x0;
+0054   <span class="keyword">end</span>
+0055 
+0056   <span class="comment">% dense vector of the linear part of objective function</span>
+0057   <span class="keyword">if</span> (isfield(pen,<span class="string">'fobj'</span>) &amp;&amp; ~isempty(pen.fobj))
+0058     bmidata.c = pen.fobj;
+0059   <span class="keyword">end</span>
+0060 
+0061   <span class="comment">% if present, quadratic part of the objective function</span>
+0062   <span class="keyword">if</span> (isfield(pen,<span class="string">'q_nzs'</span>) &amp;&amp; ~isempty(pen.q_nzs) &amp;&amp; pen.q_nzs&gt;0)
+0063     <span class="keyword">if</span> (~isfield(pen,<span class="string">'q_row'</span>) || ~isfield(pen,<span class="string">'q_col'</span>) || ~isfield(pen,<span class="string">'q_val'</span>))
+0064       error(<span class="string">'Input: incomplete quadratic part of the objective.'</span>);
+0065     <span class="keyword">end</span>
+0066     H = sparse(pen.q_row+1, pen.q_col+1, pen.q_val,Nx,Nx,pen.Q_nzs);
+0067     <span class="comment">% only upper triangle, symmetrize</span>
+0068     bmidata.H = H + triu(H,1)';
+0069   <span class="keyword">end</span>
+0070 
+0071   <span class="comment">% block of linear constraints stored in 'pen' in the form Bx&lt;=c</span>
+0072   <span class="keyword">if</span> (isfield(pen,<span class="string">'constr'</span>) &amp;&amp; ~isempty(pen.constr) &amp;&amp; pen.constr&gt;0)
+0073     <span class="keyword">if</span> (~isfield(pen,<span class="string">'bi_dim'</span>) || ~isfield(pen,<span class="string">'bi_idx'</span>) || <span class="keyword">...</span>
+0074       ~isfield(pen,<span class="string">'bi_val'</span>) || ~isfield(pen,<span class="string">'ci'</span>))
+0075       error(<span class="string">'Input: incomplete linear constraints Bx&lt;=c.'</span>);
+0076     <span class="keyword">end</span>
+0077     <span class="keyword">if</span> (any(pen.bi_dim&lt;0))
+0078       error(<span class="string">'Input: bi_dim has negative components.'</span>);
+0079     <span class="keyword">end</span>
+0080 
+0081     <span class="comment">% convert CCS -&gt; CS</span>
+0082     nnzB=sum(pen.bi_dim);
+0083     brows=[];
+0084     <span class="keyword">for</span> idx=1:pen.constr
+0085       brows=[brows;idx*ones(pen.bi_dim(idx),1)];
+0086     <span class="keyword">end</span>
+0087     B = sparse(brows,pen.bi_idx+1,pen.bi_val,pen.constr,Nx,nnzB);
+0088     bmidata.B = B;
+0089     bmidata.ubg = pen.ci;
+0090   <span class="keyword">end</span>
+0091 
+0092   <span class="comment">% matrix constraints</span>
+0093   <span class="keyword">if</span> (isfield(pen,<span class="string">'mconstr'</span>) &amp;&amp; ~isempty(pen.mconstr) &amp;&amp; pen.mconstr&gt;0)
+0094     <span class="keyword">if</span> (~isfield(pen,<span class="string">'msizes'</span>) || any(pen.msizes&lt;1))
+0095       error(<span class="string">'Input: msizes missing or wrong.'</span>);
+0096     <span class="keyword">end</span>
+0097 
+0098     <span class="comment">% linear matrix terms - OK?</span>
+0099     <span class="keyword">if</span> (isfield(pen,<span class="string">'ai_dim'</span>))
+0100       <span class="keyword">if</span> (isempty(pen.ai_dim) || any(pen.ai_dim&lt;0) || <span class="keyword">...</span>
+0101         ~isfield(pen,<span class="string">'ai_idx'</span>) || <span class="keyword">...</span>
+0102         ~isfield(pen,<span class="string">'ai_nzs'</span>) || any(pen.ai_nzs&lt;0) || <span class="keyword">...</span>
+0103         ~isfield(pen,<span class="string">'ai_val'</span>) || ~isfield(pen,<span class="string">'ai_col'</span>) || <span class="keyword">...</span>
+0104         ~isfield(pen,<span class="string">'ai_row'</span>))
+0105         error(<span class="string">'Input: incomplete linear matrix terms A_i^k.'</span>);
+0106       <span class="keyword">end</span>
+0107     <span class="keyword">else</span>
+0108       <span class="comment">% linear SDP terms missing? assume that all are empty</span>
+0109       pen.ai_dim=zeros(pen.mconstr,1);
+0110       pen.ai_idx=zeros(1,1);
+0111       pen.ai_nzs=zeros(1,1);
+0112       pen.ai_val=zeros(1,1);
+0113       pen.ai_col=zeros(1,1);
+0114       pen.ai_row=zeros(1,1);
+0115     <span class="keyword">end</span>
+0116 
+0117     <span class="comment">% bilinear matrix terms - OK?</span>
+0118     <span class="keyword">if</span> (isfield(pen,<span class="string">'ki_dim'</span>)) &amp;&amp; max(pen.ki_dim)&gt;0
+0119       <span class="keyword">if</span> (isempty(pen.ki_dim) || any(pen.ki_dim&lt;0) || <span class="keyword">...</span>
+0120         ~isfield(pen,<span class="string">'ki_idx'</span>) || ~isfield(pen,<span class="string">'kj_idx'</span>) || <span class="keyword">...</span>
+0121         ~isfield(pen,<span class="string">'ki_nzs'</span>) || any(pen.ki_nzs&lt;0) || <span class="keyword">...</span>
+0122         ~isfield(pen,<span class="string">'ki_val'</span>) || ~isfield(pen,<span class="string">'ki_col'</span>) || <span class="keyword">...</span>
+0123         ~isfield(pen,<span class="string">'ki_row'</span>))
+0124         error(<span class="string">'Input: incomplete bilinear matrix terms K_ij^k.'</span>);
+0125       <span class="keyword">end</span>
+0126     <span class="keyword">else</span>
+0127       <span class="comment">% bilinear SDP terms missing --&gt; just linear SDP, no higher order matrices</span>
+0128       pen.ki_dim=zeros(pen.mconstr,1);
+0129       pen.ki_idx=zeros(1,1);
+0130       pen.kj_idx=zeros(1,1);
+0131       pen.ki_nzs=zeros(1,1);
+0132       pen.ki_val=zeros(1,1);
+0133       pen.ki_col=zeros(1,1);
+0134       pen.ki_row=zeros(1,1);
+0135     <span class="keyword">end</span>
+0136 
+0137     bmidata.Na = pen.mconstr;
+0138     bmidata.A = cell(pen.mconstr,1);
+0139 
+0140     <span class="comment">% copy one matrix constraint at a time</span>
+0141     midxAstart=1;          <span class="comment">% indices to *_nzs() and *_idx() arrays</span>
+0142     midxKstart=1;
+0143     idxA=1;                <span class="comment">% indices to *_val, *_col, *_row arrays</span>
+0144     idxK=1;
+0145 
+0146     <span class="keyword">for</span> k=1:pen.mconstr
+0147       midxAend=midxAstart+pen.ai_dim(k)-1;
+0148       midxKend=midxKstart+pen.ki_dim(k)-1;
+0149       nnzAsum=sum(pen.ai_nzs(midxAstart:midxAend));
+0150       nnzKsum=sum(pen.ki_nzs(midxKstart:midxKend));
+0151 
+0152       bmidata.A{k} = <a href="#_sub1" class="code" title="subfunction [Ak] = copy_mconstr(dim,nA,nK,A_idx,K_idx,K_jdx,">copy_mconstr</a>(pen.msizes(k),pen.ai_dim(k),pen.ki_dim(k),<span class="keyword">...</span>
+0153         pen.ai_idx(midxAstart:midxAend), <span class="keyword">...</span>
+0154         pen.ki_idx(midxKstart:midxKend), pen.kj_idx(midxKstart:midxKend), <span class="keyword">...</span>
+0155         pen.ai_nzs(midxAstart:midxAend), <span class="keyword">...</span>
+0156         pen.ai_val(idxA:end), pen.ai_row(idxA:end), pen.ai_col(idxA:end),<span class="keyword">...</span>
+0157         pen.ki_nzs(midxKstart:midxKend), <span class="keyword">...</span>
+0158         pen.ki_val(idxK:end), pen.ki_row(idxK:end), pen.ki_col(idxK:end));
+0159 
+0160 
+0161       <span class="comment">% move indices in *_nzs arrays</span>
+0162       midxAstart=midxAend+1;
+0163       midxKstart=midxKend+1;
+0164       <span class="comment">% move indices in *_val arrays</span>
+0165       idxA = idxA+nnzAsum;
+0166       idxK = idxK+nnzKsum;
+0167     <span class="keyword">end</span>
+0168   <span class="keyword">end</span>
+0169   
+0170 <span class="comment">%   % create dependency table, Adep(k) = vector of all x indices which Ak depends on</span>
+0171 <span class="comment">%   bmidata.Adep=cell(bmidata.Na,1);</span>
+0172 <span class="comment">%   for k=1:bmidata.Na</span>
+0173 <span class="comment">%       list=[];</span>
+0174 <span class="comment">%       for i=2:bmidata.Nx+1</span>
+0175 <span class="comment">%           if (~isempty(bmidata.A{k,i}) &amp;&amp; nnz(bmidata.A{k,i})&gt;0)</span>
+0176 <span class="comment">%               list=[list,i-1];</span>
+0177 <span class="comment">%           end</span>
+0178 <span class="comment">%       end</span>
+0179 <span class="comment">%       bmidata.Adep{k}=list;</span>
+0180 <span class="comment">%   end</span>
+0181   
+0182 <span class="keyword">end</span>
+0183 
+0184 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0185 <span class="comment">% create one matrix constraints from PenBMI data</span>
+0186 <span class="comment">% in the format required in BMI2/PMI</span>
+0187 <span class="comment">%</span>
+0188 <span class="comment">% Input:</span>
+0189 <span class="comment">%   dim - dimension of the matrix constraint</span>
+0190 <span class="comment">%   nA, nK - number of matrices in linear and bilinear terms</span>
+0191 <span class="comment">%   A_idx - dim nA, indices of the linear matrices A_i</span>
+0192 <span class="comment">%   K_idx, K_jdx - dim nK, i and j indices of bilinear matrices K_ij</span>
+0193 <span class="comment">%   A_nnz - dim nA, number of nonzeros in each given matrix A_i</span>
+0194 <span class="comment">%   A_val,col,row - dim sum(A_nnz), matries A_i next to each other</span>
+0195 <span class="comment">%     stored in CS upper triangle format, 0-based indices row/col</span>
+0196 <span class="comment">%   K_nnz - dim nK, number of nonzeros in each given K_ij</span>
+0197 <span class="comment">%   K_val,col,row - dim sum(K_nnz), K_ij matrices, same format as A_i</span>
+0198 <span class="comment">%</span>
+0199 <a name="_sub1" href="#_subfunctions" class="code">function [Ak] = copy_mconstr(dim,nA,nK,A_idx,K_idx,K_jdx,</a><span class="keyword">...</span>
+0200   A_nnz,A_val,A_row,A_col,K_nnz,K_val,K_row,K_col)
+0201 
+0202   <span class="keyword">if</span> (nA==0 &amp;&amp; nK==0)
+0203     error(<span class="string">'Input: neither linear nor bilinear matrices in this constraint.'</span>);
+0204   <span class="keyword">end</span>
+0205 
+0206   <span class="keyword">if</span> (nK==0)
+0207     maxOrder = 1;
+0208     Ak.midx = zeros(maxOrder,nA);
+0209     Ak.midx(1,:) = A_idx(1:nA);
+0210   <span class="keyword">else</span>
+0211     maxOrder = 2;
+0212     Ak.midx = zeros(maxOrder,nA+nK);
+0213     Ak.midx(1,1:nA) = A_idx(1:nA);   <span class="comment">% midx(2,1:nA) = zeroes()</span>
+0214     Ak.midx(1,nA+1:end) = K_idx(1:nK);
+0215     Ak.midx(2,nA+1:end) = K_jdx(1:nK);
+0216   <span class="keyword">end</span>
+0217   
+0218   Ak.Q = cell(nA+nK,1);
+0219   <span class="comment">% copy linear terms</span>
+0220   idx = 1;          <span class="comment">% index to _val/_row/_col arrays</span>
+0221   <span class="keyword">for</span> midx=1:nA
+0222     idxend = idx+A_nnz(midx)-1;
+0223     Qi = sparse(A_row(idx:idxend)+1, A_col(idx:idxend)+1, A_val(idx:idxend),<span class="keyword">...</span>
+0224       dim, dim, A_nnz(midx));
+0225     <span class="comment">% symmetrize, was just upper triangle</span>
+0226     Qi = Qi + triu(Qi,1)';
+0227     <span class="comment">% swap sign, we want Ak &gt;= 0 (pos. def.) and it was neg. def.</span>
+0228     Ak.Q{midx} = -Qi;
+0229 
+0230     idx = idxend+1;
+0231   <span class="keyword">end</span>
+0232 
+0233   <span class="comment">% copy bilinear terms</span>
+0234   idx = 1;          <span class="comment">% index to _val/_row/_col arrays</span>
+0235   <span class="keyword">for</span> midx=1:nK
+0236     idxend = idx+K_nnz(midx)-1;
+0237     Qi = sparse(K_row(idx:idxend)+1, K_col(idx:idxend)+1, K_val(idx:idxend),<span class="keyword">...</span>
+0238       dim, dim, K_nnz(midx));
+0239     <span class="comment">% symmetrize, was just upper triangle</span>
+0240     Qi = Qi + triu(Qi,1)';
+0241     <span class="comment">% swap sign, we want Ak &gt;= 0 (pos. def.) and it was neg. def.</span>
+0242     Ak.Q{nA+midx} = -Qi;
+0243 
+0244     idx = idxend+1;
+0245   <span class="keyword">end</span>
+0246 
+0247 <span class="keyword">end</span>
+0248 
+0249</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

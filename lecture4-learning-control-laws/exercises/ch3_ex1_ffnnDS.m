@@ -59,6 +59,7 @@ clearvars -except filepath M Xi_ref Xi_dot_ref x0_all Data att
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 addpath(genpath(fullfile(filepath, '..', '..', 'libraries','book-thirdparty')));
 disp('Optimization running, be patient...');
+tStart = cputime;
 
 % Train a Feed-Forward Neural Network as a function approximator for f(x)
 
@@ -90,6 +91,7 @@ disp('Visualization loading, be patient...');
 limits = axis;
 title('Unconstrained Feed Forward NN-based DS ', 'Interpreter', 'LaTex', 'FontSize', 20)
 h_att = scatter(att(1), att(2), 150, [0 0 0], 'd', 'Linewidth', 2); hold on;
+tEnd = cputime - tStart;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%  Step 4 (Evaluation): Compute Metrics and Visualize Velocities %%
@@ -104,6 +106,9 @@ fprintf('Unconstrained Feed Forward NN-based DS, got velocity RMSE on training s
 % Compute e_dot on training data
 edot = mean(edot_error(ds_nn, Xi_ref, Xi_dot_ref));
 fprintf('Unconstrained Feed Forward NN-based DS, got velocity deviation (e_dot) on training set: %d \n', edot);
+
+% Display time 
+fprintf('Computation Time is %1.2f seconds \n', tEnd);
 
 % Compute DTWD between train trajectories and reproductions
 if ds_plot_options.sim_traj

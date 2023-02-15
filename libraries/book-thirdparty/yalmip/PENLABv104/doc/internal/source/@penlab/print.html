@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of print</title>
+  <meta name="keywords" content="print">
+  <meta name="description" content="Publisher (printing manager) for PenLab">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">source</a> &gt; <a href="index.html">@penlab</a> &gt; print.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for source/@penlab&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>print
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Publisher (printing manager) for PenLab</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [errmsg] = print(obj, minlev, maxlev, msg, varargin) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Publisher (printing manager) for PenLab
+ Print 'msg' with optional data in varargin to the screen, to a log file or 
+ using the user's printing routine; depending on printing level (outlev) set 
+ in the option settings.
+ Input:
+   minlev, maxlev ... minimum (inclusive) and maximum (exclusive) output level
+      when the message gets printed, levels are typically 1~5, use Inf if there
+      is no maximal restriction
+   msg, varargin ... message in the sprintf/fprintf format, \n is added
+ Output:
+   errmsg ... error message from sprintf (if any)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="disp.html" class="code" title="function disp(obj)">disp</a>	overloading default disp()</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="penlab.html" class="code" title="">penlab</a>	PenLab (Pennon Laboratory for Matlab, previously PennonM)</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Publisher (printing manager) for PenLab</span>
+0002 <span class="comment">% Print 'msg' with optional data in varargin to the screen, to a log file or</span>
+0003 <span class="comment">% using the user's printing routine; depending on printing level (outlev) set</span>
+0004 <span class="comment">% in the option settings.</span>
+0005 <span class="comment">% Input:</span>
+0006 <span class="comment">%   minlev, maxlev ... minimum (inclusive) and maximum (exclusive) output level</span>
+0007 <span class="comment">%      when the message gets printed, levels are typically 1~5, use Inf if there</span>
+0008 <span class="comment">%      is no maximal restriction</span>
+0009 <span class="comment">%   msg, varargin ... message in the sprintf/fprintf format, \n is added</span>
+0010 <span class="comment">% Output:</span>
+0011 <span class="comment">%   errmsg ... error message from sprintf (if any)</span>
+0012 <span class="comment">%</span>
+0013 <a name="_sub0" href="#_subfunctions" class="code">function [errmsg] = print(obj, minlev, maxlev, msg, varargin)</a>
+0014 
+0015   errmsg=[];
+0016   [text, errmsg] = sprintf(msg,varargin{:});
+0017 
+0018   level=obj.allopts.outlev;
+0019   <span class="keyword">if</span> (level&gt;=minlev &amp;&amp; level&lt;maxlev)
+0020     <a href="disp.html" class="code" title="function disp(obj)">disp</a>(text);
+0021   <span class="keyword">end</span>
+0022 
+0023   level=obj.allopts.outlev_file;
+0024   <span class="keyword">if</span> (obj.fid~=-1 &amp;&amp; level&gt;=minlev &amp;&amp; level&lt;maxlev)
+0025     fprintf(obj.fid,[text <span class="string">'\n'</span>]);
+0026   <span class="keyword">end</span>
+0027   
+0028   <span class="keyword">if</span> (~isempty(obj.allopts.user_prn))
+0029     user_prn(minlev, maxlev, text);
+0030   <span class="keyword">end</span>
+0031</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

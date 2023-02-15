@@ -1,0 +1,241 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of init</title>
+  <meta name="keywords" content="init">
+  <meta name="description" content="Initialize lagrangian multipliers, penalty parameters etc.">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">source</a> &gt; <a href="index.html">@penlab</a> &gt; init.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for source/@penlab&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>init
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>Initialize lagrangian multipliers, penalty parameters etc.</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [] = init(obj, forceupdate) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Initialize lagrangian multipliers, penalty parameters etc.
+ If called without argument (or with forceupdate=true), restores default
+ settings for all (not only for mis-shaped or empty items).
+
+ TODO: if not forced and wrong --&gt; warning?
+ TODO: force transposing if column vector?
+ problem with vectors 0x1 --&gt; changed it, if empty then 0x0 size</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="penlab.html" class="code" title="">penlab</a>	PenLab (Pennon Laboratory for Matlab, previously PennonM)</li></ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function [p, nfactor] = p_check2(M, p)</a></li></ul>
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Initialize lagrangian multipliers, penalty parameters etc.</span>
+0002 <span class="comment">% If called without argument (or with forceupdate=true), restores default</span>
+0003 <span class="comment">% settings for all (not only for mis-shaped or empty items).</span>
+0004 <span class="comment">%</span>
+0005 <span class="comment">% TODO: if not forced and wrong --&gt; warning?</span>
+0006 <span class="comment">% TODO: force transposing if column vector?</span>
+0007 <span class="comment">% problem with vectors 0x1 --&gt; changed it, if empty then 0x0 size</span>
+0008 <a name="_sub0" href="#_subfunctions" class="code">function [] = init(obj, forceupdate)</a>
+0009   
+0010   <span class="keyword">if</span> (nargin&lt;2)
+0011     forceupdate = true;
+0012   <span class="keyword">end</span>
+0013 
+0014   <span class="comment">% function constraints: Lagr. multipliers &amp; penalty</span>
+0015   <span class="keyword">if</span> (forceupdate || ~isvector(obj.uxbox) || length(obj.uxbox)~=obj.Nxbox)
+0016     <span class="keyword">if</span> (obj.Nxbox&gt;0)
+0017       obj.uxbox = obj.allopts.uinit_box*ones(obj.Nxbox,1);
+0018     <span class="keyword">else</span>
+0019       obj.uxbox = [];
+0020     <span class="keyword">end</span>
+0021   <span class="keyword">end</span>
+0022   obj.uxboxnew = ones(obj.Nxbox,1);
+0023 
+0024   <span class="keyword">if</span> (forceupdate || ~isvector(obj.uineq) || length(obj.uineq)~=obj.Nineq)
+0025     <span class="keyword">if</span> (obj.Nineq&gt;0)
+0026       obj.uineq = obj.allopts.uinit*ones(obj.Nineq,1);
+0027     <span class="keyword">else</span>
+0028       obj.uineq = [];
+0029     <span class="keyword">end</span>
+0030   <span class="keyword">end</span>
+0031   obj.uineqnew = ones(obj.Nineq,1);
+0032 
+0033   <span class="keyword">if</span> (forceupdate || ~isvector(obj.ueq) || length(obj.ueq)~=obj.Neq)
+0034     <span class="keyword">if</span> (obj.Neq&gt;0)
+0035       obj.ueq = obj.allopts.uinit_eq*ones(obj.Neq,1);
+0036     <span class="keyword">else</span>
+0037       obj.ueq = [];
+0038     <span class="keyword">end</span>
+0039   <span class="keyword">end</span>
+0040 
+0041   <span class="keyword">if</span> (forceupdate || ~isvector(obj.pxbox) || length(obj.pxbox)~=obj.Nxbox)
+0042     <span class="keyword">if</span> (obj.Nxbox&gt;0)
+0043       obj.pxbox = obj.allopts.pinit*ones(obj.Nxbox,1);
+0044     <span class="keyword">else</span>
+0045       obj.pxbox = [];
+0046     <span class="keyword">end</span>
+0047   <span class="keyword">end</span>
+0048 
+0049   <span class="keyword">if</span> (forceupdate || ~isvector(obj.pineq) || length(obj.pineq)~=obj.Nineq)
+0050     <span class="keyword">if</span> (obj.Nineq&gt;0)
+0051       obj.pineq = obj.allopts.pinit*ones(obj.Nineq,1);
+0052     <span class="keyword">else</span>
+0053       obj.pineq = [];
+0054     <span class="keyword">end</span>
+0055   <span class="keyword">end</span>
+0056 
+0057   <span class="comment">% matrix constraints: NYbox, NA</span>
+0058   <span class="comment">% MATRIX variables (Y) TODO   don't forget obj.PY...!!</span>
+0059   <span class="keyword">if</span> (forceupdate || ~isvector(obj.PYbox) || length(obj.PYbox)~=obj.NYbox)
+0060     <span class="keyword">if</span> (obj.NYbox&gt;0)
+0061       <span class="comment">% same as below, should be length(Ybox used in Phi, not barrier)</span>
+0062       pnew=1;  <span class="comment">% TODO get me from the option settings!!</span>
+0063       <span class="keyword">for</span> k=1:obj.NYbox   <span class="comment">%obj.Yboxindphi</span>
+0064         kuser=obj.Yboxmap(k);
+0065         Ykuserx=obj.Y{kuser};
+0066         Ykx = obj.Yboxshift(k)*speye(size(Ykuserx)) + obj.Yboxmlt(k) .* Ykuserx;
+0067 
+0068         <span class="comment">%pkx=pnew(k); %obj.PA(k);</span>
+0069         [pnew, nfactor] = <a href="#_sub1" class="code" title="subfunction [p, nfactor] = p_check2(M, p)">p_check2</a>(-Ykx, pnew);
+0070       <span class="keyword">end</span>
+0071 
+0072       <span class="comment">% use the minima for all  TODO shoudln't it be maxima????</span>
+0073       obj.PYbox=pnew*ones(obj.NYbox,1);
+0074 
+0075     <span class="keyword">else</span>
+0076       obj.PYbox = [];
+0077     <span class="keyword">end</span>
+0078   <span class="keyword">end</span>
+0079 
+0080   <span class="comment">% perhpas in addition to these, it should be tested if PA is sufficiently large and increase it as necessary...</span>
+0081   <span class="keyword">if</span> (forceupdate || ~isvector(obj.PA) || length(obj.PA)~=obj.NA)
+0082     <span class="keyword">if</span> (obj.NA&gt;0)
+0083       <span class="comment">% TODO this should be infact length(obj.Aindphi)&gt;0 rather than obj.NA&gt;0</span>
+0084       <span class="comment">% needs to be set up big enough that the point is feasible</span>
+0085       <span class="comment">% start with one from option settins and assign the biggest one to all</span>
+0086       pnew=1;  <span class="comment">% TODO get me from the option settings!!</span>
+0087       <span class="keyword">for</span> k=obj.Aindphi
+0088         kuser=obj.Amap(k);
+0089         [Akuserx, obj.userdata] = obj.mconfun(obj.x, obj.Y, kuser, obj.userdata);
+0090         Akx = obj.Ashift(k)*speye(size(Akuserx)) + obj.Amlt(k) .* Akuserx;
+0091 
+0092         <span class="comment">%pkx=pnew(k); %obj.PA(k);</span>
+0093         [pnew, nfactor] = <a href="#_sub1" class="code" title="subfunction [p, nfactor] = p_check2(M, p)">p_check2</a>(-Akx, pnew);
+0094       <span class="keyword">end</span>
+0095 
+0096       <span class="comment">% use the minima for all  TODO shoudln't it be maxima????</span>
+0097       obj.PA=pnew*ones(obj.NA,1);
+0098     <span class="keyword">else</span>
+0099       obj.PA=[];
+0100     <span class="keyword">end</span>
+0101   <span class="keyword">end</span>
+0102 
+0103   <span class="comment">% force update always... (just for now)</span>
+0104   <span class="keyword">if</span> (forceupdate || isempty(obj.UA))
+0105     obj.UA = [];
+0106     obj.UAnew = [];
+0107     <span class="keyword">for</span> k=1:obj.NA
+0108       kuser=obj.Amap(k);
+0109       [Akuserx, obj.userdata] = obj.mconfun(obj.x, obj.Y, kuser, obj.userdata);
+0110       obj.UA{k} = eye(size(Akuserx));
+0111       <span class="comment">% does this get used???</span>
+0112       obj.UAnew{k} = eye(size(Akuserx));
+0113     <span class="keyword">end</span>
+0114   <span class="keyword">end</span>
+0115 
+0116   <span class="keyword">if</span> (forceupdate || isempty(obj.UYbox))
+0117     obj.UYbox = [];
+0118     obj.UYboxnew = [];
+0119     <span class="keyword">for</span> k=1:obj.NYbox
+0120       kuser=obj.Yboxmap(k);
+0121       obj.UYbox{k} = eye(size(obj.Y{kuser}));
+0122       obj.UYboxnew{k} = eye(size(obj.Y{kuser}));
+0123     <span class="keyword">end</span>
+0124   <span class="keyword">end</span>
+0125 
+0126 <span class="keyword">end</span>
+0127 
+0128 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0129 <span class="comment">% TODO this is the same as from mpen_update ... put extra if needed!</span>
+0130 <span class="comment">% the difference is that there is no parameter to backtrack ...</span>
+0131 <span class="comment">%  ... probably just double it every time??</span>
+0132 <span class="comment">%  ... original Pennon adjusts rUpdate to control how fast it goes down</span>
+0133 <span class="comment">%</span>
+0134 <span class="comment">% check if the new penalty parameter is usable for the matrix</span>
+0135 <span class="comment">% constraints, i.e., check that M+p*I &gt;=0 (positive semidefinite)</span>
+0136 <span class="comment">%   M - matrix of the constraint (M&gt;=0) at the current point</span>
+0137 <span class="comment">%   p - new penalty parameter</span>
+0138 <span class="comment">%   xxxxpold - previous penalty parameter (to backtrack)</span>
+0139 <span class="comment">% returns</span>
+0140 <span class="comment">%   p - valid penalty argument</span>
+0141 <span class="comment">%   nfactor - how many times it was necessary to factorize</span>
+0142 <span class="comment">%     (nfactor&gt;1 ==&gt; p had to be shortened)</span>
+0143 <a name="_sub1" href="#_subfunctions" class="code">function [p, nfactor] = p_check2(M, p)</a>
+0144 
+0145   rSafetyFactor = 1.2;  <span class="comment">% add 20% to the initial penalty to be on the safe side</span>
+0146   <span class="comment">%rSafetyFactor = 1;</span>
+0147   rFactor=2;   <span class="comment">% if need to refactorize, try rFactor*p</span>
+0148   nfactor=0;
+0149 
+0150   [n m] = size(M);
+0151   Missparse = n&gt;10 &amp;&amp; issparse(M) &amp;&amp; nnz(M)&lt;0.15*n*n;  
+0152 
+0153   <span class="keyword">if</span> (Missparse)
+0154     perm=amd(M);
+0155     M=M(perm,perm);
+0156     I=speye(n,n);
+0157   <span class="keyword">else</span>
+0158     <span class="comment">% it is usually faster to compute with dense matrices in dense format</span>
+0159     M=full(M);
+0160     I=eye(n,n);
+0161   <span class="keyword">end</span>
+0162 
+0163   p = p/rSafetyFactor;
+0164 
+0165   [R,k] = chol(M+p*I);
+0166   nfactor=nfactor+1;
+0167   <span class="keyword">if</span> (k==0)
+0168     <span class="comment">% first match -&gt; go</span>
+0169     <span class="keyword">return</span>;
+0170   <span class="keyword">end</span>
+0171 
+0172   <span class="keyword">while</span> (k~=0)
+0173     p=rFactor*p;
+0174     [R,k] = chol(M+p*I);
+0175     <span class="comment">%disp(sprintf('up   pert=%e (%i)',p,k));</span>
+0176     nfactor=nfactor+1;
+0177     <span class="comment">% add save bounds??</span>
+0178   <span class="keyword">end</span>
+0179 
+0180   p = p*rSafetyFactor;
+0181 
+0182 <span class="keyword">end</span>
+0183 
+0184 
+0185 
+0186</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

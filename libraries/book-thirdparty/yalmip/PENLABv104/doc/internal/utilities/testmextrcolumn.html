@@ -1,0 +1,271 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of testmextrcolumn</title>
+  <meta name="keywords" content="testmextrcolumn">
+  <meta name="description" content="TESTMEXTRCOLUMN tests that the behaviour of mextrcolumn() is correct">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">utilities</a> &gt; testmextrcolumn.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for utilities&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>testmextrcolumn
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>TESTMEXTRCOLUMN tests that the behaviour of mextrcolumn() is correct</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [status] = testmextrcolumn(verbose,tol) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> TESTMEXTRCOLUMN tests that the behaviour of mextrcolumn() is correct
+
+ RETURN
+   status ...  0 failed, 1 all ok
+ INPUT
+   verbose ... 0 print only what failed, 1 print progress,
+               optional, default 1
+   tol ....... tolerance when comparing the results
+               optional, default 1e-8
+
+ See also mextrcolumn, penlabtest, <a href="penlabstresstest.html" class="code" title="function [] = penlabstresstest(feeder,timestats,logs)">penlabstresstest</a></pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)</a></li><li><a href="#_sub2" class="code">function [A,S1,B,Si] = vecmatrixdata(n,nmat,dS1,dSi)</a></li><li><a href="#_sub3" class="code">function [status] = vecmatrixtest(verbose,tol,testname,A,S1,B,Si,ref)</a></li></ul>
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [status] = testmextrcolumn(verbose,tol)</a>
+0002 <span class="comment">% TESTMEXTRCOLUMN tests that the behaviour of mextrcolumn() is correct</span>
+0003 <span class="comment">%</span>
+0004 <span class="comment">% RETURN</span>
+0005 <span class="comment">%   status ...  0 failed, 1 all ok</span>
+0006 <span class="comment">% INPUT</span>
+0007 <span class="comment">%   verbose ... 0 print only what failed, 1 print progress,</span>
+0008 <span class="comment">%               optional, default 1</span>
+0009 <span class="comment">%   tol ....... tolerance when comparing the results</span>
+0010 <span class="comment">%               optional, default 1e-8</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">% See also mextrcolumn, penlabtest, penlabstresstest</span>
+0013 <span class="comment">%</span>
+0014 
+0015 <span class="comment">% This file is a part of PENLAB package distributed under GPLv3 license</span>
+0016 <span class="comment">% Copyright (c) 2013 by  J. Fiala, M. Kocvara, M. Stingl</span>
+0017 <span class="comment">% Last Modified: 5 Dec 2013</span>
+0018 
+0019   <span class="keyword">if</span> (nargin&lt;2)
+0020     tol = 1e-8;
+0021   <span class="keyword">end</span>
+0022   <span class="keyword">if</span> (nargin&lt;1)
+0023     verbose = 1;
+0024   <span class="keyword">end</span>
+0025   status = 1;
+0026 
+0027   <span class="keyword">if</span> (verbose)
+0028     disp(<span class="string">' testing functionality of mextrcolumn()...'</span>)
+0029   <span class="keyword">end</span>
+0030 
+0031   <span class="comment">% is it possible to call it?</span>
+0032   <span class="keyword">try</span>
+0033     mextrcolumn(1,sparse(1),1,{sparse(1)});
+0034   <span class="keyword">catch</span>
+0035     disp(<span class="string">' Error: mextrcolumn - cannot call'</span>)
+0036     status = 0;
+0037     <span class="keyword">return</span>;
+0038   <span class="keyword">end</span>
+0039 
+0040   status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)">onematrixtest</a>(verbose,tol,<span class="string">'n=0, all empty'</span>, [],[],[],[],0);
+0041   status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)">onematrixtest</a>(verbose,tol,<span class="string">'n=1, all ones'</span>, 1,1,1,1,2);
+0042   status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)">onematrixtest</a>(verbose,tol,<span class="string">'n=1, all nonzeros'</span>, 2,3,-4,5,-120*2);
+0043   status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)">onematrixtest</a>(verbose,tol,<span class="string">'n=1, A=0'</span>, 0,3,-4,5,0);
+0044   status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)">onematrixtest</a>(verbose,tol,<span class="string">'n=1, S1=0'</span>, 2,0,-4,5,0);
+0045   status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)">onematrixtest</a>(verbose,tol,<span class="string">'n=1, B=0'</span>, 2,3,0,5,0);
+0046   status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)">onematrixtest</a>(verbose,tol,<span class="string">'n=1, S2=0'</span>, 2,3,-4,0,0);
+0047   status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)">onematrixtest</a>(verbose,tol,<span class="string">'n=2, all numbers, A diag'</span>, diag([2 3]),[-2.1,3.2;3.2,4.4],[4,6;6,5],[-13,-9;-9,-16]);
+0048   <span class="comment">% don't forget that magic() is not symmetric</span>
+0049   status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)">onematrixtest</a>(verbose,tol,<span class="string">'n=2, all numbers, A diag, B=[]'</span>, diag([2 3]),[-2.1,3.2;3.2,4.4],magic(2)+magic(2)'+3,sparse(2,2),0);
+0050   
+0051   <span class="comment">% build special examples with very sparse matrices</span>
+0052   n=5;
+0053   A=diag(1:n);
+0054   B=magic(n)+magic(n)';
+0055   S1=sparse(n,n); S1(2,1)=2;
+0056   S1=S1+S1';
+0057   S2=sparse(n,n); S2(4,4)=9;
+0058   status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)">onematrixtest</a>(verbose,tol,<span class="string">'n=5, very sparse'</span>, A,S1,B,S2);
+0059 
+0060   n=5;
+0061   A=diag(1:n);
+0062   B=magic(n)+magic(n)';
+0063   S1=sparse(n,n); S1(2,1)=2;
+0064   S1=S1+S1';
+0065   S2=sparse(n,n); S2(2,2)=9;
+0066   status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)">onematrixtest</a>(verbose,tol,<span class="string">'n=5, very sparse2'</span>, A,S1,B,S2);
+0067 
+0068   n=5;
+0069   A=zeros(n,n);
+0070   A(:)=[1:n^2]-10;
+0071   A=A+A';
+0072   B=magic(n)+magic(n)';
+0073   S1=sparse(n,n); S1(2,1)=2;
+0074   S1=S1+S1';
+0075   S2=sparse(n,n); S2(2,2)=9;
+0076   status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)">onematrixtest</a>(verbose,tol,<span class="string">'n=5, very sparse3'</span>, A,S1,B,S2);
+0077 
+0078   n=5;
+0079   A=zeros(n,n);
+0080   A(:)=[1:n^2]-10;
+0081   A=A+A';
+0082   B=magic(n)+magic(n)';
+0083   S1=sparse(n,n); S1(2,1)=2;
+0084   S1=S1+S1';
+0085   S2=sparse(diag([5:9]));
+0086   status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)">onematrixtest</a>(verbose,tol,<span class="string">'n=5, sparse, S2 spdiag'</span>, A,S1,B,S2);
+0087 
+0088   <span class="comment">% random of different size</span>
+0089   <span class="keyword">for</span> n=[5 5 5 10 10 10 100 100 999 1000]
+0090   <span class="comment">%for n=[2 5 5]</span>
+0091     A=rand(n,n);
+0092     A=A+A';
+0093     B=rand(n,n);
+0094     B=B+B';
+0095     S1=sprandsym(n,0.2);
+0096     S2=sprandsym(n,0.1);
+0097     testname=sprintf(<span class="string">'n=%i all random'</span>,n);
+0098     status = status &amp;&amp; <a href="#_sub1" class="code" title="subfunction [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)">onematrixtest</a>(verbose,tol,testname, A,S1,B,S2);
+0099   <span class="keyword">end</span>
+0100 
+0101   <span class="comment">% test mex on the vector of matrices S2, random data</span>
+0102   <span class="comment">%[A,S1,B,Si] = vecmatrixdata(n,nmat,dS1,dSi);</span>
+0103   [A,S1,B,Si] = <a href="#_sub2" class="code" title="subfunction [A,S1,B,Si] = vecmatrixdata(n,nmat,dS1,dSi)">vecmatrixdata</a>(7,1,0.2,0.9); testname=<span class="string">'n=7 * 1 mat'</span>;
+0104   status = status &amp;&amp; <a href="#_sub3" class="code" title="subfunction [status] = vecmatrixtest(verbose,tol,testname,A,S1,B,Si,ref)">vecmatrixtest</a>(verbose,tol,testname,A,S1,B,Si);
+0105   [A,S1,B,Si] = <a href="#_sub2" class="code" title="subfunction [A,S1,B,Si] = vecmatrixdata(n,nmat,dS1,dSi)">vecmatrixdata</a>(7,31,0.8,rand(31,1)); testname=<span class="string">'n=7 * 31 mat'</span>;
+0106   status = status &amp;&amp; <a href="#_sub3" class="code" title="subfunction [status] = vecmatrixtest(verbose,tol,testname,A,S1,B,Si,ref)">vecmatrixtest</a>(verbose,tol,testname,A,S1,B,Si);
+0107   [A,S1,B,Si] = <a href="#_sub2" class="code" title="subfunction [A,S1,B,Si] = vecmatrixdata(n,nmat,dS1,dSi)">vecmatrixdata</a>(8,17,0.5,[17:-1:1]/20); testname=<span class="string">'n=8 * 17 mat'</span>;
+0108   status = status &amp;&amp; <a href="#_sub3" class="code" title="subfunction [status] = vecmatrixtest(verbose,tol,testname,A,S1,B,Si,ref)">vecmatrixtest</a>(verbose,tol,testname,A,S1,B,Si);
+0109   [A,S1,B,Si] = <a href="#_sub2" class="code" title="subfunction [A,S1,B,Si] = vecmatrixdata(n,nmat,dS1,dSi)">vecmatrixdata</a>(20,10,0.2,ones(10,1)*0.8); testname=<span class="string">'n=20 * 10 mat (0.8)'</span>;
+0110   status = status &amp;&amp; <a href="#_sub3" class="code" title="subfunction [status] = vecmatrixtest(verbose,tol,testname,A,S1,B,Si,ref)">vecmatrixtest</a>(verbose,tol,testname,A,S1,B,Si);
+0111   [A,S1,B,Si] = <a href="#_sub2" class="code" title="subfunction [A,S1,B,Si] = vecmatrixdata(n,nmat,dS1,dSi)">vecmatrixdata</a>(3,99,0.9,ones(99,1)*0.9); testname=<span class="string">'n=3 * 99 mat (0.9)'</span>;
+0112   status = status &amp;&amp; <a href="#_sub3" class="code" title="subfunction [status] = vecmatrixtest(verbose,tol,testname,A,S1,B,Si,ref)">vecmatrixtest</a>(verbose,tol,testname,A,S1,B,Si);
+0113 
+0114 <span class="keyword">end</span>
+0115 
+0116 <a name="_sub1" href="#_subfunctions" class="code">function [status] = onematrixtest(verbose,tol,testname,A,S1,B,S2,ref)</a>
+0117 <span class="comment">% ONEMATRIXTEST - run one test with mextrcolumn(), S2 has just one element</span>
+0118 <span class="comment">%   testname - string to print out</span>
+0119 <span class="comment">%   A,B,S1,S2 - matrices for the test</span>
+0120 <span class="comment">%   ref [optional] - reference result, if not present, computed in Matlab</span>
+0121 
+0122   status = 1;
+0123 
+0124   <span class="keyword">if</span> (~issparse(S1))
+0125     S1=sparse(S1);
+0126   <span class="keyword">end</span>
+0127   <span class="keyword">if</span> (~issparse(S2))
+0128     S2=sparse(S2);
+0129   <span class="keyword">end</span>
+0130 
+0131   <span class="comment">% compute reference result if not provided</span>
+0132   <span class="keyword">if</span> (nargin==7)
+0133     <span class="comment">%ref = trace(A*S1*B*S2);</span>
+0134     ref = trace(A*S1*B*S2) + trace(A*S2*B*S1);
+0135   <span class="keyword">end</span>
+0136 
+0137   <span class="keyword">try</span>
+0138     result = mextrcolumn(A,S1,B,{S2});
+0139     err = abs(result-ref);
+0140   <span class="keyword">catch</span>
+0141     err = [];
+0142   <span class="keyword">end</span>
+0143 
+0144   <span class="keyword">if</span> (isempty(err))
+0145     fprintf(<span class="string">' test %-30s: HARD FAILED\n'</span>, testname);
+0146     status = 0;
+0147   <span class="keyword">elseif</span> (err&gt;tol*abs(ref))
+0148     fprintf(<span class="string">' test %-30s: FAILED  %15.6e %15.6e\n'</span>, testname,err,ref);
+0149     status = 0;
+0150   <span class="keyword">elseif</span> (verbose)
+0151     fprintf(<span class="string">' test %-30s: ok (tol)  %15.6e %15.6e\n'</span>, testname,err,ref);
+0152   <span class="keyword">end</span>
+0153 
+0154 <span class="keyword">end</span>
+0155 
+0156 <a name="_sub2" href="#_subfunctions" class="code">function [A,S1,B,Si] = vecmatrixdata(n,nmat,dS1,dSi)</a>
+0157 <span class="comment">% VECMATRIXDATA - generate random dataset for vecmatrixtest</span>
+0158 <span class="comment">%   n - dimension of the matrices</span>
+0159 <span class="comment">%   nmat - the number of the cell array Si</span>
+0160 <span class="comment">%   dS1 - density of S1</span>
+0161 <span class="comment">%   dSi - vector of densities (of length nmat) for Si</span>
+0162 
+0163   A = rand(n,n);
+0164   A = A+A';
+0165   B = rand(n,n);
+0166   B = B+B';
+0167   S1 = sprandsym(n,dS1);
+0168   Si = cell(nmat,1);
+0169   <span class="keyword">for</span> i = 1:nmat
+0170     Si{i} = sprandsym(n,dSi(i));
+0171   <span class="keyword">end</span>
+0172 
+0173 <span class="keyword">end</span>
+0174 
+0175 <a name="_sub3" href="#_subfunctions" class="code">function [status] = vecmatrixtest(verbose,tol,testname,A,S1,B,Si,ref)</a>
+0176 <span class="comment">% VECMATRIXTEST - run one test with mextrcolumn() on vector Si</span>
+0177 <span class="comment">%   testname - string to print out</span>
+0178 <span class="comment">%   A,B,S1,Si{:} - matrices for the test, (Si is a cell array of matrices),</span>
+0179 <span class="comment">%      all symmetric, S1, Si{:} must be sparse</span>
+0180 <span class="comment">%   ref [optional] - reference result, if not present, computed in Matlab</span>
+0181 
+0182   status = 1;
+0183 
+0184   <span class="comment">% compute reference results if not provided</span>
+0185   <span class="keyword">if</span> (nargin==7)
+0186     nmat = length(Si);
+0187     ref = zeros(nmat,1);
+0188     <span class="keyword">for</span> i = 1:nmat
+0189       ref(i) = trace(A*S1*B*Si{i}) + trace(A*Si{i}*B*S1);
+0190     <span class="keyword">end</span>
+0191   <span class="keyword">end</span>
+0192   nrm = norm(ref);
+0193 
+0194   <span class="keyword">try</span>
+0195     result = mextrcolumn(A,S1,B,Si);
+0196     err = norm(result-ref);
+0197   <span class="keyword">catch</span>
+0198     err = [];
+0199   <span class="keyword">end</span>
+0200 
+0201   <span class="keyword">if</span> (isempty(err))
+0202     fprintf(<span class="string">' test (vec) %-24s: HARD FAILED\n'</span>, testname);
+0203     status = 0;
+0204   <span class="keyword">elseif</span> (err&gt;tol*nrm)
+0205     fprintf(<span class="string">' test (vec) %-24s: FAILED  %15.6e %15.6e\n'</span>, testname,err,nrm);
+0206     status = 0;
+0207   <span class="keyword">elseif</span> (verbose)
+0208     fprintf(<span class="string">' test (vec) %-24s: ok (tol)  %15.6e %15.6e\n'</span>, testname,err,nrm);
+0209   <span class="keyword">end</span>
+0210 
+0211 <span class="keyword">end</span>
+0212</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

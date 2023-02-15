@@ -58,6 +58,7 @@ clearvars -except filepath M Xi_ref Xi_dot_ref x0_all Data att
 addpath(genpath(fullfile(filepath, '..', '..', 'libraries','book-ml-toolbox')));
 addpath(genpath(fullfile(filepath, '..', '..', 'libraries','book-thirdparty')));
 disp('Optimization running, be patient...');
+tStart = cputime;
 
 % Preparing data for SVR
 X_train   = Xi_ref';
@@ -95,6 +96,7 @@ disp('Visualization loading, be patient...');
 limits = axis;
 title('Unconstrained SVR-based DS ', 'Interpreter', 'LaTex', 'FontSize', 20)
 h_att = scatter(att(1), att(2), 150, [0 0 0], 'd', 'Linewidth', 2); hold on;
+tEnd = cputime - tStart;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%  Step 4 (Evaluation): Compute Metrics and Visualize Velocities %%
@@ -109,6 +111,8 @@ edot = mean(edot_error(ds_svr, Xi_ref, Xi_dot_ref));
 disp('--------------------')
 fprintf('Unconstrained SVR-based DS, got velocity RMSE on training set: %d \n', rmse);
 fprintf('Unconstrained SVR-based DS, got velocity deviation (e_dot) on training set: %d \n', edot);
+% Display time 
+fprintf('Computation Time is %1.2f seconds \n', tEnd);
 
 % Compute DTWD between train trajectories and reproductions
 if ds_plot_options.sim_traj

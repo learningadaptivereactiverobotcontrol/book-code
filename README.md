@@ -19,6 +19,11 @@ You will need a version of matlab from 2019 or higher with the following toolbox
 - Signal Processing
 - Statistics and Machine Learning
 
+#### Warning for Mac Users ####
+
+Exercises in lecture 4 and practical 1 require additional setup on Mac. 
+Instructions for this are available in the 'mac_setup' directory in the lecture 4 folder. 
+
 ## *Architecture* 
 
 The solutions folders obtained by students through Moodle should be unzipped and placed in their respective lecture directory, adjoint to the exercises directory, as shown in the diagram below.

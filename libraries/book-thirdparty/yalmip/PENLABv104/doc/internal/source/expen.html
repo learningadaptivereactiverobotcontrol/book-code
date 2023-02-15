@@ -1,0 +1,162 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of expen</title>
+  <meta name="keywords" content="expen">
+  <meta name="description" content="example pennon structure to play with">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">source</a> &gt; expen.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for source&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>expen
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>example pennon structure to play with</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function penm=expen() </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> example pennon structure to play with
+ call penm=expen &amp; problem=penlab(penm)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% example pennon structure to play with</span>
+0002 <span class="comment">% call penm=expen &amp; problem=penlab(penm)</span>
+0003 <a name="_sub0" href="#_subfunctions" class="code">function penm=expen()</a>
+0004 
+0005   penm = [];
+0006 
+0007   <span class="comment">% [optional] problem name and a comment (e.g. source)</span>
+0008   <span class="comment">% just for logging</span>
+0009   penm.probname = <span class="string">'Example Problem 1'</span>;
+0010   penm.comment = <span class="string">'bla bla comment'</span>;
+0011 
+0012   <span class="comment">%% [optional] userdata</span>
+0013   <span class="comment">% will get always pass in and from any callback function, can be anything</span>
+0014   <span class="comment">% if not set, an empty array will be used instead</span>
+0015   penm.userdata = [];
+0016 
+0017   <span class="comment">% [optional] option settings different from defaults</span>
+0018   penm.opts=[];
+0019 
+0020   <span class="comment">%% define decision variables</span>
+0021   <span class="comment">% number of (ordinary) decision variables</span>
+0022   <span class="comment">% If the field is not present, Nx=0; lower/upper bounds for box constraints</span>
+0023   <span class="comment">% will be ignored.</span>
+0024   penm.Nx = 7;
+0025   <span class="comment">% number of matrix variables, should be the same as length(Y)</span>
+0026   <span class="comment">% If the field is not present, NY=0; thus Y{:}, bounds etc. will be ignored.</span>
+0027   penm.NY = 3;
+0028   <span class="comment">% cell array of length 'NY' with a nonzero pattern of each of the matrix</span>
+0029   <span class="comment">% variables. Each matrix will be symmetrized and all its nonzeros in one</span>
+0030   <span class="comment">% triangle will be considered as variables, the rest as constant zeros.</span>
+0031   <span class="comment">% Whenever array Y{} is present in the callbacks, it will be symmetrized.</span>
+0032   <span class="comment">% All (element-)variables will be counted with indicies starting with (Nx+1),</span>
+0033   <span class="comment">% the order is Y{1}, Y{2}, ..., Y{NY} and in each matrix lower (symmetrized)</span>
+0034   <span class="comment">% triangle column-wise. If any (derivative) callback needs derivatives</span>
+0035   <span class="comment">% with respect to 'k' (k&gt;Nx), it means it's one of the variables in one</span>
+0036   <span class="comment">% of the matrices. A routine '...' can generate back the matrix and the exact</span>
+0037   <span class="comment">% position of the variable ...</span>
+0038   penm.Y{1} = ones(3);
+0039   penm.Y{2} = spones(sprandsym(5,0.3));
+0040   penm.Y{3} = spones(sprand(6,6,0.2));
+0041 
+0042   <span class="comment">%% decision variables box constraints</span>
+0043   <span class="comment">% box constraints (lower/upper bounds) on the variables, lbx &lt;= x &lt;= ubx</span>
+0044   <span class="comment">% if lbx==-Inf, it is not considered; similarly if ubx=Inf so, e.g.,</span>
+0045   <span class="comment">% by setting lbx=-Inf, ubx=Inf the variable is unbounded.</span>
+0046   <span class="comment">% length of each array should be Nx</span>
+0047   <span class="comment">% if one or both are missing, 'x' is considered as unconstrained from that</span>
+0048   <span class="comment">% side. Any ubx&gt;lbx is considered as error. If lbx==ubx the variable will</span>
+0049   <span class="comment">% be fixed and won't have further effect.</span>
+0050   penm.lbx = 0;
+0051   <span class="comment">%penm.lbx = [-Inf, -Inf, -1, 0, -3, -6, -77];</span>
+0052   penm.ubx = [10, Inf, Inf, 4, 66, 0.1, Inf];
+0053 
+0054   <span class="comment">% lower, upper bounds on Y variable elements?</span>
+0055   <span class="comment">% if not present, unconstrained</span>
+0056   <span class="comment">% penm.lbYx, ubYx ? or not at all? It can be always defined as one of the g()</span>
+0057   <span class="comment">% constraints</span>
+0058 
+0059   <span class="comment">% lower and upper bound on matrices Y (as matrix inequalities, i.e. eigenvals)</span>
+0060   <span class="comment">% if fixed... what to do? Might even not have solution...</span>
+0061   <span class="comment">% length NY</span>
+0062   penm.lbY = [0, -Inf, 1];
+0063   penm.ubY = [Inf, 0, 10];
+0064 
+0065   <span class="comment">% [optional] box constraints on the elements of the matrix variables</span>
+0066   <span class="comment">% only elements matchin patterns of Y{} will be taken into account</span>
+0067   <span class="comment">% if the matrix is empty ([]) it is automatically considered as +/-Inf</span>
+0068   <span class="comment">% accordingly</span>
+0069   penm.lbYx{1} = - magic(3);
+0070   penm.ubYx{1} = magic(3);
+0071   penm.lbYx{2} = sparse(5,5);
+0072   penm.ubYx{3} = 100;
+0073 
+0074   <span class="comment">%% starting point</span>
+0075   <span class="comment">% ideally feasible, might get adjusted, optional, if not set will be computed</span>
+0076   <span class="comment">% somehow. With the matrices, it will accept only these nnz which where in</span>
+0077   <span class="comment">% Y pattern. Symmetric or automatically lower triangle???</span>
+0078   penm.xinit=rand(penm.Nx,1);
+0079   <span class="comment">%penm.Yinit{1} {2} {3}=....;</span>
+0080 
+0081   <span class="comment">%% linear and nonlinear function constraints</span>
+0082   <span class="comment">% nonlinear constraints, first NLN , then LIN</span>
+0083   penm.NgNLN = 2;
+0084   penm.NgLIN = 1;
+0085 
+0086   <span class="comment">% nonlinear and linear matrix constraints</span>
+0087   penm.NANLN = 0;
+0088   penm.NALIN = 1;
+0089 
+0090   <span class="comment">% lower/upper bounds ... equalities, must be defined at least on one side</span>
+0091   <span class="comment">% (e.g. not unconstrained constraints ;-)</span>
+0092   penm.lbg = [-Inf, 0, 5];
+0093   penm.ubg = [0, Inf, 5];
+0094   penm.lbA = [0];
+0095   penm.ubA = [Inf];
+0096 
+0097   <span class="comment">%% call back functions to evaluate objective function, function constraints</span>
+0098   <span class="comment">% and matrix constraint and their derivatives. First go NLN then LIN.</span>
+0099   <span class="comment">%penm.objfun = ...</span>
+0100   <span class="comment">% [fx, userdata] = objfun(x,Y,userdata)   % returns a number</span>
+0101   <span class="comment">% [fdx, userdata] = objgrad(x,Y,userdata) % returns a (sparse) vector</span>
+0102      <span class="comment">% w.r.t. all variables (even matrix ones)</span>
+0103   <span class="comment">% objfun, objgrad, objhess</span>
+0104   <span class="comment">% confun, congrad, conhess</span>
+0105   <span class="comment">% mconfun, mcongrad, mconhess</span>
+0106   <span class="comment">% alternatively objhess + conhess -&gt; lagrhess</span>
+0107 
+0108   <span class="comment">%[fx, userdata] = objfun(x,Y,userdata)   % returns a number</span>
+0109 
+0110   <span class="comment">%[fdx, userdata] = objgrad(x,Y,userdata) % returns a (possibly sparse) vector</span>
+0111      <span class="comment">% w.r.t. all variables (even matrix ones), if objfun doesn't depend on Y</span>
+0112      <span class="comment">% it can be just Nx long, otherwise Nx+NYnnz</span>
+0113 
+0114</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

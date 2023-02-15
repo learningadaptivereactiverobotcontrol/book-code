@@ -1,0 +1,223 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of setuptestpoint</title>
+  <meta name="keywords" content="setuptestpoint">
+  <meta name="description" content="SETUPTESTPOINT sets a point from original Pennon for comparison">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">utilities</a> &gt; setuptestpoint.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for utilities&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>setuptestpoint
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>SETUPTESTPOINT sets a point from original Pennon for comparison</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [alx,aldx,alddx] = setuptestpoint(obj, filename, type) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> SETUPTESTPOINT sets a point from original Pennon for comparison
+ prob ... initialized object with the same problem as it is stored in DCF
+ filename ... name (path) to a DCF (Data Container File) generated from
+   Pennon suit, so far PenSDP (for linear SDP stored in SDPA) or Pennon/Pennlp
+   for Ampl problems
+ type ... what's the type (origin) of the DCF? either 'pennlp' or 'pensdp'</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="alselftest.html" class="code" title="function [prob]=alselftest(testID)">alselftest</a>	ALSELFTEST is a self test of evaluation of the Augmented Lagrangian and its</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 
+0002 <a name="_sub0" href="#_subfunctions" class="code">function [alx,aldx,alddx] = setuptestpoint(obj, filename, type)</a>
+0003 <span class="comment">% SETUPTESTPOINT sets a point from original Pennon for comparison</span>
+0004 <span class="comment">% prob ... initialized object with the same problem as it is stored in DCF</span>
+0005 <span class="comment">% filename ... name (path) to a DCF (Data Container File) generated from</span>
+0006 <span class="comment">%   Pennon suit, so far PenSDP (for linear SDP stored in SDPA) or Pennon/Pennlp</span>
+0007 <span class="comment">%   for Ampl problems</span>
+0008 <span class="comment">% type ... what's the type (origin) of the DCF? either 'pennlp' or 'pensdp'</span>
+0009 
+0010 <span class="comment">% This file is a part of PENLAB package distributed under GPLv3 license</span>
+0011 <span class="comment">% Copyright (c) 2013 by  J. Fiala, M. Kocvara, M. Stingl</span>
+0012 <span class="comment">% Last Modified: 27 Nov 2013</span>
+0013 
+0014   <span class="comment">% make datatransfer quiet?</span>
+0015   <span class="keyword">global</span> DCF_SILENT
+0016   DCF_SILENT=1;
+0017 
+0018   <span class="keyword">if</span> (strcmpi(type,<span class="string">'pennlp'</span>) || strcmpi(type,<span class="string">'nlp'</span>))
+0019 
+0020     <span class="comment">% unfortunately, it is impossible to identify content of the dcf file</span>
+0021     <span class="comment">% automatically ... so it is expected that all dcf files are in the same</span>
+0022     <span class="comment">% format (for now, xUPgHAuf)</span>
+0023 
+0024     <span class="comment">% read the data and check their dimensions</span>
+0025     x=datatransfer(filename,0);     <span class="comment">% dim Nx</span>
+0026     pen_u=datatransfer(filename,1); <span class="comment">% dim Nxbox+Nineq+Neq</span>
+0027       <span class="comment">% lagr. mlt. for all mixed together (box, NLN, LIN; NLN &amp; LIN include eq)</span>
+0028       <span class="comment">% order of transformed inequalities: lb&lt;=g(x)&lt;=ub should be the same</span>
+0029       <span class="comment">% as here, i.e., lb-g(x)&lt;=0 followed by g(x)-ub&lt;=0</span>
+0030     pen_p=datatransfer(filename,2); <span class="comment">% dtto as pen_u but for penalty parameters</span>
+0031     aldx=datatransfer(filename,3);  <span class="comment">% gradient of augm. lagr.</span>
+0032     pen_H=datatransfer(filename,4); <span class="comment">% either (1,1) block of KKT or the whole one</span>
+0033     pen_A=datatransfer(filename,5); <span class="comment">% Jacobian of equalities if store separately</span>
+0034     ueq=datatransfer(filename,6);   <span class="comment">% Lagr. mlt. for equalities</span>
+0035     alx=datatransfer(filename,7);   <span class="comment">% value of augm. lagr. without penalization</span>
+0036       <span class="comment">% of violation of equalitites (i.e. augm. lagr., not merit function)</span>
+0037 
+0038     <span class="comment">% check if the 'obj' looks compatible and copy all the data</span>
+0039     <span class="keyword">if</span> (length(x)~=obj.Nx || obj.NYnnz~=0)
+0040       error(<span class="string">'DCF does not fit the number of variables.'</span>);
+0041     <span class="keyword">end</span>
+0042     <span class="keyword">if</span> (obj.NA~=0)
+0043       error(<span class="string">'Problem object is not a NLP (only) problem.'</span>);
+0044     <span class="keyword">end</span>
+0045     <span class="keyword">if</span> (length(pen_u)~=obj.Nxbox+obj.Nineq+obj.Neq)
+0046       error(<span class="string">'Problem object does not seem to be defined by the same NLP model'</span>);
+0047     <span class="keyword">end</span>
+0048     <span class="keyword">if</span> (length(pen_u)~=length(pen_p))
+0049       error(<span class="string">'Arrays U and P in DCF are of different size? Corrupted DCF?'</span>);
+0050     <span class="keyword">end</span>
+0051     <span class="keyword">if</span> (length(pen_u)~=length(obj.userdata.BEQUAL_M2))
+0052       error(<span class="string">'Mapping to separate ineq+eq is incompatible, different problem loaded?'</span>);
+0053     <span class="keyword">end</span>
+0054     <span class="keyword">if</span> (length(aldx)~=obj.Nx)
+0055       error(<span class="string">'DCF looks incompatible (because of aldx).'</span>);
+0056     <span class="keyword">end</span>
+0057     <span class="keyword">if</span> (length(ueq)~=obj.Neq)
+0058       error(<span class="string">'Different number of equalities.'</span>);
+0059     <span class="keyword">end</span>
+0060     <span class="comment">% check pen_H, pen_A ?</span>
+0061 
+0062     <span class="comment">% get only inequality multipliers and penalties</span>
+0063     u=pen_u(~obj.userdata.BEQUAL_M2);
+0064     p=pen_p(~obj.userdata.BEQUAL_M2);
+0065 
+0066     <span class="comment">% copy everything</span>
+0067     obj.xall=x;
+0068     obj.uxbox=u(1:obj.Nxbox);
+0069     obj.uineq=u(obj.Nxbox+1:end);
+0070     obj.pxbox=p(1:obj.Nxbox);
+0071     obj.pineq=p(obj.Nxbox+1:end);
+0072     obj.ueq=ueq;
+0073     
+0074     <span class="comment">% transform Hessian from eqltymode=3 (e.i., separate equality Jacobian)</span>
+0075     [pha,phb]=size(pen_H);
+0076     <span class="keyword">if</span> (obj.Neq~=0 &amp;&amp; isempty(pen_A) &amp;&amp; pha==obj.Nx+obj.Neq &amp;&amp; phb==pha)
+0077       disp(<span class="string">'  ---Separating equalities from input data.---'</span>);
+0078       disp(<span class="string">' '</span>);
+0079       pen_A = pen_H(1:obj.Nx,(obj.Nx+1):phb);
+0080       pen_H = pen_H(1:obj.Nx,1:obj.Nx);
+0081     <span class="comment">%else</span>
+0082     <span class="comment">%  warning('strange pen_H??');</span>
+0083     <span class="keyword">end</span>
+0084 
+0085     <span class="comment">% Do NOT trust to the dense hessian, only upper half is for sure complete</span>
+0086     <span class="keyword">if</span> (~issparse(pen_H))
+0087       disp(<span class="string">'  ---pen_H is dense, symmetrizing it for sure---'</span>);
+0088       disp(<span class="string">' '</span>);
+0089       pen_H_ut=triu(pen_H,1);
+0090       <span class="comment">%pen_H = pen_H.*triu(ones(obj.Nx,obj.Nx)) + pen_H_ut';</span>
+0091       pen_H = triu(pen_H) + pen_H_ut';
+0092     <span class="keyword">end</span>
+0093 
+0094     alddx=[pen_H, pen_A; pen_A', sparse(obj.Neq,obj.Neq)];
+0095 
+0096   <span class="keyword">elseif</span> (strcmpi(type,<span class="string">'pensdp'</span>) || strcmpi(type,<span class="string">'sdp'</span>))
+0097     <span class="comment">% reads/decodes the saved data structure from Pennon (linear) SDP</span>
+0098     <span class="comment">% expect &quot;xUPDfgHv&quot; (default)</span>
+0099 
+0100     <span class="comment">% don't forget that the indices in datatransfer are 0-based!</span>
+0101     x=datatransfer(filename,0);  <span class="comment">% dim Nx; x</span>
+0102     u=datatransfer(filename,1);  <span class="comment">% dim Ng; lagr. multiplers for normal inequal.</span>
+0103     p=datatransfer(filename,2);  <span class="comment">% dim Ng+Na; penalty params for ineq. &amp; matr</span>
+0104       <span class="comment">% really for both? Yes</span>
+0105     dense=datatransfer(filename,3); <span class="comment">% density flag</span>
+0106     alx=datatransfer(filename,4); <span class="comment">% merit function (AL + penalty for equal)</span>
+0107     aldx=datatransfer(filename,5);<span class="comment">% dim Nx; gradient of AL</span>
+0108     alddx=datatransfer(filename,6);<span class="comment">% dim Nx x Nx, might be sparse; hessian of AL</span>
+0109     <span class="comment">% symetrize alddx if dense (perhaps even if sparse? ... Need to test)</span>
+0110     <span class="keyword">if</span> (~issparse(alddx))
+0111       <span class="comment">% only upper triangle is stored</span>
+0112       alddx = alddx+triu(alddx,1)';
+0113     <span class="keyword">end</span>
+0114     <span class="comment">% matrix constraint lagrangian multipliers</span>
+0115     Na = datatransfer(filename,7); <span class="comment">% N_MATRIX_CONSTR</span>
+0116     umat=cell(Na,1);
+0117     <span class="keyword">for</span> k=1:Na
+0118       <span class="comment">% either dense ... dim x dim or sparse (dim*(dim+1)/2) x 1</span>
+0119       <span class="comment">% TODO careful, datatransfer expects double as the number of elements!</span>
+0120       <span class="comment">% and iterating index is automatically int.</span>
+0121       umatk=datatransfer(filename,double(7+k));
+0122       <span class="keyword">if</span> (size(umatk,1)~=size(umatk,2))
+0123         <span class="comment">% Ak is sparse ==&gt; unpack packed triangular format of umat</span>
+0124         <span class="comment">% upper triangle, column order (1,2,3,...,dim nnz)</span>
+0125         <span class="comment">% dim:  2*nnz=dim^2+dim -&gt; 0=d^2+d-2nnz -&gt; D=1+8nnz, d=(-1+-sqrt(D))/2</span>
+0126         nnz=size(umatk,1);
+0127         dim=(-1+sqrt(1+8*nnz))/2;
+0128 
+0129         <span class="comment">% get mapping for the packed format</span>
+0130         Mtmp=triu(ones(dim));
+0131         [irow,icol]=find(Mtmp);
+0132         utmp=sparse(irow,icol,umatk);
+0133         umat{k}=full(utmp+triu(utmp,1)');
+0134         <span class="comment">%umat{k}(1:10,1:10)</span>
+0135         <span class="comment">%umatk(1:20)</span>
+0136       <span class="keyword">else</span>
+0137         <span class="comment">% dense, as it is</span>
+0138         umat{k}=umatk;
+0139       <span class="keyword">end</span>
+0140     <span class="keyword">end</span>
+0141     
+0142     <span class="comment">% check if the 'obj' looks compatible and copy all the data</span>
+0143     <span class="keyword">if</span> (length(x)~=obj.Nx || obj.NYnnz~=0)
+0144       error(<span class="string">'DCF does not fit the number of variables.'</span>);
+0145     <span class="keyword">end</span>
+0146     <span class="keyword">if</span> (Na~=obj.NA || obj.NANLN~=0)
+0147       error(<span class="string">'DCF has different number of matrix constraints.'</span>);
+0148     <span class="keyword">end</span>
+0149     <span class="keyword">if</span> (obj.Nxbox~=0 || obj.NgNLN~=0 || obj.Neq~=0)
+0150       error(<span class="string">'Problem object does not seem to be from SDPA'</span>);
+0151     <span class="keyword">end</span>
+0152     <span class="keyword">if</span> (length(u)~=obj.Nineq)
+0153       error(<span class="string">'DCF has a different number of linear inequalitites.'</span>);
+0154     <span class="keyword">end</span>
+0155 
+0156     obj.xall=x;
+0157     obj.uineq=u;  <span class="comment">% same order? should be ... only linear ineq.</span>
+0158     obj.pineq=p(1:obj.Nineq);
+0159     <span class="keyword">for</span> k=1:Na
+0160       obj.UA{k}=umat{k};   <span class="comment">% same order? ... should be</span>
+0161     <span class="keyword">end</span>
+0162     <span class="comment">%obj.UA=umat;</span>
+0163     <span class="comment">% in Pennon or my Matlab test there used to be 2*p in the computation</span>
+0164     <span class="comment">% this version use only PA(k) ==&gt; pass it here 2*</span>
+0165     obj.PA=2*p(obj.Nineq+1:end);
+0166 
+0167 
+0168   <span class="keyword">else</span>
+0169     error(<span class="string">'Unknown type of DCF file.'</span>);
+0170   <span class="keyword">end</span>
+0171</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

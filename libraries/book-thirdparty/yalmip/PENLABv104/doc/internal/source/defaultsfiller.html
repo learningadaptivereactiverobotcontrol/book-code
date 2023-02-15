@@ -1,0 +1,162 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of defaultsfiller</title>
+  <meta name="keywords" content="defaultsfiller">
+  <meta name="description" content="fill in default values to the missing fields in penm structure">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">source</a> &gt; defaultsfiller.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for source&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>defaultsfiller
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>fill in default values to the missing fields in penm structure</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function penm=defaultsfiller(penm) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> fill in default values to the missing fields in penm structure
+ so that I don't need to check if they exist
+ all except callbacks and xinit, Yinit</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% fill in default values to the missing fields in penm structure</span>
+0002 <span class="comment">% so that I don't need to check if they exist</span>
+0003 <span class="comment">% all except callbacks and xinit, Yinit</span>
+0004 <a name="_sub0" href="#_subfunctions" class="code">function penm=defaultsfiller(penm)</a>
+0005 
+0006   <span class="keyword">if</span> (~isfield(penm,<span class="string">'probname'</span>) || isempty(penm.probname))
+0007     penm.probname=penlab.default_probname();
+0008   <span class="keyword">end</span>
+0009 
+0010   <span class="keyword">if</span> (~isfield(penm,<span class="string">'comment'</span>))
+0011     penm.comment=<span class="string">''</span>;
+0012   <span class="keyword">end</span>
+0013 
+0014   <span class="keyword">if</span> (~isfield(penm,<span class="string">'userdata'</span>))
+0015     penm.userdata=[];
+0016   <span class="keyword">end</span>
+0017 
+0018   <span class="keyword">if</span> (~isfield(penm,<span class="string">'opts'</span>))
+0019     penm.opts=struct();
+0020   <span class="keyword">end</span>
+0021 
+0022   <span class="keyword">if</span> (~isfield(penm,<span class="string">'Nx'</span>))
+0023     penm.Nx=0;
+0024   <span class="keyword">end</span>
+0025 
+0026   <span class="keyword">if</span> (~isfield(penm,<span class="string">'NY'</span>))
+0027     penm.NY=0;
+0028   <span class="keyword">end</span>
+0029 
+0030   <span class="keyword">if</span> (~isfield(penm,<span class="string">'Y'</span>))
+0031     penm.Y=cell(penm.NY,1);
+0032   <span class="keyword">end</span>
+0033 
+0034   <span class="keyword">if</span> (~isfield(penm,<span class="string">'lbx'</span>))
+0035     penm.lbx=-Inf(penm.Nx,1);
+0036   <span class="keyword">end</span>
+0037 
+0038   <span class="keyword">if</span> (~isfield(penm,<span class="string">'ubx'</span>))
+0039     penm.ubx=Inf(penm.Nx,1);
+0040   <span class="keyword">end</span>
+0041 
+0042   <span class="keyword">if</span> (~isfield(penm,<span class="string">'lbxbar'</span>))
+0043     penm.lbxbar=[];
+0044   <span class="keyword">end</span>
+0045 
+0046   <span class="keyword">if</span> (~isfield(penm,<span class="string">'ubxbar'</span>))
+0047     penm.ubxbar=[];
+0048   <span class="keyword">end</span>
+0049 
+0050   <span class="keyword">if</span> (~isfield(penm,<span class="string">'lbY'</span>))
+0051     penm.lbY=-Inf(penm.NY,1);
+0052   <span class="keyword">end</span>
+0053 
+0054   <span class="keyword">if</span> (~isfield(penm,<span class="string">'ubY'</span>))
+0055     penm.ubY=Inf(penm.NY,1);
+0056   <span class="keyword">end</span>
+0057 
+0058   <span class="keyword">if</span> (~isfield(penm,<span class="string">'lbYbar'</span>))
+0059     penm.lbYbar=[];
+0060   <span class="keyword">end</span>
+0061 
+0062   <span class="keyword">if</span> (~isfield(penm,<span class="string">'ubYbar'</span>))
+0063     penm.ubYbar=[];
+0064   <span class="keyword">end</span>
+0065 
+0066   <span class="keyword">if</span> (~isfield(penm,<span class="string">'lbYx'</span>))
+0067     <span class="comment">% cell array of empty matrices --&gt; will use default values</span>
+0068     penm.lbYx=cell(penm.NY,1);
+0069   <span class="keyword">end</span>
+0070 
+0071   <span class="keyword">if</span> (~isfield(penm,<span class="string">'ubYx'</span>))
+0072     penm.ubYx=cell(penm.NY,1);
+0073   <span class="keyword">end</span>
+0074 
+0075   <span class="keyword">if</span> (~isfield(penm,<span class="string">'NgNLN'</span>))
+0076     penm.NgNLN=0;
+0077   <span class="keyword">end</span>
+0078 
+0079   <span class="keyword">if</span> (~isfield(penm,<span class="string">'NgLIN'</span>))
+0080     penm.NgLIN=0;
+0081   <span class="keyword">end</span>
+0082 
+0083   <span class="keyword">if</span> (~isfield(penm,<span class="string">'NANLN'</span>))
+0084     penm.NANLN=0;
+0085   <span class="keyword">end</span>
+0086 
+0087   <span class="keyword">if</span> (~isfield(penm,<span class="string">'NALIN'</span>))
+0088     penm.NALIN=0;
+0089   <span class="keyword">end</span>
+0090 
+0091   <span class="keyword">if</span> (~isfield(penm,<span class="string">'lbg'</span>))
+0092     penm.lbg=-Inf(penm.NgNLN + penm.NgLIN,1);
+0093   <span class="keyword">end</span>
+0094 
+0095   <span class="keyword">if</span> (~isfield(penm,<span class="string">'ubg'</span>))
+0096     penm.ubg=Inf(penm.NgNLN + penm.NgLIN,1);
+0097   <span class="keyword">end</span>
+0098 
+0099   <span class="keyword">if</span> (~isfield(penm,<span class="string">'lbA'</span>))
+0100     penm.lbA=-Inf(penm.NANLN + penm.NALIN,1);
+0101   <span class="keyword">end</span>
+0102 
+0103   <span class="keyword">if</span> (~isfield(penm,<span class="string">'ubA'</span>))
+0104     penm.ubA=Inf(penm.NANLN + penm.NALIN,1);
+0105   <span class="keyword">end</span>
+0106 
+0107   <span class="comment">%if (~isfield(penm,'Y'))</span>
+0108   <span class="comment">%  penm.Y=;</span>
+0109   <span class="comment">%end</span>
+0110 
+0111   
+0112 
+0113</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

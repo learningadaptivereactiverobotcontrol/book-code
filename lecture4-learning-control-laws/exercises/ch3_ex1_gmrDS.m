@@ -66,6 +66,7 @@ addpath(genpath(fullfile(filepath, '..', '..', 'libraries','book-sods-opt')));
 addpath(genpath(fullfile(filepath, '..', '..', 'libraries','book-phys-gmm')));
 addpath(genpath(fullfile(filepath, '..', '..', 'libraries','book-thirdparty')));
 disp('Optimization running, be patient...');
+tStart = cputime;
 
 % 0: Manually set the # of Gaussians
 % 1: Do Model Selection with BIC
@@ -113,13 +114,13 @@ ds_plot_options.x0_all    = x0_all;       % Intial Points
 disp('Visualization loading, be patient...');
 [hd, hs, hr, x_sim] = visualizeEstimatedDS(Data(1:M,:), ds_gmr, ds_plot_options);
 limits = axis;
+tEnd = cputime - tStart;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%  Step 4 (Evaluation): Compute Metrics and Visualize Velocities %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clc;
 disp('--------------------')
-
 % Compute RMSE on training data
 rmse = mean(rmse_error(ds_gmr, Xi_ref, Xi_dot_ref));
 fprintf('Unconstrained GMR-based DS got velocity RMSE on training set: %d \n', rmse);
@@ -127,6 +128,9 @@ fprintf('Unconstrained GMR-based DS got velocity RMSE on training set: %d \n', r
 % Compute e_dot on training data
 edot = mean(edot_error(ds_gmr, Xi_ref, Xi_dot_ref));
 fprintf('Unconstrained GMR-based DS got velocity deviation (e_dot) on training set: %d \n', edot);
+
+% Display time 
+fprintf('Computation Time is %1.2f seconds \n', tEnd);
 
 % Compute DTWD between train trajectories and reproductions
 if ds_plot_options.sim_traj

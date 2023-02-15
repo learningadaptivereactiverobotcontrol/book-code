@@ -1,0 +1,148 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of solve_chol</title>
+  <meta name="keywords" content="solve_chol">
+  <meta name="description" content="(Modified) Newton method via Cholesky factorization (with inertia control)">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">source</a> &gt; <a href="index.html">@penlab</a> &gt; solve_chol.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for source/@penlab&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>solve_chol
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>(Modified) Newton method via Cholesky factorization (with inertia control)</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [dir,nFlag]=solve_chol(obj,matrix,rhs) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> (Modified) Newton method via Cholesky factorization (with inertia control)
+ Symmetric approximate minimum degree permutation is possible to employ
+ Solves the system &quot;matrix*dir=rhs&quot;
+ OUTPUT
+   nFlag ... 0..OK, 1..Cholesky/inertia failed
+ 'obj' is used only for option settings (and to store last perturbation)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="penlab.html" class="code" title="">penlab</a>	PenLab (Pennon Laboratory for Matlab, previously PennonM)</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [dir,nFlag]=solve_chol(obj,matrix,rhs)</a>
+0002 <span class="comment">% (Modified) Newton method via Cholesky factorization (with inertia control)</span>
+0003 <span class="comment">% Symmetric approximate minimum degree permutation is possible to employ</span>
+0004 <span class="comment">% Solves the system &quot;matrix*dir=rhs&quot;</span>
+0005 <span class="comment">% OUTPUT</span>
+0006 <span class="comment">%   nFlag ... 0..OK, 1..Cholesky/inertia failed</span>
+0007 <span class="comment">% 'obj' is used only for option settings (and to store last perturbation)</span>
+0008 
+0009 <span class="comment">%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%</span>
+0010 
+0011 
+0012   start_time=cputime;
+0013   [n m] = size(matrix);
+0014   mat_nnz=nnz(matrix);
+0015 
+0016   LMUPDATE = obj.allopts.pert_update;
+0017   LMLOW = obj.allopts.pert_min;
+0018   PERT_TRY_MAX = obj.allopts.pert_try_max;
+0019   ORDERING = obj.allopts.chol_ordering;
+0020   <span class="comment">%LMFASTER = obj.allopts.pert_faster; % &amp;&amp; issparse(matrix); ??</span>
+0021   LMFASTER = 0; <span class="comment">% &amp;&amp; issparse(matrix); ??</span>
+0022 
+0023   <span class="keyword">if</span> (ORDERING &amp;&amp; issparse(matrix))
+0024     <span class="keyword">if</span> (~isempty(obj.chol_factperm))
+0025       obj.print(4,Inf,<span class="string">'Reusing ordering'</span>);
+0026       p=obj.chol_factperm;
+0027     <span class="keyword">else</span>
+0028       obj.print(4,Inf,<span class="string">'Computing ordering'</span>);
+0029       p=symamd(matrix);
+0030       obj.chol_factperm=p;
+0031     <span class="keyword">end</span>
+0032   <span class="keyword">else</span>
+0033     p=1:n;
+0034   <span class="keyword">end</span>
+0035   rev(p)=1:n;  <span class="comment">% inverse permutation</span>
+0036 
+0037   matrix=matrix(p,p);
+0038   [factor, status] = chol(matrix);
+0039   chol_try=0;
+0040   lambda=max(obj.chol_lmlast/LMUPDATE, LMLOW);  <span class="comment">% lambda to try if it fails now</span>
+0041   lambda_last=0.;
+0042   <span class="keyword">while</span> (status~=0 &amp;&amp; chol_try&lt;PERT_TRY_MAX)
+0043     obj.print(4,Inf,<span class="string">'Chol fact failed (%d), new pert: %e'</span>,status,lambda);
+0044     <span class="keyword">if</span> (LMFASTER)
+0045       <span class="comment">% find negative curvature vector from the last factorization</span>
+0046       <span class="comment">%k = status-1;</span>
+0047       <span class="comment">%R11 = factor(1:status-1,1:status-1);</span>
+0048       <span class="comment">%R12 = factor(1:status-1,status:n);</span>
+0049       <span class="comment">%v_nc = [R11 \ R12(:,1); -1; zeros(n-k-1,1)];</span>
+0050       R12e1 = factor(1:status-1,status);
+0051       v_nc = [factor(1:status-1,1:status-1) \ R12e1; -1; zeros(n-status,1)];
+0052       v_nc = v_nc/norm(v_nc);      <span class="comment">% negative curvature vector</span>
+0053       <span class="comment">% perturbated matrix must be positive definite, e.i., v_nc'*(matrix+lambda*I)*v_nc&gt;0</span>
+0054       <span class="comment">% it gives: lambda &gt; -v_nc'*matrix*v_nc since v_nc is normed</span>
+0055       negcrv = -v_nc'*matrix*v_nc;
+0056       cnt=0;
+0057       <span class="keyword">while</span> (lambda-lambda_last &lt;= negcrv)
+0058         lambda=lambda*LMUPDATE;
+0059         cnt=cnt+1;
+0060       <span class="keyword">end</span>
+0061       obj.print(5,Inf,<span class="string">'Chol: pert_faster: skipped %d steps: pert=%e -&gt; %e'</span>,cnt,lambda_last,lambda);
+0062     <span class="keyword">end</span>
+0063     matrix=matrix + (lambda-lambda_last)*speye(n,n);
+0064     [factor, status] = chol(matrix);
+0065     chol_try = chol_try+1;
+0066     lambda_last=lambda;
+0067     lambda=lambda*LMUPDATE;
+0068   <span class="keyword">end</span>
+0069 
+0070   <span class="keyword">if</span> (chol_try&gt;0)
+0071     obj.chol_lmlast=lambda_last;
+0072   <span class="keyword">end</span>
+0073 
+0074   <span class="comment">% update statistics</span>
+0075   time_fact = cputime - start_time;
+0076   obj.stats_time_fact_last=obj.stats_time_fact_last+time_fact;
+0077   obj.initer_last = obj.initer_last+chol_try+1;
+0078 
+0079   <span class="keyword">if</span> (status~=0)
+0080     obj.print(3,Inf,<span class="string">'Chol fact failure (%d), last pert: %e, giving up'</span>,status,lambda_last);
+0081     nFlag = 1;
+0082     dir=zeros(n,1);
+0083     <span class="keyword">return</span>;
+0084   <span class="keyword">end</span>
+0085 
+0086   dir=factor \ (factor' \ rhs(p));
+0087   dir=dir(rev);
+0088   time_total=cputime - start_time;
+0089   nFlag=0;
+0090 
+0091   obj.print(4,Inf,<span class="string">'Chol fact OK in %fs, total %fs, no pert=%i, pert=%.4e, nnz=%d (dim %dx%d)'</span>,time_fact, time_total, chol_try, lambda_last, nnz(factor),n,n);
+0092   <span class="keyword">if</span> (lambda_last&gt;0)
+0093     obj.print(3,4,<span class="string">'Chol fact: OK, pert=%.4e'</span>,lambda_last);
+0094   <span class="keyword">end</span>
+0095 
+0096</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

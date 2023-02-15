@@ -1,0 +1,444 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of eval_alddx</title>
+  <meta name="keywords" content="eval_alddx">
+  <meta name="description" content="As eval_alx(), evaluate hessian of the Augmented Lagrangian and Jacobian">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">source</a> &gt; <a href="index.html">@penlab</a> &gt; eval_alddx.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for source/@penlab&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>eval_alddx
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>As eval_alx(), evaluate hessian of the Augmented Lagrangian and Jacobian</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [status] = eval_alddx(obj) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> As eval_alx(), evaluate hessian of the Augmented Lagrangian and Jacobian
+ of the equality constraints. The results are stored in obj.ALddx, obj.eqdx
+ and tickers updated.</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="penlab.html" class="code" title="">penlab</a>	PenLab (Pennon Laboratory for Matlab, previously PennonM)</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% As eval_alx(), evaluate hessian of the Augmented Lagrangian and Jacobian</span>
+0002 <span class="comment">% of the equality constraints. The results are stored in obj.ALddx, obj.eqdx</span>
+0003 <span class="comment">% and tickers updated.</span>
+0004 <a name="_sub0" href="#_subfunctions" class="code">function [status] = eval_alddx(obj)</a>
+0005 
+0006   <span class="comment">% status TODO</span>
+0007   status = 0;
+0008 
+0009   <span class="comment">% TODO remove!</span>
+0010   <span class="keyword">if</span> (true || obj.ALddxtck &lt; obj.ticker)
+0011     starttime = cputime;
+0012 
+0013     <span class="comment">% create local copies of obj.x,obj.Y to avoid checking repetitively if they</span>
+0014     <span class="comment">% are 'up-to-date' with obj.xall, they get used many times in calls to</span>
+0015     <span class="comment">% user's functions</span>
+0016     x=obj.x;
+0017     Y=obj.Y;
+0018     <span class="comment">% same for obj.userdata, it might be quite expensive to get&amp;store it in</span>
+0019     <span class="comment">% the object</span>
+0020     userdata=obj.userdata;
+0021 
+0022     <span class="comment">% TODO reuse it + 'pointchanged' flag</span>
+0023     <span class="comment">% function inequal &amp; equal</span>
+0024     <span class="keyword">if</span> (obj.NgNLN + obj.NgLIN&gt;0)
+0025       [gx, userdata] = obj.confun(x, Y, userdata);
+0026       ineqx = obj.ineqshift + obj.ineqmlt .* gx(obj.ineqmap);
+0027       obj.eqx = obj.eqshift + gx(obj.eqmap);
+0028 
+0029       [gdx, userdata] = obj.congrad(x, Y, userdata);
+0030       <span class="comment">% because of stupid spdiags() which doesn't accept ([],0,0,0)</span>
+0031       <span class="keyword">if</span> (obj.Nineq&gt;0)
+0032         ineqdx = gdx(:,obj.ineqmap) * spdiags(obj.ineqmlt,0,obj.Nineq,obj.Nineq);
+0033       <span class="keyword">else</span>
+0034         ineqdx = [];
+0035       <span class="keyword">end</span>
+0036       <span class="comment">% TODO update ticker eqdx</span>
+0037       obj.eqdx = gdx(:,obj.eqmap);
+0038     <span class="keyword">end</span>
+0039 
+0040     <span class="comment">% prepare Lmlt for all function 2nd derivatives fddx + Lmlt*gddx</span>
+0041     <span class="comment">% (in user's indices, including both equal &amp; inequal)</span>
+0042     <span class="comment">% AMPL wants to have the full length ... but in fact only obj.NgNLN</span>
+0043     <span class="comment">% should be enough.  ==&gt; try with all and then reduce it later TODO</span>
+0044     <span class="comment">% TODO vectorize</span>
+0045     <span class="comment">% TODO this is right only if all phiind! (which will be probably true,</span>
+0046     <span class="comment">% as no NLN constr should go to the barrier ... why should they?)</span>
+0047     <span class="keyword">if</span> (obj.Nineq&gt;0)
+0048       ind=1:obj.Nineq;
+0049       Lmlt_long=obj.ineqmlt(ind).*obj.uineq(ind).*obj.phi2_D(ineqx(ind)./obj.pineq(ind));
+0050       <span class="comment">% gather these Lmlt belonging to the same &quot;body&quot; of the constraint</span>
+0051       <span class="comment">% (sparse sums element which belong to the same index)</span>
+0052       Lmlt = full(sparse(obj.ineqmap(ind),1,Lmlt_long,obj.NgNLN+obj.NgLIN,1));
+0053     <span class="keyword">else</span>
+0054       Lmlt = zeros(obj.NgNLN+obj.NgLIN,1);
+0055     <span class="keyword">end</span>
+0056 <span class="comment">%    Lmlt = zeros(obj.NgNLN+obj.NgLIN,1);</span>
+0057 <span class="comment">%    for k=1:obj.Nineq</span>
+0058 <span class="comment">%      kuser=obj.ineqmap(k);</span>
+0059 <span class="comment">%      Lmlt(kuser) = Lmlt(kuser) + obj.ineqmlt(k)*obj.uineq(k)*obj.phi2_D(ineqx(k)/obj.pineq(k));</span>
+0060 <span class="comment">%    end</span>
+0061     <span class="keyword">for</span> k=1:obj.Neq
+0062       kuser=obj.eqmap(k);
+0063       Lmlt(kuser)=obj.ueq(k);
+0064     <span class="keyword">end</span>
+0065 
+0066     <span class="comment">% get Lagrangian directly or compose it</span>
+0067     <span class="keyword">if</span> (~isempty(obj.lagrhess))
+0068       [ALddx, userdata] = obj.lagrhess(x,Y,Lmlt,userdata);
+0069       <span class="keyword">if</span> (isempty(ALddx))
+0070         ALddx=sparse(obj.Nx+obj.NYnnz,obj.Nx+obj.NYnnz);
+0071       <span class="keyword">end</span>
+0072     <span class="keyword">else</span>
+0073       <span class="comment">% compose Lagrangian</span>
+0074       [ALddx, userdata] = obj.objhess(x,Y,userdata);
+0075       <span class="keyword">if</span> (isempty(ALddx))
+0076         ALddx=sparse(obj.Nx+obj.NYnnz,obj.Nx+obj.NYnnz);
+0077       <span class="keyword">end</span>
+0078       <span class="keyword">for</span> kuser=1:obj.NgNLN
+0079         [gddx, userdata] = obj.conhess(x,Y,kuser,userdata);
+0080         ALddx = ALddx + Lmlt(kuser)*gddx;
+0081       <span class="keyword">end</span>
+0082     <span class="keyword">end</span>
+0083 
+0084     <span class="comment">%%% Add dyadic product of function inequalitites (and box)</span>
+0085 
+0086     <span class="comment">% box constraints</span>
+0087     <span class="keyword">if</span> (obj.Nxbox&gt;0)
+0088       xboxx = obj.xboxshift + obj.xboxmlt .* obj.xall(obj.xboxmap);
+0089       <span class="comment">% this adds only diagonal scaling as grad = (0,...,1,...0) or with -1</span>
+0090       <span class="comment">% so it will be either:</span>
+0091       <span class="comment">%   + u(i)/p(i)*phi2_D2(g(i)/p(i))   for phi/bar</span>
+0092       <span class="comment">% or</span>
+0093       <span class="comment">%   + u(i)*p(i)*phibar_D2(g(i))      for barrier</span>
+0094       <span class="comment">% or nothing if not bounded, don't forget on both inequalitites</span>
+0095       diagxbox=zeros(obj.Nx+obj.NYnnz,1);
+0096       <span class="comment">% TODO vectorize</span>
+0097       ind=obj.xboxindbar;
+0098       <span class="keyword">if</span> ~isempty(ind)
+0099       <span class="keyword">for</span> k=ind
+0100         kuser=obj.xboxmap(k);
+0101         diagxbox(kuser) = diagxbox(kuser) + obj.uxbox(k)*obj.pxbox(k)*obj.phibar_D2(xboxx(k));
+0102       <span class="keyword">end</span>
+0103       <span class="keyword">end</span>
+0104 
+0105       ind=obj.xboxindphi;
+0106       <span class="keyword">if</span> ~isempty(ind)
+0107       <span class="keyword">for</span> k=ind
+0108         kuser=obj.xboxmap(k);
+0109         diagxbox(kuser) = diagxbox(kuser) + obj.uxbox(k)/obj.pxbox(k)*obj.phi2_D2(xboxx(k)/obj.pxbox(k));
+0110       <span class="keyword">end</span>
+0111       <span class="keyword">end</span>
+0112       ALddx = ALddx + spdiags(diagxbox,0,obj.Nx+obj.NYnnz,obj.Nx+obj.NYnnz);
+0113     <span class="keyword">end</span>
+0114 
+0115     <span class="comment">% function inequalitites</span>
+0116     <span class="comment">%ind=obj.ineqindbar;</span>
+0117     <span class="comment">%... TODO</span>
+0118 
+0119     ind=obj.ineqindphi;
+0120     <span class="keyword">if</span> (~isempty(ind))
+0121       coef=obj.uineq(ind)./obj.pineq(ind).*obj.phi2_D2(ineqx(ind)./obj.pineq(ind));
+0122       ALddx = ALddx + ineqdx(:,ind) * spdiags(coef,0,length(ind),length(ind)) * ineqdx(:,ind)';
+0123 
+0124     <span class="keyword">end</span>
+0125 <span class="comment">%    for k=ind</span>
+0126       <span class="comment">%k</span>
+0127       <span class="comment">%nnz(ineqdx(:,k))</span>
+0128 <span class="comment">%      ALddx = ALddx + ((obj.uineq(k)/obj.pineq(k)*obj.phi2_D2(ineqx(k)/obj.pineq(k)))*ineqdx(:,k))*ineqdx(:,k)';</span>
+0129       <span class="comment">%disp('k done')</span>
+0130       <span class="comment">%nnz(ALddx)</span>
+0131 <span class="comment">%    end</span>
+0132 
+0133     <span class="comment">% matrix variable - log barrier (strict feasibility)</span>
+0134     <span class="keyword">if</span> ~isempty(obj.Yboxindbar)
+0135     <span class="keyword">for</span> k=obj.Yboxindbar
+0136       <span class="comment">% convert the matrix box constraint to the form:   +/-Y +/-bound &gt;=0</span>
+0137       pkx=obj.PYbox(k);
+0138       Ykx = Y{obj.Yboxmap(k)};
+0139       Akx=-obj.Yboxshift(k)*speye(size(Ykx)) - obj.Yboxmlt(k)*Ykx;
+0140 
+0141       <span class="comment">% can assume that ALx was computed before ALdx --&gt; Akx must be pos. def.</span>
+0142       chol(Akx);
+0143       invAkx = full(inv(Akx));
+0144 
+0145       <span class="comment">% compute elements of 2nd derivative of the penalty term:</span>
+0146       <span class="comment">%   d2/dxi dxj ... = p*trace( (A^-1) * (d/dxi A) * (A^-1) * (d/dxj A) )</span>
+0147 
+0148       mlt=-obj.Yboxmlt(k);  <span class="comment">% +/-1</span>
+0149       mapper=obj.vec2Ymap{obj.Yboxmap(k)};
+0150       dim=mapper.dim;
+0151       lAdep=mapper.nelem;
+0152       offset=obj.Nx + mapper.xmap(1) - 1;
+0153       irow=mapper.irow;
+0154       icol=mapper.icol;
+0155 
+0156       Akdixall=cell(lAdep,1);
+0157       <span class="comment">% store everything in a dense matrix (kernel) and copy it to the Hessian</span>
+0158       <span class="comment">% once when finished</span>
+0159       Akddx=zeros(lAdep,lAdep);
+0160       <span class="keyword">for</span> ii=1:lAdep
+0161         <span class="keyword">if</span> (irow(ii)==icol(ii))
+0162           <span class="comment">% diagonal element</span>
+0163           Akdix = sparse(irow(ii),icol(ii),mlt,dim,dim);
+0164         <span class="keyword">else</span>
+0165           <span class="comment">% nondiag element --&gt; add two</span>
+0166           Akdix = sparse([irow(ii),icol(ii)],[icol(ii),irow(ii)],[mlt,mlt],dim,dim);
+0167         <span class="keyword">end</span>
+0168 
+0169         Akdixall{ii}=Akdix;
+0170 
+0171         <span class="comment">% compute all elements under the diagonal</span>
+0172         <span class="keyword">for</span> jj=1:ii-1
+0173           hij=0.5*pkx*mextrdsdsmat(invAkx, Akdix, invAkx, Akdixall{jj});
+0174           Akddx(ii,jj)=hij;
+0175           Akddx(jj,ii)=hij;
+0176         <span class="keyword">end</span>
+0177 
+0178         <span class="comment">% compute diagonal element jj=ii</span>
+0179         hij=0.5*pkx*mextrdsdsmat(invAkx, Akdix, invAkx, Akdix);
+0180         Akddx(ii,ii)=hij;
+0181         
+0182       <span class="keyword">end</span>
+0183       Adep=offset+[1:lAdep];
+0184       <span class="comment">% copy the dense kernel back to ALddx</span>
+0185       <span class="comment">% ALddx=ALddx + Akddx(obj.Adep{kuser},obj.Adep{kuser}); ... need other way</span>
+0186       Akddx_expand=sparse(obj.Nx+obj.NYnnz,obj.Nx+obj.NYnnz);
+0187       <span class="comment">%Akddx_expand(obj.Adep{kuser},obj.Adep{kuser})=Akddx;</span>
+0188       Akddx_expand(Adep,Adep)=Akddx;
+0189       ALddx=ALddx + Akddx_expand;
+0190 
+0191     <span class="keyword">end</span>
+0192     <span class="keyword">end</span>
+0193 
+0194     <span class="comment">% matrix variable - pen/bar</span>
+0195     <span class="keyword">if</span> ~isempty(obj.Yboxindphi)
+0196     <span class="keyword">for</span> k=obj.Yboxindphi
+0197       pkx=obj.PYbox(k);            <span class="comment">%2*p(sdpdata.Ng+k);</span>
+0198       Ykx = obj.Y{obj.Yboxmap(k)};
+0199       Akx=obj.Yboxshift(k)*speye(size(Ykx)) + obj.Yboxmlt(k)*Ykx;
+0200       umatk=obj.UYbox{k};
+0201 
+0202       <span class="comment">%Z=(pkx*speye(size(Akx))-Akx);</span>
+0203       Z=(pkx*speye(size(Akx))-Akx);
+0204       <span class="comment">%invZ=inv(Z);</span>
+0205       invZ=full(inv(Z));
+0206       pZUZ=pkx^2*invZ*umatk*invZ;
+0207 
+0208       mlt=obj.Yboxmlt(k);  <span class="comment">% +/-1</span>
+0209       mapper=obj.vec2Ymap{obj.Yboxmap(k)};
+0210       dim=mapper.dim;
+0211       lAdep=mapper.nelem;
+0212       offset=obj.Nx + mapper.xmap(1) - 1;
+0213       irow=mapper.irow;
+0214       icol=mapper.icol;
+0215 
+0216       Akdixall=cell(lAdep,1);
+0217       <span class="comment">% store everything in a dense matrix (kernel) and copy it to the Hessian</span>
+0218       <span class="comment">% once when finished</span>
+0219       Akddx=zeros(lAdep,lAdep);
+0220       <span class="keyword">for</span> ii=1:lAdep
+0221         <span class="keyword">if</span> (irow(ii)==icol(ii))
+0222           <span class="comment">% diagonal element</span>
+0223           Akdix = sparse(irow(ii),icol(ii),mlt,dim,dim);
+0224         <span class="keyword">else</span>
+0225           <span class="comment">% nondiag element --&gt; add two</span>
+0226           Akdix = sparse([irow(ii),icol(ii)],[icol(ii),irow(ii)],[mlt,mlt],dim,dim);
+0227         <span class="keyword">end</span>
+0228 
+0229         Akdixall{ii}=Akdix;
+0230 
+0231         <span class="comment">% compute all elements under the diagonal</span>
+0232         <span class="keyword">for</span> jj=1:ii-1
+0233           hij=mextrdsdsmat(pZUZ, Akdix, invZ, Akdixall{jj});
+0234           Akddx(ii,jj)=hij;
+0235           Akddx(jj,ii)=hij;
+0236         <span class="keyword">end</span>
+0237 
+0238         <span class="comment">% compute diagonal element jj=ii</span>
+0239         hij=mextrdsdsmat(pZUZ, Akdix, invZ, Akdix);
+0240         Akddx(ii,ii)=hij;
+0241         
+0242       <span class="keyword">end</span>
+0243       Adep=offset+[1:lAdep];
+0244       <span class="comment">% copy the dense kernel back to ALddx</span>
+0245       <span class="comment">% ALddx=ALddx + Akddx(obj.Adep{kuser},obj.Adep{kuser}); ... need other way</span>
+0246       Akddx_expand=sparse(obj.Nx+obj.NYnnz,obj.Nx+obj.NYnnz);
+0247       <span class="comment">%Akddx_expand(obj.Adep{kuser},obj.Adep{kuser})=Akddx;</span>
+0248       Akddx_expand(Adep,Adep)=Akddx;
+0249       ALddx=ALddx + Akddx_expand;
+0250 
+0251     <span class="keyword">end</span>
+0252     <span class="keyword">end</span>
+0253 
+0254     <span class="comment">% matrix constraints - pen/bar</span>
+0255     <span class="keyword">if</span> ~isempty(obj.Aindphi)
+0256     <span class="keyword">for</span> k=obj.Aindphi
+0257       pkx=obj.PA(k);  <span class="comment">% I used to use 2*         !!!!!!!!</span>
+0258       <span class="comment">% TODO need to map the matrix first! - is it correct???</span>
+0259       kuser=obj.Amap(k);
+0260       [Akuserx, userdata] = obj.mconfun(x, Y, kuser, userdata);
+0261       Akx = obj.Ashift(k)*speye(size(Akuserx)) + obj.Amlt(k) .* Akuserx;
+0262       umatk=obj.UA{k};
+0263 
+0264       Z=(pkx*speye(size(Akx))-Akx);
+0265       <span class="comment">%invZ=inv(Z);</span>
+0266       invZ=full(inv(Z));
+0267       <span class="comment">%invZ=inv(full(Z));</span>
+0268       pZUZ=pkx^2*invZ*umatk*invZ;
+0269       
+0270       <span class="comment">% MAPPING &amp; transformation !!!</span>
+0271       Adep=obj.Adep{kuser};
+0272       lAdep=length(Adep);
+0273       Akdixall=cell(lAdep,1);
+0274       <span class="comment">% store everything in a dense matrix (kernel) and copy it to the Hessian</span>
+0275       <span class="comment">% once when finished</span>
+0276       <span class="comment">%Akddx=zeros(lAdep,lAdep);</span>
+0277       Akddx_nnz=lAdep*(lAdep+1)/2;
+0278       Akddx_val=zeros(Akddx_nnz,1);
+0279       Akddx_row=zeros(Akddx_nnz,1);
+0280       Akddx_col=zeros(Akddx_nnz,1);
+0281       idx = 0;
+0282       <span class="keyword">for</span> ii=1:lAdep
+0283         i=Adep(ii);
+0284         [Akdix, userdata] = obj.mcongrad(x,Y,kuser,i,userdata);
+0285         <span class="keyword">if</span> (obj.Amlt(k)&lt;0)    <span class="comment">% TODO correct????</span>
+0286           <span class="comment">% must be -1, otherwise it would be 1</span>
+0287           Akdix = -Akdix;
+0288         <span class="keyword">end</span>
+0289         <span class="comment">%Akdix = obj.Amlt(k)*Akdix;</span>
+0290         Akdixall{ii}=Akdix;
+0291         Akddx_row(idx+1:idx+ii)=i;
+0292         Akddx_col(idx+1:idx+ii)=Adep(1:ii);
+0293         <span class="comment">% compute all elements under the diagonal</span>
+0294 <span class="comment">%        for jj=1:ii-1</span>
+0295           <span class="comment">%---Akdjx=Akdixall{jj};</span>
+0296 
+0297           <span class="comment">%AZA=Akdix*invZ*Akdjx;</span>
+0298           <span class="comment">%hij = trace(pZUZ*AZA);</span>
+0299           <span class="comment">%%hij=trdsdsmat(pZUZ, Akdix, invZ, Akdjx);</span>
+0300           <span class="comment">%---hij=mextrdsdsmat(pZUZ, Akdix, invZ, Akdjx);</span>
+0301 <span class="comment">%          hij=mextrdsdsmat(pZUZ, Akdix, invZ, Akdixall{jj});</span>
+0302           <span class="comment">%Akddx(ii,jj)=hij;</span>
+0303           <span class="comment">%Akddx(jj,ii)=hij;</span>
+0304 <span class="comment">%          Akddx_val(idx+jj)=hij;</span>
+0305 <span class="comment">%        end</span>
+0306 
+0307         <span class="comment">% compute diagonal element jj=ii</span>
+0308 <span class="comment">%        hij=mextrdsdsmat(pZUZ, Akdix, invZ, Akdix);</span>
+0309         <span class="comment">%Akddx(ii,ii)=hij;</span>
+0310 <span class="comment">%        Akddx_val(idx+ii)=hij;</span>
+0311 
+0312         vec = mextrcolumn(pZUZ,Akdix,invZ,Akdixall(1:ii));
+0313         Akddx_val(idx+1:idx+ii)=vec;
+0314         
+0315         idx = idx+ii;
+0316       <span class="keyword">end</span>
+0317 
+0318       <span class="comment">% add 2nd order matrix constraints derivatives</span>
+0319       <span class="comment">% either by lagrangian or element by element</span>
+0320       Akddx_lagr = [];
+0321       <span class="keyword">if</span> (kuser&lt;=obj.NANLN)
+0322         <span class="keyword">if</span> (~isempty(obj.mconlagrhess))
+0323           [Akddx_lagr, userdata] = obj.mconlagrhess(x,Y,kuser,pZUZ,userdata);
+0324           <span class="keyword">if</span> (obj.Amlt(k)~=1)
+0325             Akddx_lagr = obj.Amlt(k)*Akddx_lagr;
+0326           <span class="keyword">end</span>
+0327         <span class="keyword">else</span>
+0328           <span class="comment">% lagrangian is not present, do it element by element</span>
+0329           <span class="comment">%Akddx_val2=zeros(Akddx_nnz,1);</span>
+0330           idx = 0;
+0331           <span class="keyword">for</span> ii=1:lAdep
+0332             i=Adep(ii);
+0333             <span class="keyword">for</span> jj=1:ii-1
+0334               <span class="comment">%[Akddijx, userdata] = obj.mconhess(x,Y,kuser,i,Adep(jj),userdata);</span>
+0335               [Akddijx, userdata] = obj.mconhess(x,Y,kuser,Adep(jj),i,userdata);
+0336               <span class="keyword">if</span> (~isempty(Akddijx))
+0337                 <span class="comment">% TODO better</span>
+0338                 <span class="comment">% don't forget a possible transformation with Akddijx,</span>
+0339                 <span class="comment">% can be applied on the trace (instead of on Akddijx</span>
+0340                 <span class="comment">% directly)</span>
+0341                 hij=obj.Amlt(k)*trace(Akddijx*pZUZ);
+0342                 <span class="comment">%Akddx(ii,jj)=Akddx(ii,jj)+hij;</span>
+0343                 <span class="comment">%Akddx(jj,ii)=Akddx(jj,ii)+hij;</span>
+0344                 Akddx_val(idx+jj)=Akddx_val(idx+jj)+hij;
+0345                 <span class="comment">%Akddx_val2(idx+jj)=Akddx_val2(idx+jj)+hij;</span>
+0346               <span class="keyword">end</span>
+0347             <span class="keyword">end</span>
+0348             [Akddijx, userdata] = obj.mconhess(x,Y,kuser,i,i,userdata);
+0349             <span class="keyword">if</span> (~isempty(Akddijx))
+0350               <span class="comment">% TODO better</span>
+0351               hij=obj.Amlt(k)*trace(Akddijx*pZUZ);
+0352               <span class="comment">%Akddx(ii,ii)=Akddx(ii,ii)+hij;</span>
+0353               Akddx_val(idx+ii)=Akddx_val(idx+ii)+hij;
+0354               <span class="comment">%Akddx_val2(idx+ii)=Akddx_val2(idx+ii)+hij;</span>
+0355             <span class="keyword">end</span>
+0356             idx = idx+ii;
+0357           <span class="keyword">end</span>
+0358         <span class="keyword">end</span>
+0359       <span class="keyword">end</span>
+0360       <span class="comment">% only lower triangle -&gt; copy to full</span>
+0361       <span class="comment">%Akddx = tril(Akddx) + tril(Akddx,-1)';</span>
+0362       <span class="comment">% copy the dense kernel back to ALddx</span>
+0363       <span class="comment">% ALddx=ALddx + Akddx(obj.Adep{kuser},obj.Adep{kuser}); ... need other way</span>
+0364 
+0365       <span class="comment">%%Akddx_expand=sparse(obj.Nx+obj.NYnnz,obj.Nx+obj.NYnnz);</span>
+0366       <span class="comment">%Akddx_expand(obj.Adep{kuser},obj.Adep{kuser})=Akddx;</span>
+0367       <span class="comment">%%Akddx_expand(Adep,Adep)=Akddx;</span>
+0368       <span class="comment">%ALddx=ALddx + Akddx_expand;</span>
+0369       Akddx_expand = sparse(Akddx_row,Akddx_col,Akddx_val,obj.Nx+obj.NYnnz,obj.Nx+obj.NYnnz,lAdep*lAdep);
+0370       Akddx_expand = Akddx_expand + tril(Akddx_expand,-1)';
+0371       <span class="keyword">if</span> (isempty(Akddx_lagr))
+0372         <span class="comment">%Akddx_lagr = sparse(Akddx_row,Akddx_col,Akddx_val2,obj.Nx+obj.NYnnz,obj.Nx+obj.NYnnz,lAdep*lAdep);</span>
+0373         <span class="comment">%Akddx_lagr = Akddx_lagr + tril(Akddx_lagr,-1)';</span>
+0374         ALddx=ALddx + Akddx_expand;
+0375         <span class="comment">%ALddx=ALddx + Akddx_expand + Akddx_lagr;</span>
+0376       <span class="keyword">else</span>
+0377         ALddx=ALddx + Akddx_expand + Akddx_lagr;
+0378       <span class="keyword">end</span>
+0379       <span class="comment">% + add 2nd derivatives</span>
+0380     <span class="keyword">end</span>
+0381     <span class="keyword">end</span>
+0382 
+0383     <span class="comment">% store user's data back in the object if it got changed</span>
+0384     obj.userdata=userdata;
+0385     
+0386     <span class="comment">% update ticker</span>
+0387     obj.ALddx = ALddx;
+0388     obj.ALddxtck = obj.ticker;
+0389 
+0390     <span class="comment">% update stats</span>
+0391     obj.stats_ncall_alddx = obj.stats_ncall_alddx + 1;
+0392     obj.stats_time_alddx = obj.stats_time_alddx + cputime - starttime;
+0393 
+0394   <span class="keyword">end</span>
+0395</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of print_opts</title>
+  <meta name="keywords" content="print_opts">
+  <meta name="description" content="print all options from the object via obj.print() and add a flag if it is">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="../index.html">source</a> &gt; <a href="index.html">@penlab</a> &gt; print_opts.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for source/@penlab&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>print_opts
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>print all options from the object via obj.print() and add a flag if it is</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function [errmsg] = print_opts(obj, minlev, maxlev) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> print all options from the object via obj.print() and add a flag if it is
+ a default setting or changed by user from obj.opts
+ If minlev/maxlev specified, print only on these levels, if not all (0-Inf)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="penlab.html" class="code" title="">penlab</a>	PenLab (Pennon Laboratory for Matlab, previously PennonM)</li></ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% print all options from the object via obj.print() and add a flag if it is</span>
+0002 <span class="comment">% a default setting or changed by user from obj.opts</span>
+0003 <span class="comment">% If minlev/maxlev specified, print only on these levels, if not all (0-Inf)</span>
+0004 <a name="_sub0" href="#_subfunctions" class="code">function [errmsg] = print_opts(obj, minlev, maxlev)</a>
+0005   
+0006   errmsg = [];
+0007   <span class="keyword">if</span> (nargin&lt;=1)
+0008     minlev=0;
+0009     maxlev=Inf;
+0010   <span class="keyword">elseif</span> (nargin&lt;=2)
+0011     maxlev=Inf;
+0012   <span class="keyword">end</span>
+0013 
+0014   errmsg=obj.print(minlev,maxlev,<span class="string">'All option settings (* = set by user):'</span>);
+0015 
+0016   <span class="comment">% create an array of flags if the option is coming from user or as default</span>
+0017   optnames = fieldnames(obj.allopts);
+0018   usrset = isfield(obj.opts, optnames);
+0019   no_opts=length(optnames);
+0020 
+0021   <span class="keyword">for</span> i=1:no_opts
+0022     fld=obj.allopts.(optnames{i});
+0023     <span class="keyword">if</span> (usrset(i))
+0024       flag=<span class="string">'*'</span>;
+0025     <span class="keyword">else</span>
+0026       flag=<span class="string">' '</span>;
+0027     <span class="keyword">end</span>
+0028     <span class="keyword">if</span> (isempty(fld))
+0029       str=<span class="string">'[not used]'</span>;
+0030     <span class="keyword">elseif</span> (isnumeric(fld))   
+0031       str=sprintf(<span class="string">'%g '</span>,fld);  <span class="comment">% this will work even with arrays</span>
+0032     <span class="keyword">elseif</span> (ischar(fld))
+0033       str=fld;
+0034     <span class="keyword">else</span>
+0035       str=<span class="string">'[other type, in use]'</span>
+0036     <span class="keyword">end</span>
+0037     errmsg=obj.print(minlev,maxlev,<span class="string">'  %-20s %s: %s'</span>,optnames{i},flag,str);
+0038   <span class="keyword">end</span>
+0039</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>

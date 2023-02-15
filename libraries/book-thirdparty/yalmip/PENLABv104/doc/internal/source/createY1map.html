@@ -1,0 +1,148 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of createY1map</title>
+  <meta name="keywords" content="createY1map">
+  <meta name="description" content="Check &amp; create one structure representing one matrix variable Y">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html v1.5 &copy; 2003-2005 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="index.html">source</a> &gt; createY1map.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for source&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>createY1map
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Check &amp; create one structure representing one matrix variable Y</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [mapper, offset]=createY1map(Y,offset) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Check &amp; create one structure representing one matrix variable Y 
+ The structure will be one element of array vec2Ymap used in vec2Y().
+   Y ... &quot;pattern&quot; matrix given by user (all nnz in one triangle -&gt; variables)
+   offset ... gives the last number of the variable (matrix element considered
+     as variable) so far, so typically obj.NYnnz and 0 at the beggining;
+     matrix element/variables will start with number (offset+1)
+     and the returned offset is the last one
+   mapper ... structure mapping vectorized variable back to Y in a fast way
+     .dim   ... dimxdim dimension of the matrix variable
+     .nelem ... no of variables (=no of elements in lower triangle)
+     .dense ... generate as dense (true) or sparse (false)
+     .xmap  ... mapping the (whole) vector of (Yall) elements) -&gt; nnz of one Y
+        the first one (xmap(1)) is always the same as offset+1, i.e., first
+        variable (counting 1...NYnnz) in this matrix;
+        thus this matrix is created by variables xmap(1)..xmap(1)+nelem-1
+     .irow, .icol  ... to generate sparse matrix with xmap (if ~dense),
+        first nelem refer to the lower triangle, the rest to the upper;
+        if dense, the length is nelem and they map to the lower triangle,
+        it could be computed because it'll be 1,1; 2,1; ...dim,1; 2,2; 3,2;...
+ Note, to see exactly where the given variable maps (= its derivative):
+   variable with index idx=1..nelem maps to irow(idx),icol(idx) + symmetric
+   if nondiagonal, absolute number of such a variable (in xall()) is
+   idx=Nx+xmap(1), ... ,Nx+xmap(1)+nelem-1</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Check &amp; create one structure representing one matrix variable Y</span>
+0002 <span class="comment">% The structure will be one element of array vec2Ymap used in vec2Y().</span>
+0003 <span class="comment">%   Y ... &quot;pattern&quot; matrix given by user (all nnz in one triangle -&gt; variables)</span>
+0004 <span class="comment">%   offset ... gives the last number of the variable (matrix element considered</span>
+0005 <span class="comment">%     as variable) so far, so typically obj.NYnnz and 0 at the beggining;</span>
+0006 <span class="comment">%     matrix element/variables will start with number (offset+1)</span>
+0007 <span class="comment">%     and the returned offset is the last one</span>
+0008 <span class="comment">%   mapper ... structure mapping vectorized variable back to Y in a fast way</span>
+0009 <span class="comment">%     .dim   ... dimxdim dimension of the matrix variable</span>
+0010 <span class="comment">%     .nelem ... no of variables (=no of elements in lower triangle)</span>
+0011 <span class="comment">%     .dense ... generate as dense (true) or sparse (false)</span>
+0012 <span class="comment">%     .xmap  ... mapping the (whole) vector of (Yall) elements) -&gt; nnz of one Y</span>
+0013 <span class="comment">%        the first one (xmap(1)) is always the same as offset+1, i.e., first</span>
+0014 <span class="comment">%        variable (counting 1...NYnnz) in this matrix;</span>
+0015 <span class="comment">%        thus this matrix is created by variables xmap(1)..xmap(1)+nelem-1</span>
+0016 <span class="comment">%     .irow, .icol  ... to generate sparse matrix with xmap (if ~dense),</span>
+0017 <span class="comment">%        first nelem refer to the lower triangle, the rest to the upper;</span>
+0018 <span class="comment">%        if dense, the length is nelem and they map to the lower triangle,</span>
+0019 <span class="comment">%        it could be computed because it'll be 1,1; 2,1; ...dim,1; 2,2; 3,2;...</span>
+0020 <span class="comment">% Note, to see exactly where the given variable maps (= its derivative):</span>
+0021 <span class="comment">%   variable with index idx=1..nelem maps to irow(idx),icol(idx) + symmetric</span>
+0022 <span class="comment">%   if nondiagonal, absolute number of such a variable (in xall()) is</span>
+0023 <span class="comment">%   idx=Nx+xmap(1), ... ,Nx+xmap(1)+nelem-1</span>
+0024 <a name="_sub0" href="#_subfunctions" class="code">function [mapper, offset]=createY1map(Y,offset)</a>
+0025   mapper=[];
+0026   
+0027   <span class="comment">% take empty as OK? Yes, such a matrix will be filtered-out from constraints</span>
+0028   <span class="keyword">if</span> (isempty(Y))
+0029     mapper.dim=0;
+0030     mapper.nelem=0;
+0031     mapper.dense=true;
+0032     mapper.xmap=[];
+0033     mapper.irow=[];
+0034     mapper.icol=[];
+0035   <span class="keyword">else</span>
+0036     <span class="comment">% does Y look OK?</span>
+0037     [dim, dim2] = size(Y);
+0038     <span class="keyword">if</span> (dim~=dim2)
+0039       error(<span class="string">'Y is not a square??'</span>);
+0040       <span class="keyword">return</span>;
+0041     <span class="keyword">end</span>
+0042 
+0043     <span class="keyword">if</span> (~issparse(Y) &amp;&amp; nnz(Y)==dim*dim)
+0044       <span class="comment">% Y is really dense and the full lower triangle will create decision vars</span>
+0045       nonnz=dim*(dim+1)/2;
+0046       <span class="comment">% do it better???</span>
+0047       [row,col]=find(tril(Y));  <span class="comment">% should be 1,1; 2,1; 3,1; 2,2; 3,2; ...</span>
+0048       mat=full(sparse(row,col,[1:nonnz]));
+0049       mat=mat+tril(mat,-1)';
+0050 
+0051       mapper.dim=dim;
+0052       mapper.nelem=nonnz;
+0053       mapper.dense=true;
+0054       mapper.xmap=offset + mat(:);  <span class="comment">% should be same as reshape(mat,dim*dim,1)</span>
+0055       <span class="comment">%mapper.irow=[];</span>
+0056       <span class="comment">%mapper.icol=[];</span>
+0057       mapper.irow=row;
+0058       mapper.icol=col;
+0059       offset=offset+nonnz;
+0060 
+0061     <span class="keyword">else</span>
+0062       <span class="comment">% work with it as sparse</span>
+0063       Y=spones(Y);   <span class="comment">% to avoid random nullification in Y+Y'</span>
+0064       Y=tril(Y+Y');  <span class="comment">% or don't symmetrize? or check?</span>
+0065       [row, col] = find(Y);
+0066       inner=find(row~=col);
+0067       nonnz=length(row);
+0068 
+0069       mapper.dim=dim;
+0070       mapper.nelem=nonnz;
+0071       mapper.dense=false;
+0072       mapper.irow=[row; col(inner)];
+0073       mapper.icol=[col; row(inner)];
+0074       mapper.xmap= offset + [[1:nonnz]'; inner];
+0075       offset = offset + nonnz;
+0076     <span class="keyword">end</span>
+0077 
+0078   <span class="keyword">end</span>
+0079</pre></div>
+<hr><address>Generated on Mon 26-Aug-2019 10:22:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/" title="Matlab Documentation in HTML">m2html</a></strong> &copy; 2005</address>
+</body>
+</html>
