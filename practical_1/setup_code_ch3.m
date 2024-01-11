@@ -8,28 +8,6 @@ function setup_code_ch3(compileFlag)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                  WARNING FOR MAC USERS
-% If you are using a Mac, there are some complements that you need to install. This only need to be done once, so no need to repeat this set up if 
-% you have done this in the lecture 4 exercises.
-% 
-% First, you need to have Xcode install from app Store. Then, open it once
-% and accept the license
-% 
-% Then, you have to open a terminal window at the folder matlab_exercices/lecture4-learning-control-laws/mac_setup. 
-% For that you have to open your finder, go to the folder matlab_exercices/lecture4-learning-control-laws/mac_setup
-% Then, right click and choose: "New terminal to folder"
-% Here a terminal window will open. If you run pwd, you should see  ../matlab_exercices/lecture4-learning-control-laws/mac_setup. 
-% 
-% We use SUDO command line, that means you‘ll have to enter you admin password. 
-% 
-% Then run the following command in this terminal:
-% bash Mac_config.sh
-%
-% You will then need to run 'MPC_LPVDS.m' with 'est_options.type = 0' to finalize the setup.
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                                  WARNING FOR MAC USERS
 % If you are using a Mac, you have some complements that you need to install.
 %
 % This should be done during the lecture4 exercises. 
@@ -61,6 +39,21 @@ if exist("svmtrain") ~= 3 || compileFlag == true
 else
     disp('libsvm is correctly installed')
 end
+
+cd(folder_path)
+disp('Press space to continue to next library'); pause()
+
+%% Install sedumi
+sedumi_path = fullfile(folder_path, '..', 'libraries', 'book-thirdparty', 'sedumi');
+cd(sedumi_path);
+addpath(genpath(sedumi_path))
+
+if compileFlag == true
+    % If error here run "install_sedumi -build"
+    install_sedumi
+end
+test_sedumi
+
 cd(folder_path)
 disp('Press space to continue to next library'); pause()
 
@@ -77,20 +70,6 @@ if compileFlag == true || ismac
 end
 test_lightspeed
 close all;
-
-cd(folder_path)
-disp('Press space to continue to next library'); pause()
-
-%% Install sedumi
-sedumi_path = fullfile(folder_path, '..', 'libraries', 'book-thirdparty', 'sedumi');
-cd(sedumi_path);
-addpath(genpath(sedumi_path))
-
-if compileFlag == true
-    % If error here run "install_sedumi -build"
-    install_sedumi
-end
-test_sedumi
 
 cd(folder_path);
 close all;
