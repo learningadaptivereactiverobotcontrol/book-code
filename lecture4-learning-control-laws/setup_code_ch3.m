@@ -72,6 +72,21 @@ if exist("svmtrain") ~= 3 || compileFlag == true
 else
     disp('libsvm is correctly installed')
 end
+
+cd(folder_path)
+disp('Press space to continue to next library'); pause()
+
+%% Install sedumi
+sedumi_path = fullfile(folder_path, '..', 'libraries', 'book-thirdparty', 'sedumi');
+cd(sedumi_path);
+addpath(genpath(sedumi_path))
+
+if compileFlag == true
+    % If error here run "install_sedumi -build"
+    install_sedumi
+end
+test_sedumi
+
 cd(folder_path)
 disp('Press space to continue to next library'); pause()
 
@@ -89,20 +104,6 @@ if compileFlag == true || ismac
 end
 test_lightspeed
 close all;
-
-cd(folder_path)
-disp('Press space to continue to next library'); pause()
-
-%% Install sedumi
-sedumi_path = fullfile(folder_path, '..', 'libraries', 'book-thirdparty', 'sedumi');
-cd(sedumi_path);
-addpath(genpath(sedumi_path))
-
-if compileFlag == true
-    % If error here run "install_sedumi -build"
-    install_sedumi
-end
-test_sedumi
 
 cd(folder_path);
 close all;

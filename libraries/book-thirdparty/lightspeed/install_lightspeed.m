@@ -7,8 +7,8 @@
 % thanks to Kevin Murphy for suggesting this routine.
 % thanks to Ruben Martinez-Cantin for UNDERSCORE_LAPACK_CALL
 
-% Some modifications by Nadia Figueroa and Dominic Reber to run on 
-% MAC OS MOJAVE and higher and Windows
+% Some modifications by Nadia Figueroa, Dominic Reber and Maxime Gautier to run on 
+% MAC OS MOJAVE and higher and Windows and Unix
 
 
 fprintf('Compiling lightspeed 2.6 mex files...\n');
@@ -186,7 +186,7 @@ else
   else
     % this command only works on linux
     clear librandom.so randomseed randbinom randgamma sample_hist
-    cmd = [options.COMPILER ' ' options.COMPFLAGS ' ' options.OPTIMFLAGS ' -c random.c; ' options.COMPILER ' ' options.COMPFLAGS ' -shared -Wl,-E -Wl,-soname,`pwd`/librandom.so -o librandom.so random.o'];
+    cmd = [options.COMPILER ' ' options.COMPFLAGS ' ' options.OPTIMFLAGS ' -c random.c; ' options.COMPILER ' ' options.COMPFLAGS ' -shared -Wl,-E -Wl,-soname,"`pwd`/librandom.so" -o librandom.so random.o'];
 		disp(cmd);
 		system(cmd)
     eval(['mex' flags 'randomseed.c util.o librandom.so -lm'])
