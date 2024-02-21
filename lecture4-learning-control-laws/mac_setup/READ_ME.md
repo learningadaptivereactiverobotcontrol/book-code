@@ -1,6 +1,6 @@
 # Instructions to set up lpvDS learning on Mac 
 
-Follow these instructions to set up proper compilation of the required librairies on Mac. You will then need to run 'setup_code_ch3(1)' in Matlab.
+Follow these instructions to set up proper compilation of the required librairies on Mac. You will then need to run 'setup_code_ch3' in Matlab.
 
 1. First, download Xcode from the App Store. Then, open it once and accept the license
 
