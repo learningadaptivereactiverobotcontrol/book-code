@@ -1,6 +1,6 @@
 # Practical 3 setup 
 
-This file describes the dependencies and setup needed to run the practical_3 in simulation.
+This file describes the dependencies and setup needed to run the practical_3 in simulation. This setup currently only works on Linux.
 
 ## Dependencies
 
