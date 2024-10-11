@@ -1,0 +1,33 @@
+parallel_plugin_execution: True
+loop_rate: 500.0
+
+robots:
+  panda:
+    #urdf_path: /home/ros2/ros2_ws/src/franka_panda_description/urdf/panda_arm.urdf
+    urdf_path: /home/ros2/ros2_ws/src/franka_panda/panda.urdf
+    fixed_base: True
+    use_inertia_from_file: True
+    plugins:
+      - module: pybullet_zmq.plugins.robot_state_publisher
+        class: RobotStatePublisher
+        URI: "0.0.0.0:1601"
+      - module: pybullet_zmq.plugins.control
+        class: Control
+        URI: "0.0.0.0:1602"
+      - module: pybullet_zmq.plugins.obstacle_manager ## Display obstacles
+        class: ObstacleManager
+        URI: "0.0.0.0:4567"
+      - module: pybullet_zmq.plugins.path_display_manager ## DS planned trajectory
+        class: PathDisplayManager
+        URI: "0.0.0.0:3456"
+      - module: pybullet_zmq.plugins.path_display_manager  ## Robot executed trajectory
+        class: PathDisplayManager
+        URI: "0.0.0.0:6543"
+      - module: pybullet_zmq.plugins.path_display_manager  ## Demonstrations trajectory
+        class: PathDisplayManager
+        URI: "0.0.0.0:5634"
+      - module: pybullet_zmq.plugins.kernel_manager  ## display robot configurations
+        class: KernelManager
+        URI: "0.0.0.0:1338"
+      - module: pybullet_zmq.plugins.environment_static_setup  ## display robot configurations
+        class: EnvironmentSetup
