@@ -14,6 +14,7 @@ You will need a version of Matlab from 2019 or higher with the following toolbox
 - Model Predictive Control
 - Optimization
 - Robotic System
+- ROS Toolbox
 - Signal Processing
 - Statistics and Machine Learning
 
