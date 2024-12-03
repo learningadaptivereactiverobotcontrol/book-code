@@ -8,6 +8,15 @@ FWD_ARGS+=(--net host)
 FWD_ARGS+=(--volume="${PWD}/pybullet_zmq:/home/ros2/pybullet_zmq/pybullet_zmq:rw")
 FWD_ARGS+=()
 
+# Check for nvidia gpu
+USE_NVIDIA_TOOLKIT=false 
+if command -v nvidia-smi &> /dev/null; then
+    if nvidia-smi --list-gpus | grep -q "GPU"; then
+        echo "Using Nvidia GPU"
+        RUN_FLAGS+=(--gpus all)
+    fi
+fi
+
 RUN_FLAGS+=(-u "${USERNAME}")
 RUN_FLAGS+=(-e DISPLAY="${DISPLAY}")
 RUN_FLAGS+=(-e XAUTHORITY="${XAUTHORITY}")

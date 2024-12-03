@@ -256,11 +256,12 @@ class ObstacleManager(Node):
     
     def on_close(self):
         """Remove all obstacles when the window is closed."""
-        for index, item in enumerate( self.obstacle_list.get(0, tk.END)):
-            obstacle = self.obstacles[index]
+        for i in range(len(self.obstacle_list.get(0, tk.END))):
+            # Delete all obstacles in the list
+            obstacle = self.obstacles[0]
             self.publish_marker(obstacle, action="remove")
-            del self.obstacles[index]
-            self.obstacle_list.delete(index)
+            del self.obstacles[0]
+            self.obstacle_list.delete(0)
             
         self.root.destroy()  # Close the window
 

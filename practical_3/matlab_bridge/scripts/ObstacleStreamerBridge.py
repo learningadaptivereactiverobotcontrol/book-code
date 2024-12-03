@@ -147,7 +147,7 @@ class ObstacleStreamerBridge(Node):
         ########################################
         ### I-Shape centered in front of franka
         ########################################
-        x_dist = 0.4
+        x_dist = 0.5
         y_width = 0.4
         z_0 = 0.1
         height = 0.75

@@ -34,12 +34,10 @@ ament_auto_add_executable(matlab_bridge src/MatlabBridge.cpp src/FrankaInterface
 target_link_libraries(matlab_bridge ${control_libraries_LIBRARIES} ${network_interfaces_LIBRARIES})
 
 ament_auto_add_executable(print_robot_state src/RobotStateSubscriber.cpp)
-ament_auto_add_executable(obstacle_bridge src/ObstaclePublisher.cpp)
 
 install(TARGETS
   matlab_bridge
   print_robot_state
-  obstacle_bridge
   DESTINATION lib/${PROJECT_NAME})
 
 # Install other necessary files

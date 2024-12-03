@@ -52,7 +52,12 @@ class MPPIController(Node):
         self.path_to_ds_mppi = '/home/ros2/ros2_ws/src/matlab_bridge/scripts/ds_mppi/'
 
         # Define tensor parameters (cpu or cuda:0 or mps)
-        self.params = {'device': 'cpu', 'dtype': torch.float32}
+        if torch.cuda.is_available():
+            print(f"CUDA is available. GPU detected: {torch.cuda.get_device_name(0)}")
+            self.params = {'device': 'cuda:0', 'dtype': torch.float32}
+        else:
+            print(f"CUDA is NOT available. Running on cpu...")
+            self.params = {'device': 'cpu', 'dtype': torch.float32}
 
         # Load configuration
         self.config = self.read_yaml(os.path.join(self.path_to_ds_mppi, 'config.yaml'))
@@ -145,7 +150,7 @@ class MPPIController(Node):
 
         # Setup MPPI controller
         n_closest_obs = self.config['collision_model']['closest_spheres']
-        self.mppi_step = MPPI(self.q_0, self.q_f, self.dh_params, self.obs, self.dt_sim, self.dt_H, self.N_traj, self.DS_ARRAY, self.dh_a, self.nn_model, n_closest_obs)
+        self.mppi_step = MPPI(self.q_0, self.q_f, self.dh_params, self.obs.to(**self.params), self.dt_sim, self.dt_H, self.N_traj, self.DS_ARRAY, self.dh_a, self.nn_model, n_closest_obs)
         self.mppi_step.dst_thr = self.config['integrator']['collision_threshold']
         self.mppi_step.Policy.alpha_s *= 0
 
@@ -174,7 +179,7 @@ class MPPIController(Node):
 
         # [ZMQ] Receive obstacles
         obstacles_data, obs_recv_status = zmq_try_recv(self.mppi_step.obs, self.socket_receive_obs)
-        self.mppi_step.update_obstacles(obstacles_data)
+        self.mppi_step.update_obstacles(obstacles_data.to(**self.params))
 
         # self.get_logger().info(f"obstacle data : {obstacles_data}")
 
@@ -197,7 +202,7 @@ class MPPIController(Node):
         self.robot_state = self.robot_interface.get_state()
         if not self.robot_state:
             return
-        q_des_np = np.concatenate([q_des.numpy(), np.zeros(2)])
+        q_des_np = np.concatenate([q_des.cpu.numpy(), np.zeros(2)])
         self.command.joint_state.set_positions(q_des_np)
         self.robot_interface.send_command(self.command)
 
@@ -268,7 +273,7 @@ class MPPIController(Node):
             # self.get_logger().info(f"State sent: {state_dict}")
 
             # Send info to Simulation using robot interface
-            q_des_np = np.concatenate([q_des.numpy(), np.zeros(2)])
+            q_des_np = np.concatenate([q_des.cpu().numpy(), np.zeros(2)])
             self.command.joint_state.set_positions(q_des_np)
             self.robot_interface.send_command(self.command)
 

@@ -44,7 +44,12 @@ class MPPIPlanner(Node):
         self.path_to_ds_mppi = '/home/ros2/ros2_ws/src/matlab_bridge/scripts/ds_mppi/'
 
         # Define tensor parameters (cpu or cuda:0 or mps)
-        self.params = {'device': 'cpu', 'dtype': torch.float32}
+        if torch.cuda.is_available():
+            print(f"CUDA is available. GPU detected: {torch.cuda.get_device_name(0)}")
+            self.params = {'device': 'cuda:0', 'dtype': torch.float32}
+        else:
+            print(f"CUDA is NOT available. Running on cpu...")
+            self.params = {'device': 'cpu', 'dtype': torch.float32}
 
         # Load configuration
         self.config = self.read_yaml(os.path.join(self.path_to_ds_mppi, 'config.yaml'))
@@ -117,7 +122,7 @@ class MPPIPlanner(Node):
 
         # Setup MPPI controller
         n_closest_obs = self.config['collision_model']['closest_spheres']
-        self.mppi_step = MPPI(self.q_0, self.q_f, self.dh_params, self.obs, self.dt_sim, self.dt_H, self.N_traj, self.DS_ARRAY, self.dh_a, self.nn_model, n_closest_obs)
+        self.mppi_step = MPPI(self.q_0, self.q_f, self.dh_params, self.obs.to(**self.params), self.dt_sim, self.dt_H, self.N_traj, self.DS_ARRAY, self.dh_a, self.nn_model, n_closest_obs)
         self.mppi_step.Policy.sigma_c_nominal = self.config['planner']['kernel_width']
         self.mppi_step.Policy.alpha_s = self.config['planner']['alpha_sampling_sigma']
         self.mppi_step.Policy.policy_upd_rate = self.config['planner']['policy_update_rate']
@@ -143,7 +148,7 @@ class MPPIPlanner(Node):
 
         # [ZMQ] Receive obstacles
         obstacles_data, obs_recv_status = zmq_try_recv(self.mppi_step.obs, self.socket_receive_obs)
-        self.mppi_step.update_obstacles(obstacles_data)
+        self.mppi_step.update_obstacles(obstacles_data.to(**self.params))
 
         # Update kernel tangential spaces wrt to new obstacles
         if self.config['planner']['update_kernel_bases']:

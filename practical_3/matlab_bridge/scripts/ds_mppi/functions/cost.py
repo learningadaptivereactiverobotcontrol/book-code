@@ -4,11 +4,12 @@ from fk_num import *
 class Cost:
     def __init__(self, q_f, dh_params):
         self.qf = q_f
+        self.tensor_args = {'device': q_f.device, 'dtype': q_f.dtype}
         self.COLL_WEIGHT = 500
         self.dh_params = dh_params
         self.goal_fk = numeric_fk_model(self.qf, self.dh_params, 2)[0]
-        self.q_min = torch.tensor([-2.8973, -1.7628, -2.8973, -3.0718, -2.8973, -0.0175, -2.8973])
-        self.q_max = torch.tensor([2.8973, 1.7628, 2.8973, -0.0698, 2.8973, 3.7525, 2.8973])
+        self.q_min = torch.tensor([-2.8973, -1.7628, -2.8973, -3.0718, -2.8973, -0.0175, -2.8973]).to(**self.tensor_args)
+        self.q_max = torch.tensor([2.8973, 1.7628, 2.8973, -0.0698, 2.8973, 3.7525, 2.8973]).to(**self.tensor_args)
         self.rest = self.q_min + (self.q_max - self.q_min) * 0.5
     def evaluate_costs(self, all_traj, closest_dist_all):
         goal_cost = 10*self.goal_cost(all_traj[:, -1, :], self.qf)

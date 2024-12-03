@@ -42,7 +42,7 @@ def zmq_init_recv(socket, timeout=5000, poll_interval=100):
             try:
                 val = socket.recv_pyobj(flags=zmq.DONTWAIT)
                 if val is not None:
-                    print("Received data:", val)
+                    # print("Received data:", val)
                     return val
             except zmq.ZMQError as e:
                 print(f"ZMQ Error while receiving data: {e}")

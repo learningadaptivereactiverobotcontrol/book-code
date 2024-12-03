@@ -21,6 +21,7 @@ First navigate to simulator-backend, then start the container, then launch the s
 ```console
 cd dependencies/simulator-backend/pybullet_zmq
 bash run.sh
+zmq-simulator
 ```
 Note : You can move the camera around with Ctrl + drag (mouse).
 
@@ -42,9 +43,42 @@ ros2 run matlab_bridge print_robot_state
 matlab
 ```
 
+## Command to activate null space
+```console
+ros2 param set /matlab_bridge activate_ns true
+ros2 param get /matlab_bridge activate_ns 
+```
+
+## Command to change gain weights
+```console
+ros2 param set /matlab_bridge gain_weights 1.0
+ros2 param get /matlab_bridge gain_weights 
+```
+## Optional commands for running matlab_bridge
+```console
+ros2 run matlab_bridge matlab_bridge
+ros2 launch matlab_bridge matlab_bridge.launch.py
+```
+
+
 ## Authors/Maintainers 
 
 Maxime Gautier : maxime.gautier@epfl.ch
 Tristan Bonatio : tristan.bonato@epfl.ch
 
 
+## Dev Notes
+
+Commands to push the images to ghcr, replace relevant variables 
+```console
+docker login ghcr.io -u USERNAME -p YOUR_TOKEN
+docker build -f docker/Dockerfile -t epfl-lasa/larrc/practical_3_sim .
+docker push ghcr.io/epfl-lasa/larrc/practical_3_sim:latest
+```
+
+TO push to docker hub
+```console
+docker login
+docker tag epfl-lasa/larrc/practical_3_sim:latest maxime00/epfl-lasa-larrc-practical_3:bridge
+docker push maxime00/epfl-lasa-larrc-practical_3:bridge
+```

@@ -27,7 +27,7 @@ WORKDIR ${ROS2_WORKSPACE}
 
 FROM dependencies AS build-sources
 
-RUN sudo pip install pyzmq torch==1.13.1 sdf
+RUN sudo pip install pyzmq torch==1.13.1 sdf numpy==1.26.4
 
 # Install tkinter
 RUN sudo apt-get update && sudo apt-get install -y python3-tk

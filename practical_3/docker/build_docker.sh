@@ -3,7 +3,7 @@
 # Set default variables
 LOCAL_BASE_IMAGE=false
 BASE_TAG=humble
-BUILD_LOCAL=false  # New variable to control local build or pull from GHCR
+BUILD_LOCAL=true  # New variable to control local build or pull from GHCR
 
 IMAGE_NAME=epfl-lasa/larrc/practical_3_sim
 IMAGE_TAG=latest

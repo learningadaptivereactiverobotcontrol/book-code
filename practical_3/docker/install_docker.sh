@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Docker installation according to https://docs.docker.com/engine/install/ubuntu/
-echo "Docker not found, installing..."
+echo "Installing docker..."
 sudo apt-get update
 sudo apt-get install ca-certificates curl gnupg lsb-release
 sudo mkdir -p /etc/apt/keyrings
@@ -26,19 +26,27 @@ sudo usermod -aG docker $USER
 newgrp docker
 
 
-# If nvidia, install nividia-docker2
-
-# # nvidia-docker2 install according to: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html
-# echo "Installing nvidia-docker2"
-# distribution=$(. /etc/os-release;echo $ID$VERSION_ID) \
-#     && curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
-#     && curl -s -L https://nvidia.github.io/libnvidia-container/$distribution/libnvidia-container.list | \
-#     sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
-#     sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
-# sudo apt-get update
-# sudo apt-get install -y nvidia-docker2
-# sudo systemctl restart docker
-# echo "Installation done."
+# If nvidia, install nvidia-container-toolkit
+if command -v nvidia-smi &> /dev/null; then
+    if nvidia-smi --list-gpus | grep -q "GPU"; then
+        echo "GPU detected: $(nvidia-smi --query-gpu=gpu_name --format=csv,noheader)"
+        echo "Installing nvidia-container-toolkit"
+        distribution=$(. /etc/os-release; echo $ID$VERSION_ID) \
+            && curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
+            && curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | \
+            sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+            sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+        sudo apt-get update
+        sudo apt-get install -y nvidia-container-toolkit
+        sudo nvidia-ctk runtime configure --runtime=docker
+        sudo systemctl restart docker
+        echo "Installation done."
+    else
+        echo "NVIDIA driver installed, but no GPU detected."
+    fi
+else
+    echo "nvidia-smi not found. No GPU detected or NVIDIA drivers not installed."
+fi
 
 
 

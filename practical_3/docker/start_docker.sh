@@ -4,7 +4,6 @@ IMAGE_TAG="latest"
 CONTAINER_NAME="${IMAGE_NAME//[\/.]/-}"
 USERNAME="ros2"
 MODE="interactive"
-USE_NVIDIA_TOOLKIT=false
 ROS_DOMAIN_ID=14
 
 # Help
@@ -59,12 +58,12 @@ if [ "${MODE}" == "interactive" ]; then
     # FWD_ARGS+=("--no-hostname")
     FWD_ARGS+=(--env ROS_DOMAIN_ID="${ROS_DOMAIN_ID}")
 
-    ## Use nvidia
-    if [ ${USE_NVIDIA_TOOLKIT} == true ]; then
-        RUN_FLAGS+=(--gpus all)
-        RUN_FLAGS+=(--env DISPLAY="${DISPLAY}")
-        RUN_FLAGS+=(--env NVIDIA_VISIBLE_DEVICES="${NVIDIA_VISIBLE_DEVICES:-all}")
-        RUN_FLAGS+=(--env NVIDIA_DRIVER_CAPABILITIES="${NVIDIA_DRIVER_CAPABILITIES:+$NVIDIA_DRIVER_CAPABILITIES,}graphics")
+    ## Use nvidia if available
+    if command -v nvidia-smi &> /dev/null; then
+        if nvidia-smi --list-gpus | grep -q "GPU"; then
+            echo "Using Nvidia GPU"
+            RUN_FLAGS+=(--gpus all)
+        fi
     fi
 
     # Volume

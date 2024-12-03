@@ -13,6 +13,8 @@ It contains a docker image which can be run to start a pybullet simulation fo th
 
 Assuming you do not already have MATLAB, you need to install it with the toolboxes listed in the top folder's README.
 
+Make sure you have the ROS toolbox, which is necessary for this practical.
+
 ### Install docker
 
 First, you need to install docker with sudo privileges. You can either do it yourself or run the docker/install_docker.sh script.
@@ -20,6 +22,13 @@ First, you need to install docker with sudo privileges. You can either do it you
 Note : Make sure everything is installed correctly by running the command :
 ```console
 docker run hello-world
+```
+
+#### Install nvidia-container-toolkit
+If you have a NVIDIA GPU, make sure nvidia-container-toolkit is installed with the docker/install_docker.sh script. 
+To verify it is installed correctly, run the following command which will open a basic docker container and output your GPU configuration :
+```console
+docker run --rm --gpus all nvidia/cuda:12.2.0-base-ubuntu22.04 nvidia-smi
 ```
 
 ### Building images
